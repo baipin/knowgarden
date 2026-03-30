@@ -202,10 +202,17 @@
 
                 // 处理后端抛出的调试错误
                 if (result.success === false) {
-                    console.error("Backend Debug Trace:", result.debug_info);
-                    alert(`${langPack.backendErrorTitle || '培育失败 (Backend Error)'}:\n${result.error}\n\n${langPack.backendErrorHint || '请按 F12 在控制台查看详细堆栈。'}`);
-                    resetUI();
-                    return;
+    const rawError = result.debug_info || result.error || 'No raw error details.';
+    console.error("Backend Debug Trace:", rawError);
+
+    alert(
+        `${langPack.backendErrorTitle || '培育失败 (Backend Error)'}\n\n` +
+        `${result.error || 'Unknown backend error.'}\n\n` +
+        `===== Raw Error =====\n${rawError}`
+    );
+
+    resetUI();
+    return;
                 }
 
                 // 正常逻辑进度模拟
@@ -219,10 +226,17 @@
                 window.location.href = 'garden.html';
 
             } catch (err) {
-                console.error("Fetch Error:", err);
-                alert(langPack.fetchError || "网络或系统解析错误，请检查后端服务。");
-                resetUI();
-            }
+    const rawError = err?.stack || err?.message || String(err);
+    console.error("Fetch Error:", rawError);
+
+    alert(
+        `${langPack.fetchError || "网络或系统解析错误，请检查后端服务。"}\n\n` +
+        `===== Raw Error =====\n${rawError}`
+    );
+
+    resetUI();
+}
+
         });
 
         function updateUI(text, progress, icon) {
