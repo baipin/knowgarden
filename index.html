@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
-    <script src="https://kg.baipon.com/js/lang.js"></script>
+    <script src="./js/lang.js"></script>
     <style>
         :root { --max-width: 800px; }
         body { 
@@ -233,27 +233,6 @@
         window.addEventListener('load', () => {
             const savedLang = localStorage.getItem('user_lang') || 'zh-cn';
             applyLanguage(savedLang);
-        });
-    </script>
-</body>
-</html>
-    raw_content: content
-                    };
-                    history.unshift(newRecord); // 最新数据放在最前面
-                    localStorage.setItem('garden_history', JSON.stringify(history));
-
-                    // 跳转到花园页面展示历史数据
-                    setTimeout(() => {
-                        window.location.href = 'garden.html';
-                    }, 500);
-
-                } catch (err) {
-                    console.error("Agent Error:", err);
-                    alert("处理失败，请检查 main.py 是否启动");
-                    submitBtn.disabled = false;
-                    statusArea.style.display = 'none';
-                }
-            };
         });
     </script>
 </body>
