@@ -1,0 +1,164 @@
+﻿<!DOCTYPE html>
+<html class="mdui-theme-auto">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Garden | My Plants</title>
+    <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
+    <style>
+        :root {
+            --max-width: 1200px;
+        }
+
+        body {
+            background-color: var(--mdui-color-surface-container-lowest);
+            color: var(--mdui-color-on-surface);
+            padding-bottom: 50px;
+        }
+
+        .garden-header {
+            text-align: center;
+            margin: 60px 0 40px;
+        }
+
+        .knowledge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        /* 知识卡片动效 */
+        mdui-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+            mdui-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--mdui-elevation-level3);
+            }
+
+        .tag-chip {
+            margin-right: 8px;
+            margin-top: 8px;
+        }
+
+        .section-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--mdui-color-primary);
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <mdui-layout>
+        <mdui-top-app-bar variant="flat">
+            <mdui-button-icon icon="arrow_back" onclick="window.location.href='index.html'"></mdui-button-icon>
+            <mdui-top-app-bar-title>我的知识花园</mdui-top-app-bar-title>
+            <div style="flex-grow: 1"></div>
+            <mdui-button-icon icon="refresh" id="refresh-btn"></mdui-button-icon>
+        </mdui-top-app-bar>
+
+        <mdui-layout-main>
+            <div class="garden-header">
+                <h1 class="mdui-typo-display-medium">茁壮成长的知识</h1>
+                <p style="opacity: 0.7;">这里存放着由 Agent 链培育的所有灵感种子</p>
+            </div>
+
+            <div class="knowledge-grid" id="garden-container">
+            </div>
+
+            <div id="empty-state" style="text-align: center; margin-top: 100px; display: none;">
+                <mdui-icon name="filter_vintage" style="font-size: 80px; opacity: 0.2;"></mdui-icon>
+                <p>花园还是空的，快去“播种”吧！</p>
+                <mdui-button variant="tonal" href="index.html">前往播种</mdui-button>
+            </div>
+        </mdui-layout-main>
+    </mdui-layout>
+
+    <script>const container = document.querySelector('#garden-container');
+    const emptyState = document.querySelector('#empty-state');
+    const refreshBtn = document.querySelector('#refresh-btn');
+
+    // 页面加载时拉取数据
+    window.addEventListener('load', loadGarden);
+    refreshBtn.addEventListener('click', loadGarden);
+
+    async function loadGarden() {
+        container.innerHTML = '';
+
+        try {
+            // 优先尝试从后端数据库获取 (api/main.py 对应的获取路由)
+            const response = await fetch('/api/list');
+            if (response.ok) {
+                const result = await response.json();
+                renderCards(result.data);
+            } else {
+                // 如果后端没写好，降级读取本地缓存
+                loadFromLocal();
+            }
+        } catch (e) {
+            console.log("后端接口未就绪，切换本地模式");
+            loadFromLocal();
+        }
+    }
+
+    function loadFromLocal() {
+        const localData = JSON.parse(localStorage.getItem('garden_history') || '[]');
+        if (localData.length === 0) {
+            emptyState.style.display = 'block';
+        } else {
+            emptyState.style.display = 'none';
+            renderCards(localData);
+        }
+    }
+
+    function renderCards(dataList) {
+        dataList.forEach(item => {
+            const card = document.createElement('mdui-card');
+            card.variant = "elevated";
+            card.innerHTML = `
+                <div style="padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="font-size: 20px; font-weight: bold; margin-bottom: 12px;">🌱 ${item.title || '新知识'}</div>
+                        <span style="font-size: 12px; opacity: 0.5;">${item.date || item.created_at || ''}</span>
+                    </div>
+
+                    <span class="section-label">Agent 1: 核心总结</span>
+                    <p style="margin-top: 0; line-height: 1.6;">${item.summary}</p>
+
+                    <mdui-divider style="margin: 16px 0;"></mdui-divider>
+
+                    <span class="section-label">Agent 2: 知识关联</span>
+                    <div style="margin-bottom: 16px;">
+                        ${formatTags(item.connections)}
+                    </div>
+
+                    <div style="background-color: var(--mdui-color-secondary-container); padding: 12px; border-radius: 8px;">
+                        <span class="section-label" style="color: var(--mdui-color-on-secondary-container);">Agent 3: 生长建议</span>
+                        <p style="margin: 0; font-size: 14px;">${item.growth_plan}</p>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // 将 Agent 2 返回的字符串处理成 MDUI 的 Chip 标签
+    function formatTags(tagsString) {
+        if (!tagsString) return "";
+        // 简单处理，按逗号或空格分割关键词
+        const tags = tagsString.split(/[，,、\s]+/).slice(0, 5);
+        return tags.map(tag => `<mdui-chip class="tag-chip" variant="filled">${tag}</mdui-chip>`).join('');
+    }</script>
+
+</body>
+</html>
