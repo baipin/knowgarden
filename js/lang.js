@@ -14,8 +14,19 @@ const i18n = {
         agent3: "Agent 3 (Growth): 催生复习建议...",
         btnExport: "导出备份",
         btnImport: "导入备份",
-        btnClear: "清空花园"
+        btnClear: "清空花园",
+
+        emptyInput: "请输入内容后再播种哦！",
+        fetchError: "网络或系统解析错误，请检查后端服务。",
+        backendErrorTitle: "培育失败 (Backend Error)",
+        backendErrorHint: "请按 F12 在控制台查看详细堆栈。",
+        importSuccess: "导入成功！已合并数据。",
+        invalidFile: "非法文件格式！",
+        confirmClear: "确定要拔掉所有的知识植物吗？此操作不可撤销。",
+        emptyGarden: "花园还是空的。",
+        goSow: "去播种"
     },
+
     'zh-tw': {
         title: "知識花園",
         subtitle: "輸入想法或連結，AI 園丁將為您自動培育知識",
@@ -31,8 +42,19 @@ const i18n = {
         agent3: "Agent 3 (Growth): 催生複習建議...",
         btnExport: "導出備份",
         btnImport: "導入備份",
-        btnClear: "清空花園"
+        btnClear: "清空花園",
+
+        emptyInput: "請先輸入內容再播種哦！",
+        fetchError: "網路或系統解析錯誤，請檢查後端服務。",
+        backendErrorTitle: "培育失敗 (Backend Error)",
+        backendErrorHint: "請按 F12 在控制台查看詳細堆疊。",
+        importSuccess: "導入成功！已合併資料。",
+        invalidFile: "非法檔案格式！",
+        confirmClear: "確定要拔掉所有的知識植物嗎？此操作不可撤銷。",
+        emptyGarden: "花園還是空的。",
+        goSow: "去播種"
     },
+
     'en': {
         title: "Knowledge Garden",
         subtitle: "Enter ideas or links, and AI gardeners will automatically cultivate knowledge for you",
@@ -48,6 +70,16 @@ const i18n = {
         agent3: "Agent 3 (Growth): Generating growth suggestions...",
         btnExport: "Export Backup",
         btnImport: "Import Backup",
-        btnClear: "Clear Garden"
+        btnClear: "Clear Garden",
+
+        emptyInput: "Please enter something before sowing.",
+        fetchError: "Network or system parsing error. Please check the backend service.",
+        backendErrorTitle: "Cultivation Failed (Backend Error)",
+        backendErrorHint: "Press F12 to view the detailed stack trace in the console.",
+        importSuccess: "Import successful! Data has been merged.",
+        invalidFile: "Invalid file format!",
+        confirmClear: "Are you sure you want to remove all knowledge plants? This action cannot be undone.",
+        emptyGarden: "Garden is empty.",
+        goSow: "Go Sow"
     }
 };
