@@ -120,60 +120,73 @@
         const progressBar = document.getElementById('progress-bar');
         const statusIcon = document.getElementById('status-icon');
 
+        function getCurrentLang() {
+            return localStorage.getItem('user_lang') || 'zh-cn';
+        }
+
+        function getLangPack() {
+            const lang = getCurrentLang();
+            return i18n[lang] || i18n['zh-cn'];
+        }
+
         /**
-         * 1. 语言切换核心 (修复多语言失效)
+         * 1. 语言切换核心
          */
         function applyLanguage(lang) {
             if (typeof i18n === 'undefined') {
                 console.warn("lang.js 尚未加载或 i18n 未定义");
                 return;
             }
+
             const data = i18n[lang];
             if (!data) return;
 
-            // 翻译带 data-i18n 的元素
+            // 翻译普通文本
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (data[key]) el.textContent = data[key];
             });
 
-            // 翻译 MDUI 组件内部属性
+            // 翻译 MDUI 组件属性
             document.querySelectorAll('[data-i18n-label]').forEach(el => {
                 const key = el.getAttribute('data-i18n-label');
                 if (data[key]) el.label = data[key];
             });
+
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
                 const key = el.getAttribute('data-i18n-placeholder');
                 if (data[key]) el.placeholder = data[key];
             });
 
+            // 同步菜单选中状态
+            langMenu.value = lang;
+
             localStorage.setItem('user_lang', lang);
         }
 
-        // 修复：MDUI 2 Menu 必须监听 'change' 事件来捕获选择
+        // 语言菜单切换
         langMenu.addEventListener('change', () => {
             applyLanguage(langMenu.value);
         });
 
-        // 侧边栏开关
+        // 抽屉菜单开关
         trigger.addEventListener('click', () => {
             drawer.open = !drawer.open;
         });
 
         /**
-         * 2. 提交逻辑 (配合 main.py 的 Debug 模式)
+         * 2. 提交逻辑
          */
         submitBtn.addEventListener('click', async () => {
             const content = inputField.value.trim();
-            const currentLang = localStorage.getItem('user_lang') || 'zh-cn';
+            const currentLang = getCurrentLang();
+            const langPack = i18n[currentLang] || i18n['zh-cn'];
 
             if (!content) {
-                const msg = (currentLang === 'en') ? "Please enter something!" : "请输入内容后再播种哦！";
-                alert(msg);
+                alert(langPack.emptyInput || "请输入内容后再播种哦！");
                 return;
             }
 
-            const langPack = i18n[currentLang];
             submitBtn.disabled = true;
             statusArea.style.display = 'block';
             updateUI(langPack.agent1, 33, "data_exploration");
@@ -190,7 +203,7 @@
                 // 处理后端抛出的调试错误
                 if (result.success === false) {
                     console.error("Backend Debug Trace:", result.debug_info);
-                    alert(`培育失败 (Backend Error):\n${result.error}\n\n请按 F12 在控制台查看详细堆栈。`);
+                    alert(`${langPack.backendErrorTitle || '培育失败 (Backend Error)'}:\n${result.error}\n\n${langPack.backendErrorHint || '请按 F12 在控制台查看详细堆栈。'}`);
                     resetUI();
                     return;
                 }
@@ -207,7 +220,7 @@
 
             } catch (err) {
                 console.error("Fetch Error:", err);
-                alert("网络或系统解析错误，请检查后端服务。");
+                alert(langPack.fetchError || "网络或系统解析错误，请检查后端服务。");
                 resetUI();
             }
         });
@@ -225,13 +238,17 @@
 
         function saveToGarden(data) {
             const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
-            garden.unshift({ ...data, id: Date.now(), created_at: new Date().toLocaleString() });
+            garden.unshift({
+                ...data,
+                id: Date.now(),
+                created_at: new Date().toLocaleString()
+            });
             localStorage.setItem('garden_history', JSON.stringify(garden));
         }
 
         // 初始化语言
         window.addEventListener('load', () => {
-            const savedLang = localStorage.getItem('user_lang') || 'zh-cn';
+            const savedLang = getCurrentLang();
             applyLanguage(savedLang);
         });
     </script>
