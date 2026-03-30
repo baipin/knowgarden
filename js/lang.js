@@ -11,7 +11,10 @@ const i18n = {
         footerCopy: "© 2026 知识花园 AI 项目",
         agent1: "Agent 1 (Ingestion): 正在总结内容...",
         agent2: "Agent 2 (Synthesis): 发现知识隐藏关联...",
-        agent3: "Agent 3 (Growth): 催生复习建议..."
+        agent3: "Agent 3 (Growth): 催生复习建议...",
+        btnExport: "导出备份",
+        btnImport: "导入备份",
+        btnClear: "清空花园"
     },
     'zh-tw': {
         title: "知識花園",
@@ -25,7 +28,10 @@ const i18n = {
         footerCopy: "© 2026 知識花園 AI 項目",
         agent1: "Agent 1 (Ingestion): 正在總結內容...",
         agent2: "Agent 2 (Synthesis): 發現知識隱藏關聯...",
-        agent3: "Agent 3 (Growth): 催生複習建議..."
+        agent3: "Agent 3 (Growth): 催生複習建議...",
+        btnExport: "導出備份",
+        btnImport: "導入備份",
+        btnClear: "清空花園"
     },
     'en': {
         title: "Knowledge Garden",
@@ -39,6 +45,9 @@ const i18n = {
         footerCopy: "© 2026 Knowledge Garden AI Project",
         agent1: "Agent 1 (Ingestion): Summarizing content...",
         agent2: "Agent 2 (Synthesis): Discovering hidden connections...",
-        agent3: "Agent 3 (Growth): Generating growth suggestions..."
+        agent3: "Agent 3 (Growth): Generating growth suggestions...",
+        btnExport: "Export Backup",
+        btnImport: "Import Backup",
+        btnClear: "Clear Garden"
     }
 };
