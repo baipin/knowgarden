@@ -7,163 +7,179 @@
     <link rel="stylesheet" href="./mdui/mdui.css">
     <script src="./mdui/mdui.global.js"></script>
     <style>
-        :root { --max-width: 800px; }
-        body { background-color: var(--mdui-color-surface); }
+        :root {
+            --max-width: 800px;
+        }
+
+        body {
+            background-color: var(--mdui-color-surface);
+            color: var(--mdui-color-on-surface);
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
         .main-container {
             max-width: var(--max-width);
-            margin: 40px auto;
-            padding: 0 20px;
+            margin: 60px auto;
+            padding: 0 24px;
         }
+
         .input-card {
-            padding: 32px;
-            border-radius: 24px;
-            background-color: var(--mdui-color-surface-container-low);
+            padding: 40px;
+            border-radius: 28px;
+            background-color: var(--mdui-color-surface-container-high);
+            box-shadow: var(--mdui-elevation-level1);
         }
+
         #status-area {
-            margin-top: 24px;
-            padding: 16px;
-            border-radius: 12px;
+            margin-top: 32px;
+            padding: 24px;
+            border-radius: 16px;
             background-color: var(--mdui-color-secondary-container);
             display: none;
+            transition: all 0.3s ease;
+        }
+
+        .agent-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
 
-<mdui-layout>
-    <mdui-top-app-bar variant="flat">
-        <mdui-button-icon icon="menu" id="drawer-trigger"></mdui-button-icon>
-        <mdui-top-app-bar-title>Knowledge Garden</mdui-top-app-bar-title>
-        <div style="flex-grow: 1"></div>
-        <mdui-avatar icon="person"></mdui-avatar>
-    </mdui-top-app-bar>
+    <mdui-layout>
+        <mdui-top-app-bar variant="flat">
+            <mdui-button-icon icon="menu" id="drawer-trigger"></mdui-button-icon>
+            <mdui-top-app-bar-title>Knowledge Garden</mdui-top-app-bar-title>
+        </mdui-top-app-bar>
 
-    <mdui-navigation-drawer id="main-drawer" close-on-overlay-click>
-        <div style="padding: 24px 16px;">
-            <h2 class="mdui-typo-title">园丁菜单</h2>
-        </div>
-        <mdui-list>
-            <mdui-list-item icon="edit" href="index.html" selected>灵感采集</mdui-list-item>
-            <mdui-list-item icon="local_florist" href="garden.html">我的花园</mdui-list-item>
-            <mdui-list-item icon="hub" href="garden.html#network">知识连接</mdui-list-item>
-            <mdui-divider></mdui-divider>
-            <mdui-list-item icon="settings">设置</mdui-list-item>
-        </mdui-list>
-    </mdui-navigation-drawer>
+        <mdui-navigation-drawer id="main-drawer" close-on-overlay-click>
+            <div style="padding: 24px 16px;">
+                <h2 class="mdui-typo-title">园丁工具箱</h2>
+            </div>
+            <mdui-list>
+                <mdui-list-item icon="add_box" href="index.html" selected>播种灵感</mdui-list-item>
+                <mdui-list-item icon="local_florist" href="garden.html">查看花园</mdui-list-item>
+                <mdui-divider></mdui-divider>
+                <mdui-list-item icon="settings">系统设置</mdui-list-item>
+            </mdui-list>
+        </mdui-navigation-drawer>
 
-    <mdui-layout-main>
-        <div class="main-container">
-            <div class="input-card">
-                <div style="text-align: center; margin-bottom: 32px;">
-                    <h1 class="mdui-typo-display-small">播种新知识</h1>
-                    <p style="color: var(--mdui-color-on-surface-variant);">
-                        输入文章链接或感悟，AI 园丁将启动 Agent 链进行培育。
-                    </p>
-                </div>
-
-                <mdui-text-field
-                    id="knowledge-input"
-                    label="在此输入您的想法..."
-                    placeholder="例如：今天学到了关于量子纠缠的新解释..."
-                    rows="8"
-                    area
-                    variant="outlined"
-                ></mdui-text-field>
-
-                <div style="display: flex; justify-content: center; margin-top: 24px;">
-                    <mdui-button id="submit-btn" icon="auto_awesome" variant="filled">
-                        开始培育 (Chain Start)
-                    </mdui-button>
-                </div>
-
-                <div id="status-area">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span id="status-text" style="font-weight: bold;">准备中...</span>
-                        <span id="status-percent">0%</span>
+        <mdui-layout-main>
+            <div class="main-container">
+                <div class="input-card">
+                    <div style="text-align: center; margin-bottom: 40px;">
+                        <div style="font-size: 56px; margin-bottom: 16px;">🌱</div>
+                        <h1 class="mdui-typo-display-small">今天学到了什么？</h1>
+                        <p style="opacity: 0.7;">输入想法或链接，AI 园丁将为您自动培育知识</p>
                     </div>
-                    <mdui-linear-progress id="progress-bar" value="0"></mdui-linear-progress>
+
+                    <mdui-text-field id="knowledge-input"
+                                     label="输入内容..."
+                                     placeholder="例如：量子纠缠的非局域性特征..."
+                                     rows="6"
+                                     area
+                                     variant="outlined"></mdui-text-field>
+
+                    <div style="display: flex; justify-content: center; margin-top: 32px;">
+                        <mdui-button id="submit-btn" icon="auto_awesome" variant="filled">
+                            开始培育 (Sow Seeds)
+                        </mdui-button>
+                    </div>
+
+                    <div id="status-area">
+                        <div class="agent-step">
+                            <mdui-icon name="hourglass_empty" id="status-icon" style="margin-right: 12px; color: var(--mdui-color-primary);"></mdui-icon>
+                            <span id="status-text">准备启动 Agent 链...</span>
+                        </div>
+                        <mdui-linear-progress id="progress-bar"></mdui-linear-progress>
+                    </div>
                 </div>
             </div>
-        </div>
-    </mdui-layout-main>
-</mdui-layout>
+        </mdui-layout-main>
+    </mdui-layout>
 
-<script>
-    const drawer = document.querySelector('#main-drawer');
-    const trigger = document.querySelector('#drawer-trigger');
-    const submitBtn = document.querySelector('#submit-btn');
-    const inputField = document.querySelector('#knowledge-input');
-    const statusArea = document.querySelector('#status-area');
-    const statusText = document.querySelector('#status-text');
-    const progressBar = document.querySelector('#progress-bar');
-    const statusPercent = document.querySelector('#status-percent');
+    <script>
+        const drawer = document.querySelector('#main-drawer');
+        const trigger = document.querySelector('#drawer-trigger');
+        const submitBtn = document.querySelector('#submit-btn');
+        const inputField = document.querySelector('#knowledge-input');
+        const statusArea = document.querySelector('#status-area');
+        const statusText = document.querySelector('#status-text');
+        const progressBar = document.querySelector('#progress-bar');
+        const statusIcon = document.querySelector('#status-icon');
 
-    // 菜单开关
-    trigger.addEventListener('click', () => drawer.opened = !drawer.opened);
+        // 抽屉开关
+        trigger.addEventListener('click', () => drawer.opened = !drawer.opened);
 
-    // 提交处理逻辑
-    submitBtn.addEventListener('click', async () => {
-        const content = inputField.value.trim();
-        if (!content) {
-            alert("请先输入一些内容再播种。");
-            return;
-        }
+        submitBtn.addEventListener('click', async () => {
+            const content = inputField.value.trim();
+            if (!content) {
+                alert("请输入内容后再播种哦！");
+                return;
+            }
 
-        // 1. 初始化状态
-        submitBtn.disabled = true;
-        statusArea.style.display = 'block';
-        updateStatus("Agent 1: 正在总结内容...", 33);
+            // 初始化加载状态
+            submitBtn.disabled = true;
+            statusArea.style.display = 'block';
+            updateUI("Agent 1 (Ingestion): 正在总结内容...", 33, "data_exploration");
 
-        try {
-            // 2. 发送请求到后端 FastAPI
-            const response = await fetch('/api/grow', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: content })
-            });
+            try {
+                // 2. 发送请求到 Vercel 后端路径 (api 重命名后的路径)
+                const response = await fetch('/api/grow', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: content })
+                });
 
-            if (!response.ok) throw new Error("后端连接失败");
+                if (!response.ok) throw new Error("后端响应异常，请检查 API 配置");
 
-            // 模拟 Agent 链的视觉进度 (因为 API 是合并返回的)
-            updateStatus("Agent 2: 正在发现知识关联...", 66);
-            await new Promise(r => setTimeout(r, 800)); 
+                const result = await response.json();
 
-            updateStatus("Agent 3: 正在催生生长计划...", 95);
-            const result = await response.json();
-            
-            updateStatus("培育完成！正在同步到花园...", 100);
+                // 模拟 Agent 2 的处理感
+                updateUI("Agent 2 (Synthesis): 发现知识隐藏关联...", 66, "hub");
+                await new Promise(r => setTimeout(r, 1000));
 
-            // 3. 将结果持久化到本地以便 garden.html 读取
-            saveToLocal(result.data);
+                // 模拟 Agent 3 的处理感
+                updateUI("Agent 3 (Growth): 催生复习与应用建议...", 90, "trending_up");
+                await new Promise(r => setTimeout(r, 800));
 
-            // 4. 跳转
-            setTimeout(() => {
-                window.location.href = 'garden.html';
-            }, 1000);
+                // 存储结果到本地
+                saveToGarden(result.data);
 
-        } catch (error) {
-            statusText.innerText = "出错了：" + error.message;
-            submitBtn.disabled = false;
-        }
-    });
+                updateUI("培育完成！正在同步至花园...", 100, "check_circle");
 
-    function updateStatus(text, progress) {
-        statusText.innerText = text;
-        progressBar.value = progress;
-        statusPercent.innerText = progress + "%";
-    }
+                // 延迟跳转，让用户看清完成状态
+                setTimeout(() => {
+                    window.location.href = 'garden.html';
+                }, 1000);
 
-    function saveToLocal(data) {
-        const gardenData = JSON.parse(localStorage.getItem('garden_history') || '[]');
-        // 将新知识插入到最前面
-        gardenData.unshift({
-            ...data,
-            id: Date.now(),
-            timestamp: new Date().toLocaleString()
+            } catch (error) {
+                console.error(error);
+                updateUI("出错了: " + error.message, 0, "error");
+                submitBtn.disabled = false;
+            }
         });
-        localStorage.setItem('garden_history', JSON.stringify(gardenData));
-    }
-</script>
+
+        function updateUI(text, progress, icon) {
+            statusText.innerText = text;
+            progressBar.value = progress;
+            statusIcon.name = icon;
+        }
+
+        function saveToGarden(data) {
+            const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
+            // 插入到开头
+            garden.unshift({
+                ...data,
+                id: Date.now(),
+                created_at: new Date().toLocaleString()
+            });
+            localStorage.setItem('garden_history', JSON.stringify(garden));
+        }
+    </script>
 
 </body>
 </html>

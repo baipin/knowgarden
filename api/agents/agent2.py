@@ -1,7 +1,7 @@
 from openai import OpenAI
 import os
 
-def run_ingestion(client, content):
+def run_synthesis(client, content):
     response = client.chat.completions.create(
         model="deepseek-chat",
         messages=[
