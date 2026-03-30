@@ -85,93 +85,80 @@
     </mdui-layout>
 
     <script>
-        // 等待 DOM 和 mdui 组件完全加载后再执行
-        document.addEventListener('DOMContentLoaded', () => {
-            const drawer = document.querySelector('#main-drawer');
-            const trigger = document.querySelector('#drawer-trigger');
+        const container = document.querySelector('#garden-container');
+        const emptyState = document.querySelector('#empty-state');
+        const refreshBtn = document.querySelector('#refresh-btn');
 
-            if (!drawer || !trigger) {
-                console.error('抽屉或触发按钮未找到，请检查 ID 是否正确');
-                return;
-            }
+        // 页面加载时拉取数据
+        window.addEventListener('load', loadGarden);
+        refreshBtn.addEventListener('click', loadGarden);
 
-            // 点击菜单按钮切换抽屉
-            trigger.addEventListener('click', () => {
-                drawer.opened = !drawer.opened;
-            });
-
-            // 点击遮罩层时自动关闭
-            drawer.addEventListener('click', (e) => {
-                if (e.target === drawer) {
-                    drawer.opened = false;
-                }
-            });
-
-            console.log('mdui 抽屉初始化完成');
-        });
-
-        const submitBtn = document.querySelector('#submit-btn');
-        const inputField = document.querySelector('#knowledge-input');
-        const statusArea = document.querySelector('#status-area');
-        const statusText = document.querySelector('#status-text');
-        const progressBar = document.querySelector('#progress-bar');
-        const statusIcon = document.querySelector('#status-icon');
-
-        submitBtn.addEventListener('click', async () => {
-            const content = inputField.value.trim();
-            if (!content) {
-                alert("请输入内容后再播种哦！");
-                return;
-            }
-
-            submitBtn.disabled = true;
-            statusArea.style.display = 'block';
-            updateUI("Agent 1 (Ingestion): 正在总结内容...", 33, "data_exploration");
+        async function loadGarden() {
+            container.innerHTML = '';
 
             try {
-                const response = await fetch('/api/grow', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: content })
-                });
-
-                if (!response.ok) throw new Error("后端响应异常，请检查 API 配置");
-
-                const result = await response.json();
-
-                updateUI("Agent 2 (Synthesis): 发现知识隐藏关联...", 66, "hub");
-                await new Promise(r => setTimeout(r, 1000));
-
-                updateUI("Agent 3 (Growth): 催生复习与应用建议...", 90, "trending_up");
-                await new Promise(r => setTimeout(r, 800));
-
-                saveToGarden(result.data);
-                updateUI("培育完成！正在同步至花园...", 100, "check_circle");
-
-                setTimeout(() => {
-                    window.location.href = 'garden.html';
-                }, 1000);
-            } catch (error) {
-                console.error(error);
-                updateUI("出错了: " + error.message, 0, "error");
-                submitBtn.disabled = false;
+                // 优先尝试从后端数据库获取 (api/main.py 对应的获取路由)
+                const response = await fetch('/api/list');
+                if (response.ok) {
+                    const result = await response.json();
+                    renderCards(result.data);
+                } else {
+                    // 如果后端没写好，降级读取本地缓存
+                    loadFromLocal();
+                }
+            } catch (e) {
+                console.log("后端接口未就绪，切换本地模式");
+                loadFromLocal();
             }
-        });
-
-        function updateUI(text, progress, icon) {
-            statusText.innerText = text;
-            progressBar.value = progress;
-            if (statusIcon) statusIcon.name = icon;
         }
 
-        function saveToGarden(data) {
-            const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
-            garden.unshift({
-                ...data,
-                id: Date.now(),
-                created_at: new Date().toLocaleString()
+        function loadFromLocal() {
+            const localData = JSON.parse(localStorage.getItem('garden_history') || '[]');
+            if (localData.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+                renderCards(localData);
+            }
+        }
+
+        function renderCards(dataList) {
+            dataList.forEach(item => {
+                const card = document.createElement('mdui-card');
+                card.variant = "elevated";
+                card.innerHTML = `
+                    <div style="padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div style="font-size: 20px; font-weight: bold; margin-bottom: 12px;">🌱 ${item.title || '新知识'}</div>
+                            <span style="font-size: 12px; opacity: 0.5;">${item.date || item.created_at || ''}</span>
+                        </div>
+
+                        <span class="section-label">Agent 1: 核心总结</span>
+                        <p style="margin-top: 0; line-height: 1.6;">${item.summary}</p>
+
+                        <mdui-divider style="margin: 16px 0;"></mdui-divider>
+
+                        <span class="section-label">Agent 2: 知识关联</span>
+                        <div style="margin-bottom: 16px;">
+                            ${formatTags(item.connections)}
+                        </div>
+
+                        <div style="background-color: var(--mdui-color-secondary-container); padding: 12px; border-radius: 8px;">
+                            <span class="section-label" style="color: var(--mdui-color-on-secondary-container);">Agent 3: 生长建议</span>
+                            <p style="margin: 0; font-size: 14px;">${item.growth_plan}</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
             });
-            localStorage.setItem('garden_history', JSON.stringify(garden));
+        }
+
+        // 将 Agent 2 返回的字符串处理成 MDUI 的 Chip 标签
+        function formatTags(tagsString) {
+            if (!tagsString) return "";
+            // 简单处理，按逗号或空格分割关键词
+            const tags = tagsString.split(/[，,、\s]+/).slice(0, 5);
+            return tags.map(tag => `<mdui-chip class="tag-chip" variant="filled">${tag}</mdui-chip>`).join('');
         }
     </script>
 
