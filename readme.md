@@ -8,6 +8,7 @@ Nowadays, many people read articles, listen to podcasts, and browse news every d
 
 ## Construction
 
+```
 knowledge-garden-ai/
 ├── backend/                # Backend service powered by FastAPI/Flask
 │   ├── main.py             # Entry point: API route definitions and orchestration
@@ -17,12 +18,13 @@ knowledge-garden-ai/
 │   │   └── growth.py       # Agent 3: Spaced repetition and output suggestions
 │   ├── database.py         # Data persistence layer (SQLite/SQLAlchemy)
 │   └── requirements.txt    # Python dependencies
-├── frontend/ (root)        # Frontend application (Root for web files)
+├── frontend/               # Frontend application (Root for web files)
 │   ├── index.html          # Homepage: Inspiration capture and input
 │   ├── garden.html         # Visualization: Knowledge graph and card grid
 │   ├── assets/             # Static assets (Custom CSS, JS logic)
 │   └── components/         # Reusable MDUI 2 web components
 └── README.md               # Project documentation and setup guide
+```
 
 ## Three Agent Roles:
 
