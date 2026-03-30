@@ -38,9 +38,8 @@
         footer {
             padding: 32px 24px;
             text-align: center;
-            background-color: var(--mdui-color-surface-container-lowest);
-            border-top: 1px solid var(--mdui-color-outline-variant);
             margin-top: 60px;
+            opacity: 0.6;
         }
     </style>
 </head>
@@ -105,13 +104,12 @@
             </div>
 
             <footer>
-                <div class="mdui-typo-body-medium" style="opacity: 0.6;" data-i18n="footerCopy">© 2026 Knowledge Garden</div>
+                <div class="mdui-typo-body-medium" data-i18n="footerCopy">© 2026 Knowledge Garden</div>
             </footer>
         </mdui-layout-main>
     </mdui-layout>
 
     <script>
-        // 元素引用
         const drawer = document.getElementById('main-drawer');
         const trigger = document.getElementById('drawer-trigger');
         const langMenu = document.getElementById('language-menu');
@@ -123,23 +121,23 @@
         const statusIcon = document.getElementById('status-icon');
 
         /**
-         * 1. 多语言核心逻辑
+         * 1. 语言切换核心 (修复多语言失效)
          */
         function applyLanguage(lang) {
             if (typeof i18n === 'undefined') {
-                console.error("lang.js 未加载，请检查文件路径。");
+                console.warn("lang.js 尚未加载或 i18n 未定义");
                 return;
             }
             const data = i18n[lang];
             if (!data) return;
 
-            // 翻译常规文本
+            // 翻译带 data-i18n 的元素
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (data[key]) el.textContent = data[key];
             });
 
-            // 翻译 MDUI 组件属性 (注意使用 .label 和 .placeholder 属性)
+            // 翻译 MDUI 组件内部属性
             document.querySelectorAll('[data-i18n-label]').forEach(el => {
                 const key = el.getAttribute('data-i18n-label');
                 if (data[key]) el.label = data[key];
@@ -152,21 +150,19 @@
             localStorage.setItem('user_lang', lang);
         }
 
-        /**
-         * 2. 事件绑定
-         */
-        
-        // 抽屉开关
-        trigger.addEventListener('click', () => {
-            drawer.opened = !drawer.opened;
-        });
-
-        // 语言菜单切换
+        // 修复：MDUI 2 Menu 必须监听 'change' 事件来捕获选择
         langMenu.addEventListener('change', (e) => {
             applyLanguage(e.target.value);
         });
 
-        // 提交逻辑
+        // 侧边栏开关
+        trigger.addEventListener('click', () => {
+            drawer.opened = !drawer.opened;
+        });
+
+        /**
+         * 2. 提交逻辑 (配合 main.py 的 Debug 模式)
+         */
         submitBtn.addEventListener('click', async () => {
             const content = inputField.value.trim();
             const currentLang = localStorage.getItem('user_lang') || 'zh-cn';
@@ -180,7 +176,6 @@
             const langPack = i18n[currentLang];
             submitBtn.disabled = true;
             statusArea.style.display = 'block';
-            
             updateUI(langPack.agent1, 33, "data_exploration");
 
             try {
@@ -190,32 +185,30 @@
                     body: JSON.stringify({ content: content, lang: currentLang })
                 });
 
-                // 获取原始响应文本
-                const responseText = await response.text();
+                const result = await response.json();
 
-                if (!response.ok) {
-                    // 如果后端报错（如 500），这里会捕获到具体的错误文本
-                    throw new Error(`Server Error (${response.status}): ${responseText}`);
+                // 处理后端抛出的调试错误
+                if (result.success === false) {
+                    console.error("Backend Debug Trace:", result.debug_info);
+                    alert(`培育失败 (Backend Error):\n${result.error}\n\n请按 F12 在控制台查看详细堆栈。`);
+                    resetUI();
+                    return;
                 }
 
-                // 尝试解析 JSON
-                const result = JSON.parse(responseText);
-
-                // 模拟 Agent 进度
+                // 正常逻辑进度模拟
                 updateUI(langPack.agent2, 66, "hub");
                 await new Promise(r => setTimeout(r, 800));
                 updateUI(langPack.agent3, 95, "trending_up");
-                await new Promise(r => setTimeout(r, 800));
+                await new Promise(r => setTimeout(r, 1000));
 
-                // 存入缓存
+                // 保存并跳转
                 saveToGarden(result.data);
                 window.location.href = 'garden.html';
 
             } catch (err) {
-                console.error("Detailed Error:", err);
-                alert("噢！出错了：\n" + err.message);
-                submitBtn.disabled = false;
-                statusArea.style.display = 'none';
+                console.error("Fetch Error:", err);
+                alert("网络或系统解析错误，请检查后端服务。");
+                resetUI();
             }
         });
 
@@ -225,14 +218,19 @@
             if (statusIcon) statusIcon.name = icon;
         }
 
+        function resetUI() {
+            submitBtn.disabled = false;
+            statusArea.style.display = 'none';
+        }
+
         function saveToGarden(data) {
             const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
             garden.unshift({ ...data, id: Date.now(), created_at: new Date().toLocaleString() });
             localStorage.setItem('garden_history', JSON.stringify(garden));
         }
 
-        // 初始化
-        window.addEventListener('DOMContentLoaded', () => {
+        // 初始化语言
+        window.addEventListener('load', () => {
             const savedLang = localStorage.getItem('user_lang') || 'zh-cn';
             applyLanguage(savedLang);
         });
