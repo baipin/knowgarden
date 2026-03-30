@@ -192,12 +192,45 @@
                     return;
                 }
 
-                // 正常进度模拟
+                                // 正常逻辑进度模拟
                 updateUI(langPack.agent2, 66, "hub");
                 await new Promise(r => setTimeout(r, 800));
                 updateUI(langPack.agent3, 95, "trending_up");
                 await new Promise(r => setTimeout(r, 1000));
 
-                //
+                // 保存并跳转
+                saveToGarden(result.data);
+                window.location.href = 'garden.html';
 
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                alert("网络或系统解析错误，请检查后端服务。");
+                resetUI();
+            }
+        });
 
+        function updateUI(text, progress, icon) {
+            statusText.innerText = text;
+            progressBar.value = progress;
+            if (statusIcon) statusIcon.name = icon;
+        }
+
+        function resetUI() {
+            submitBtn.disabled = false;
+            statusArea.style.display = 'none';
+        }
+
+        function saveToGarden(data) {
+            const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
+            garden.unshift({ ...data, id: Date.now(), created_at: new Date().toLocaleString() });
+            localStorage.setItem('garden_history', JSON.stringify(garden));
+        }
+
+        // 初始化语言
+        window.addEventListener('load', () => {
+            const savedLang = localStorage.getItem('user_lang') || 'zh-cn';
+            applyLanguage(savedLang);
+        });
+    </script>
+</body>
+</html>
