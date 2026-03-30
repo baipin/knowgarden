@@ -76,7 +76,7 @@
                 <div class="input-card">
                     <div style="text-align: center; margin-bottom: 40px;">
                         <div style="font-size: 56px; margin-bottom: 16px;">🌱</div>
-                        <h1 class="mdui-typo-display-small" data-i18n="title">Knowledge Garden</h1>
+                        <h1 class="mdui-typo-display-small" data-i18n="title">知识花园</h1>
                         <p style="opacity: 0.7;" data-i18n="subtitle">培育你的灵感种子</p>
                     </div>
 
@@ -110,7 +110,8 @@
     </mdui-layout>
 
     <script>
-        const drawerInstance = new mdui.Drawer('#main-drawer');
+        // --- 元素获取 ---
+        const drawer = document.getElementById('main-drawer');
         const trigger = document.getElementById('drawer-trigger');
         const langMenu = document.getElementById('language-menu');
         const submitBtn = document.getElementById('submit-btn');
@@ -120,22 +121,21 @@
         const progressBar = document.getElementById('progress-bar');
         const statusIcon = document.getElementById('status-icon');
 
-        // 语言切换核心
+        // --- 核心功能：语言切换 ---
         function applyLanguage(lang) {
             if (typeof i18n === 'undefined') {
-                console.warn("lang.js 尚未加载或 i18n 未定义");
+                console.warn("lang.js 未加载");
                 return;
             }
             const data = i18n[lang];
             if (!data) return;
 
-            // 翻译带 data-i18n 的元素
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (data[key]) el.textContent = data[key];
             });
 
-            // 翻译 MDUI 组件内部属性
+            // MDUI 2 组件通过直接设置属性同步 UI
             document.querySelectorAll('[data-i18n-label]').forEach(el => {
                 const key = el.getAttribute('data-i18n-label');
                 if (data[key]) el.label = data[key];
@@ -148,19 +148,17 @@
             localStorage.setItem('user_lang', lang);
         }
 
-        // 监听菜单项点击事件
-        document.querySelectorAll('#language-menu .mdui-menu-item').forEach(item => {
-            item.addEventListener('click', () => {
-                applyLanguage(item.getAttribute('value'));
-            });
+        // 修正：监听 mdui-menu 的 change 事件，这是获取选定值最可靠的方法
+        langMenu.addEventListener('change', (e) => {
+            applyLanguage(e.target.value);
         });
 
-        // 侧边栏开关
+        // 修正：侧边栏开关。MDUI 2 直接操作 .opened 属性即可
         trigger.addEventListener('click', () => {
-            drawerInstance.toggle();  // MDUI提供的Drawer API切换
+            drawer.opened = !drawer.opened;
         });
 
-        // 提交逻辑
+        // --- 提交逻辑 ---
         submitBtn.addEventListener('click', async () => {
             const content = inputField.value.trim();
             const currentLang = localStorage.getItem('user_lang') || 'zh-cn';
@@ -174,7 +172,9 @@
             const langPack = i18n[currentLang];
             submitBtn.disabled = true;
             statusArea.style.display = 'block';
-            updateUI(langPack.agent1, 33, "data_exploration");
+            
+            // 初始进度
+            updateUI(langPack.agent1 || "正在摄取内容...", 33, "data_exploration");
 
             try {
                 const response = await fetch('/api/grow', {
@@ -186,16 +186,17 @@
                 const result = await response.json();
 
                 if (result.success === false) {
-                    console.error("Backend Debug Trace:", result.debug_info);
-                    alert(`培育失败 (Backend Error):\n${result.error}\n\n请按 F12 在控制台查看详细堆栈。`);
+                    console.error("Backend Trace:", result.debug_info);
+                    alert(`培育失败: ${result.error}`);
                     resetUI();
                     return;
                 }
 
-                                // 正常逻辑进度模拟
-                updateUI(langPack.agent2, 66, "hub");
+                // 进度模拟
+                updateUI(langPack.agent2 || "正在建立关联...", 66, "hub");
                 await new Promise(r => setTimeout(r, 800));
-                updateUI(langPack.agent3, 95, "trending_up");
+                
+                updateUI(langPack.agent3 || "正在生成方案...", 95, "trending_up");
                 await new Promise(r => setTimeout(r, 1000));
 
                 // 保存并跳转
@@ -204,15 +205,15 @@
 
             } catch (err) {
                 console.error("Fetch Error:", err);
-                alert("网络或系统解析错误，请检查后端服务。");
+                alert("无法连接到 AI 园丁，请检查后端服务。");
                 resetUI();
             }
         });
 
-        function updateUI(text, progress, icon) {
+        function updateUI(text, progress, iconName) {
             statusText.innerText = text;
             progressBar.value = progress;
-            if (statusIcon) statusIcon.name = icon;
+            if (statusIcon) statusIcon.name = iconName; // MDUI 2 使用 name 属性更换图标
         }
 
         function resetUI() {
@@ -222,12 +223,16 @@
 
         function saveToGarden(data) {
             const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
-            garden.unshift({ ...data, id: Date.now(), created_at: new Date().toLocaleString() });
+            garden.unshift({ 
+                ...data, 
+                id: Date.now(), 
+                created_at: new Date().toLocaleString() 
+            });
             localStorage.setItem('garden_history', JSON.stringify(garden));
         }
 
-        // 初始化语言
-        window.addEventListener('load', () => {
+        // --- 初始化 ---
+        window.addEventListener('DOMContentLoaded', () => {
             const savedLang = localStorage.getItem('user_lang') || 'zh-cn';
             applyLanguage(savedLang);
         });
