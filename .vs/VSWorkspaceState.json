@@ -1,8 +1,7 @@
 {
   "ExpandedNodes": [
     "",
-    "\\api",
-    "\\api\\agents"
+    "\\api"
   ],
   "SelectedNode": "\\api\\main.py",
   "PreviewInSolutionExplorer": false
