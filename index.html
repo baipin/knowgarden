@@ -52,7 +52,7 @@
             <mdui-top-app-bar-title data-i18n="title">Knowledge Garden</mdui-top-app-bar-title>
             <div style="flex-grow: 1"></div>
             
-            <mdui-dropdown>
+            <mdui-dropdown id="lang-dropdown">
                 <mdui-button-icon icon="language" slot="trigger"></mdui-button-icon>
                 <mdui-menu id="language-menu">
                     <mdui-menu-item value="zh-cn">简体中文</mdui-menu-item>
@@ -86,15 +86,13 @@
                     <mdui-text-field id="knowledge-input"
                                      data-i18n-label="inputLabel"
                                      data-i18n-placeholder="inputPlaceholder"
-                                     label="输入内容..."
-                                     placeholder="例如：量子纠缠的非局域性特征..."
                                      rows="6"
                                      area
                                      variant="outlined"></mdui-text-field>
 
                     <div style="display: flex; justify-content: center; margin-top: 32px;">
-                        <mdui-button id="submit-btn" icon="auto_awesome" variant="filled" data-i18n="btnSubmit">
-                            开始培育 (Sow Seeds)
+                        <mdui-button id="submit-btn" icon="auto_awesome" variant="filled">
+                            <span data-i18n="btnSubmit">开始培育 (Sow Seeds)</span>
                         </mdui-button>
                     </div>
 
@@ -109,12 +107,10 @@
             </div>
 
             <footer>
-                <div class="mdui-typo-body-medium" style="opacity: 0.6;" data-i18n="footerCopy">
-                    © 2026 Knowledge Garden AI Project
-                </div>
-                <div class="footer-links" style="margin-top: 12px;">
+                <div class="mdui-typo-body-medium" style="opacity: 0.6;" data-i18n="footerCopy">© 2026 Knowledge Garden</div>
+                <div style="margin-top: 12px;">
                     <a href="https://github.com/baipin/knowgarden" target="_blank" style="text-decoration: none;">
-                        <mdui-button variant="tonal" icon="code">GitHub Repository</mdui-button>
+                        <mdui-button variant="tonal" icon="code">GitHub</mdui-button>
                     </a>
                 </div>
             </footer>
@@ -122,21 +118,35 @@
     </mdui-layout>
 
     <script>
+        // 1. 获取所有核心 DOM 元素
+        const drawer = document.querySelector('#main-drawer');
+        const trigger = document.querySelector('#drawer-trigger');
+        const langMenu = document.querySelector('#language-menu');
+        const submitBtn = document.querySelector('#submit-btn');
+        const inputField = document.querySelector('#knowledge-input');
+        const statusArea = document.querySelector('#status-area');
+        const statusText = document.querySelector('#status-text');
+        const progressBar = document.querySelector('#progress-bar');
+        const statusIcon = document.querySelector('#status-icon');
+
         /**
-         * 1. 多语言切换核心逻辑
+         * 2. 多语言切换逻辑
          */
         function applyLanguage(lang) {
-            // 确保 i18n 对象已从 lang.js 加载
-            if (typeof i18n === 'undefined') return;
+            if (typeof i18n === 'undefined') {
+                console.error("Language file (lang.js) not loaded or i18n object missing.");
+                return;
+            }
             const data = i18n[lang];
+            if (!data) return;
 
-            // 替换所有带有 data-i18n 属性的文本
+            // 翻译普通文本
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (data[key]) el.textContent = data[key];
             });
 
-            // 替换 MDUI 组件的 label 和 placeholder
+            // 翻译 MDUI 组件属性 (Label 和 Placeholder)
             document.querySelectorAll('[data-i18n-label]').forEach(el => {
                 const key = el.getAttribute('data-i18n-label');
                 if (data[key]) el.label = data[key];
@@ -149,74 +159,82 @@
             localStorage.setItem('user_lang', lang);
         }
 
-        // 初始化语言
-        const currentLang = localStorage.getItem('user_lang') || 'zh-cn';
-        applyLanguage(currentLang);
+        // 初始化语言加载
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('user_lang') || 'zh-cn';
+            applyLanguage(savedLang);
+        });
 
-        // 监听语言菜单点击
-        document.querySelector('#language-menu').addEventListener('change', (e) => {
+        // 绑定语言切换菜单点击事件
+        langMenu.addEventListener('change', (e) => {
             applyLanguage(e.target.value);
         });
 
         /**
-         * 2. UI 交互逻辑 (抽屉、提交等)
+         * 3. 交互逻辑
          */
-        const drawer = document.querySelector('#main-drawer');
-        const trigger = document.querySelector('#drawer-trigger');
-        trigger.addEventListener('click', () => drawer.opened = !drawer.opened);
+        // 抽屉开关
+        trigger.addEventListener('click', () => {
+            drawer.opened = !drawer.opened;
+        });
 
-        const submitBtn = document.querySelector('#submit-btn');
-        const inputField = document.querySelector('#knowledge-input');
-        const statusArea = document.querySelector('#status-area');
-        const statusText = document.querySelector('#status-text');
-        const progressBar = document.querySelector('#progress-bar');
-        const statusIcon = document.querySelector('#status-icon');
-
+        // 提交按钮逻辑
         submitBtn.addEventListener('click', async () => {
             const content = inputField.value.trim();
-            if (!content) return;
+            if (!content) {
+                alert("Please enter something!");
+                return;
+            }
 
-            const lang = localStorage.getItem('user_lang') || 'zh-cn';
-            const langPack = i18n[lang];
+            const currentLang = localStorage.getItem('user_lang') || 'zh-cn';
+            const langPack = i18n[currentLang];
 
+            // 禁用按钮并显示状态区
             submitBtn.disabled = true;
             statusArea.style.display = 'block';
             
-            // 使用语言包中的状态文字
             updateUI(langPack.agent1, 33, "data_exploration");
 
             try {
                 const response = await fetch('/api/grow', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: content, lang: lang })
+                    body: JSON.stringify({ content: content, lang: currentLang })
                 });
 
-                if (!response.ok) throw new Error("API Error");
+                if (!response.ok) throw new Error("Server Error");
                 const result = await response.json();
 
+                // 模拟 Agent 链的进度展示
                 updateUI(langPack.agent2, 66, "hub");
                 await new Promise(r => setTimeout(r, 800));
+                
                 updateUI(langPack.agent3, 95, "trending_up");
                 await new Promise(r => setTimeout(r, 800));
 
+                // 保存并跳转
                 saveToGarden(result.data);
-                setTimeout(() => { window.location.href = 'garden.html'; }, 800);
+                window.location.href = 'garden.html';
             } catch (error) {
+                console.error(error);
                 updateUI("Error: " + error.message, 0, "error");
                 submitBtn.disabled = false;
             }
         });
 
-        function updateUI(text, progress, icon) {
+        function updateUI(text, progress, iconName) {
             statusText.innerText = text;
             progressBar.value = progress;
-            if (statusIcon) statusIcon.name = icon;
+            if (statusIcon) statusIcon.name = iconName;
         }
 
         function saveToGarden(data) {
             const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
-            garden.unshift({ ...data, id: Date.now(), created_at: new Date().toLocaleString() });
+            garden.unshift({ 
+                ...data, 
+                id: Date.now(), 
+                created_at: new Date().toLocaleString() 
+            });
             localStorage.setItem('garden_history', JSON.stringify(garden));
         }
     </script>
