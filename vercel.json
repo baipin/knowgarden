@@ -8,7 +8,7 @@
   ],
   "functions": {
     "api/main.py": {
-      "runtime": "python"
+      "runtime": "@vercel/python"
     }
   }
 }
