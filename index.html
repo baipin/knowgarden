@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="mdui-theme-auto" lang="zh-CN">
+<html class="mdui-theme-auto">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,20 +7,19 @@
     <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
-    <script src="./js/lang.js"></script>
+    <script src="/js/lang.js"></script>
     <style>
         :root { --max-width: 800px; }
         body { 
             background-color: var(--mdui-color-surface); 
             color: var(--mdui-color-on-surface);
-            font-family: system-ui, -apple-system, sans-serif;
             margin: 0;
         }
         .main-container {
             max-width: var(--max-width);
             margin: 40px auto;
             padding: 0 24px;
-            min-height: calc(100vh - 250px);
+            min-height: calc(100vh - 300px);
         }
         .input-card {
             padding: 40px;
@@ -49,7 +48,7 @@
     <mdui-layout>
         <mdui-top-app-bar variant="flat" scroll-behavior="elevate">
             <mdui-button-icon icon="menu" id="drawer-trigger"></mdui-button-icon>
-            <mdui-top-app-bar-title data-i18n="title">知识花园</mdui-top-app-bar-title>
+            <mdui-top-app-bar-title data-i18n="title">Knowledge Garden</mdui-top-app-bar-title>
             <div style="flex-grow: 1"></div>
             
             <mdui-dropdown>
@@ -63,8 +62,8 @@
         </mdui-top-app-bar>
 
         <mdui-navigation-drawer id="main-drawer" close-on-overlay-click>
-            <div style="padding: 24px 16px;">
-                <h2 class="mdui-typo-title" data-i18n="title">知识花园</h2>
+            <div style="padding: 16px;">
+                <span class="mdui-typo-title" data-i18n="title">Knowledge Garden</span>
             </div>
             <mdui-list>
                 <mdui-list-item icon="add_box" href="index.html" data-i18n="navSow" selected>播种灵感</mdui-list-item>
@@ -79,15 +78,13 @@
                 <div class="input-card">
                     <div style="text-align: center; margin-bottom: 40px;">
                         <div style="font-size: 56px; margin-bottom: 16px;">🌱</div>
-                        <h1 class="mdui-typo-display-small" data-i18n="title">知识花园</h1>
+                        <h1 class="mdui-typo-display-small" data-i18n="title">Knowledge Garden</h1>
                         <p style="opacity: 0.7;" data-i18n="subtitle">输入想法或链接，AI 园丁将为您自动培育知识</p>
                     </div>
 
                     <mdui-text-field id="knowledge-input"
                                      data-i18n-label="inputLabel"
                                      data-i18n-placeholder="inputPlaceholder"
-                                     label="输入内容..."
-                                     placeholder="例如：量子纠缠的非局域性特征..."
                                      rows="6"
                                      area
                                      variant="outlined"></mdui-text-field>
@@ -99,7 +96,7 @@
                     </div>
 
                     <div id="status-area">
-                        <div class="agent-step" style="display: flex; align-items: center; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 12px;">
                             <mdui-icon name="hourglass_empty" id="status-icon" style="margin-right: 12px; color: var(--mdui-color-primary);"></mdui-icon>
                             <span id="status-text" style="font-weight: 500;">...</span>
                         </div>
@@ -120,7 +117,7 @@
     </mdui-layout>
 
     <script>
-        // --- 核心元素获取 ---
+        // --- 1. 获取元素 ---
         const drawer = document.querySelector('#main-drawer');
         const trigger = document.querySelector('#drawer-trigger');
         const langMenu = document.querySelector('#language-menu');
@@ -131,44 +128,39 @@
         const progressBar = document.querySelector('#progress-bar');
         const statusIcon = document.querySelector('#status-icon');
 
-        // --- 1. 多语言应用函数 ---
+        // --- 2. 核心逻辑：多语言应用 ---
         function applyLanguage(lang) {
-            // 检查 lang.js 是否加载成功
-            if (typeof i18n === 'undefined') {
-                console.error("lang.js 未加载，请检查文件路径！");
-                return;
-            }
-            
+            if (typeof i18n === 'undefined') return;
             const data = i18n[lang];
             if (!data) return;
 
-            // 替换所有 data-i18n 的文本
+            // 文本替换
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (data[key]) el.textContent = data[key];
             });
 
-            // 特殊处理 MDUI 组件的属性
+            // MDUI 组件属性替换
             document.querySelectorAll('[data-i18n-label]').forEach(el => {
                 const key = el.getAttribute('data-i18n-label');
-                if (data[key]) el.setAttribute('label', data[key]);
+                if (data[key]) el.label = data[key]; // MDUI 组件支持直接修改 .label 属性
             });
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
                 const key = el.getAttribute('data-i18n-placeholder');
-                if (data[key]) el.setAttribute('placeholder', data[key]);
+                if (data[key]) el.placeholder = data[key];
             });
 
             localStorage.setItem('user_lang', lang);
         }
 
-        // --- 2. 事件绑定 ---
+        // --- 3. 事件绑定 ---
 
-        // 菜单开关：MDUI 2 使用 .opened 属性
+        // 抽屉开关逻辑
         trigger.addEventListener('click', () => {
             drawer.opened = !drawer.opened;
         });
 
-        // 语言切换：监听 change 事件
+        // 语言菜单逻辑
         langMenu.addEventListener('change', (e) => {
             applyLanguage(e.target.value);
         });
@@ -177,11 +169,12 @@
         submitBtn.addEventListener('click', async () => {
             const content = inputField.value.trim();
             const currentLang = localStorage.getItem('user_lang') || 'zh-cn';
-            
-            // 修复空输入提示：根据语言显示
+
             if (!content) {
-                const alertMsg = (currentLang === 'en') ? "Please enter something!" : "请输入内容后再播种哦！";
-                alert(alertMsg);
+                // 根据当前语言弹出提示
+                const msg = (currentLang === 'en') ? "Please enter content!" : 
+                            (currentLang === 'zh-tw' ? "請輸入內容后再播種哦！" : "请输入内容后再播种哦！");
+                alert(msg);
                 return;
             }
 
@@ -189,7 +182,7 @@
             submitBtn.disabled = true;
             statusArea.style.display = 'block';
             
-            updateUI(langPack.agent1, 33, "data_exploration");
+            updateStatus(langPack.agent1, 33, "data_exploration");
 
             try {
                 const response = await fetch('/api/grow', {
@@ -198,40 +191,34 @@
                     body: JSON.stringify({ content: content, lang: currentLang })
                 });
 
-                if (!response.ok) throw new Error("Server Error");
                 const result = await response.json();
+                if (!response.ok) throw new Error(result.detail || "Server Error");
 
-                updateUI(langPack.agent2, 66, "hub");
+                updateStatus(langPack.agent2, 66, "hub");
                 await new Promise(r => setTimeout(r, 800));
-                
-                updateUI(langPack.agent3, 95, "trending_up");
+                updateStatus(langPack.agent3, 95, "trending_up");
                 await new Promise(r => setTimeout(r, 800));
 
-                saveToGarden(result.data);
+                // 存入本地
+                const history = JSON.parse(localStorage.getItem('garden_history') || '[]');
+                history.unshift({ ...result.data, id: Date.now(), created_at: new Date().toLocaleString() });
+                localStorage.setItem('garden_history', JSON.stringify(history));
+
                 window.location.href = 'garden.html';
-            } catch (error) {
-                updateUI("Error: " + error.message, 0, "error");
+            } catch (err) {
+                alert("Error: " + err.message);
                 submitBtn.disabled = false;
+                statusArea.style.display = 'none';
             }
         });
 
-        function updateUI(text, progress, iconName) {
+        function updateStatus(text, progress, icon) {
             statusText.innerText = text;
             progressBar.value = progress;
-            if (statusIcon) statusIcon.setAttribute('name', iconName);
+            if (statusIcon) statusIcon.name = icon;
         }
 
-        function saveToGarden(data) {
-            const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
-            garden.unshift({ 
-                ...data, 
-                id: Date.now(), 
-                created_at: new Date().toLocaleString() 
-            });
-            localStorage.setItem('garden_history', JSON.stringify(garden));
-        }
-
-        // --- 3. 页面初始化 ---
+        // --- 4. 初始化 ---
         window.addEventListener('DOMContentLoaded', () => {
             const savedLang = localStorage.getItem('user_lang') || 'zh-cn';
             applyLanguage(savedLang);
