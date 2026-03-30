@@ -103,30 +103,15 @@
     </mdui-layout>
 
     <script>
-        // 等待 DOM 和 mdui 组件完全加载后再执行
-        document.addEventListener('DOMContentLoaded', () => {
-            const drawer = document.querySelector('#main-drawer');
-            const trigger = document.querySelector('#drawer-trigger');
+        const drawer = document.querySelector('#main-drawer');
+        const trigger = document.querySelector('#drawer-trigger');
 
-            if (!drawer || !trigger) {
-                console.error('抽屉或触发按钮未找到，请检查 ID 是否正确');
-                return;
-            }
-
-            // 点击菜单按钮切换抽屉
+        if (trigger && drawer) {
             trigger.addEventListener('click', () => {
                 drawer.opened = !drawer.opened;
             });
-
-            drawer.addEventListener('click', (e) => {
-                if (e.target === drawer) {
-                    drawer.opened = false;
-                }
-            });
-
-            console.log('mdui 抽屉初始化完成');
-        });
-
+        }
+        
         const submitBtn = document.querySelector('#submit-btn');
         const inputField = document.querySelector('#knowledge-input');
         const statusArea = document.querySelector('#status-area');
