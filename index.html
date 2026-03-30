@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
+    <script src="https://kg.baipon.com/js/lang.js"></script>
     <style>
         :root { --max-width: 800px; }
         body { 
@@ -40,7 +41,6 @@
             margin-top: 60px;
             opacity: 0.6;
         }
-        mdui-menu-item { cursor: pointer; }
     </style>
 </head>
 <body>
@@ -51,7 +51,7 @@
             <mdui-top-app-bar-title data-i18n="title">Knowledge Garden</mdui-top-app-bar-title>
             <div style="flex-grow: 1"></div>
             
-            <mdui-dropdown id="language-dropdown">
+            <mdui-dropdown>
                 <mdui-button-icon icon="language" slot="trigger"></mdui-button-icon>
                 <mdui-menu id="language-menu">
                     <mdui-menu-item value="zh-cn">简体中文</mdui-menu-item>
@@ -81,6 +81,8 @@
                     </div>
 
                     <mdui-text-field id="knowledge-input"
+                                     data-i18n-label="inputLabel"
+                                     data-i18n-placeholder="inputPlaceholder"
                                      rows="6"
                                      area
                                      variant="outlined"></mdui-text-field>
@@ -108,127 +110,134 @@
     </mdui-layout>
 
     <script>
-        // --- 1. 语言包与 Agent 阶段描述 ---
-        const i18n = {
-            "zh-cn": {
-                "title": "知识花园",
-                "subtitle": "Agent 自动摄取与总结灵感",
-                "inputLabel": "今日灵感内容 (支持链接)",
-                "inputPlaceholder": "输入文本或粘贴链接，由 api/ 下的 Agent 自动处理...",
-                "btnSubmit": "启动 Agent 培育",
-                "navSow": "播种灵感",
-                "navGarden": "查看花园",
-                "footerCopy": "© 2026 知识花园",
-                "agent1": "Ingestion Agent: 正在抓取内容... 🌱",
-                "agent2": "Association Agent: 正在 api/ 库中检索关联... 🔗",
-                "agent3": "Synthesis Agent: 正在由 main.py 最终生成方案... ✨",
-                "emptyAlert": "内容不能为空！"
-            },
-            "en": {
-                "title": "Knowledge Garden",
-                "subtitle": "Automated Ingestion & Synthesis",
-                "inputLabel": "Inspiration Port",
-                "inputPlaceholder": "Enter content to be processed by /api Agents...",
-                "btnSubmit": "Start Agent Process",
-                "navSow": "Sow Seeds",
-                "navGarden": "My Garden",
-                "footerCopy": "© 2026 Knowledge Garden",
-                "agent1": "Ingestion Agent: Extracting... 🌱",
-                "agent2": "Association Agent: Linking nodes... 🔗",
-                "agent3": "Synthesis Agent: Finalizing in main.py... ✨",
-                "emptyAlert": "Please enter something!"
-            }
-        };
+        const drawer = document.getElementById('main-drawer');
+        const trigger = document.getElementById('drawer-trigger');
+        const langMenu = document.getElementById('language-menu');
+        const submitBtn = document.getElementById('submit-btn');
+        const inputField = document.getElementById('knowledge-input');
+        const statusArea = document.getElementById('status-area');
+        const statusText = document.getElementById('status-text');
+        const progressBar = document.getElementById('progress-bar');
+        const statusIcon = document.getElementById('status-icon');
 
-        // --- 2. 状态应用与语言切换 ---
+        /**
+         * 1. 语言切换核心 (修复多语言失效)
+         */
         function applyLanguage(lang) {
-            const data = i18n[lang] || i18n['en'];
+            if (typeof i18n === 'undefined') {
+                console.warn("lang.js 尚未加载或 i18n 未定义");
+                return;
+            }
+            const data = i18n[lang];
+            if (!data) return;
+
+            // 翻译带 data-i18n 的元素
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (data[key]) el.textContent = data[key];
             });
-            const input = document.getElementById('knowledge-input');
-            if (input) {
-                input.label = data.inputLabel;
-                input.placeholder = data.inputPlaceholder;
-            }
+
+            // 翻译 MDUI 组件内部属性
+            document.querySelectorAll('[data-i18n-label]').forEach(el => {
+                const key = el.getAttribute('data-i18n-label');
+                if (data[key]) el.label = data[key];
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (data[key]) el.placeholder = data[key];
+            });
+
             localStorage.setItem('user_lang', lang);
         }
 
-        // --- 3. 核心功能与缓存逻辑 ---
-        document.addEventListener('DOMContentLoaded', () => {
-            const drawer = new mdui.Drawer(document.getElementById('main-drawer'));
-            document.getElementById('drawer-trigger').onclick = () => drawer.toggle();
+        // 修复：MDUI 2 Menu 必须监听 'change' 事件来捕获选择
+        langMenu.addEventListener('change', (e) => {
+            applyLanguage(e.target.value);
+        });
 
-            const savedLang = localStorage.getItem('user_lang') || 'zh-cn';
-            applyLanguage(savedLang);
+        // 侧边栏开关
+        trigger.addEventListener('click', () => {
+            drawer.opened = !drawer.opened;
+        });
 
-            // 语言菜单逻辑
-            document.querySelectorAll('#language-menu mdui-menu-item').forEach(item => {
-                item.onclick = () => {
-                    const lang = item.getAttribute('value');
-                    applyLanguage(lang);
-                    document.getElementById('language-dropdown').open = false;
-                };
-            });
+        /**
+         * 2. 提交逻辑 (配合 main.py 的 Debug 模式)
+         */
+        submitBtn.addEventListener('click', async () => {
+            const content = inputField.value.trim();
+            const currentLang = localStorage.getItem('user_lang') || 'zh-cn';
 
-            // 提交按钮逻辑
-            const submitBtn = document.getElementById('submit-btn');
-            const inputField = document.getElementById('knowledge-input');
-            const statusArea = document.getElementById('status-area');
-            const statusText = document.getElementById('status-text');
-            const progressBar = document.getElementById('progress-bar');
-            const statusIcon = document.getElementById('status-icon');
+            if (!content) {
+                const msg = (currentLang === 'en') ? "Please enter something!" : "请输入内容后再播种哦！";
+                alert(msg);
+                return;
+            }
 
-            submitBtn.onclick = async () => {
-                const content = inputField.value.trim();
-                const currentLang = localStorage.getItem('user_lang') || 'zh-cn';
-                const langPack = i18n[currentLang];
+            const langPack = i18n[currentLang];
+            submitBtn.disabled = true;
+            statusArea.style.display = 'block';
+            updateUI(langPack.agent1, 33, "data_exploration");
 
-                if (!content) {
-                    alert(langPack.emptyAlert);
+            try {
+                const response = await fetch('/api/grow', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: content, lang: currentLang })
+                });
+
+                const result = await response.json();
+
+                // 处理后端抛出的调试错误
+                if (result.success === false) {
+                    console.error("Backend Debug Trace:", result.debug_info);
+                    alert(`培育失败 (Backend Error):\n${result.error}\n\n请按 F12 在控制台查看详细堆栈。`);
+                    resetUI();
                     return;
                 }
 
-                // UI 表现
-                submitBtn.disabled = true;
-                statusArea.style.display = 'block';
-                
-                // Agent 1: 摄取
-                statusText.innerText = langPack.agent1;
-                progressBar.value = 33;
-                statusIcon.name = "data_exploration";
+                // 正常逻辑进度模拟
+                updateUI(langPack.agent2, 66, "hub");
+                await new Promise(r => setTimeout(r, 800));
+                updateUI(langPack.agent3, 95, "trending_up");
+                await new Promise(r => setTimeout(r, 1000));
 
-                try {
-                    // 调用 main.py 转发到 api/agent 逻辑
-                    const response = await fetch('/api/grow', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ content, lang: currentLang })
-                    });
-                    
-                    const result = await response.json();
-                    if (!result.success) throw new Error(result.error);
+                // 保存并跳转
+                saveToGarden(result.data);
+                window.location.href = 'garden.html';
 
-                    // Agent 2: 关联模拟
-                    await new Promise(r => setTimeout(r, 600));
-                    statusText.innerText = langPack.agent2;
-                    progressBar.value = 66;
-                    statusIcon.name = "hub";
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                alert("网络或系统解析错误，请检查后端服务。");
+                resetUI();
+            }
+        });
 
-                    // Agent 3: 综合模拟
-                    await new Promise(r => setTimeout(r, 800));
-                    statusText.innerText = langPack.agent3;
-                    progressBar.value = 95;
-                    statusIcon.name = "trending_up";
+        function updateUI(text, progress, icon) {
+            statusText.innerText = text;
+            progressBar.value = progress;
+            if (statusIcon) statusIcon.name = icon;
+        }
 
-                    // --- 关键：保存历史数据到浏览器缓存 (localStorage) ---
-                    const history = JSON.parse(localStorage.getItem('garden_history') || '[]');
-                    const newRecord = {
-                        ...result.data, // 包含后端 Agent 返回的 summary, tags 等
-                        id: Date.now(),
-                        created_at: new Date().toLocaleString(),
-                        raw_content: content
+        function resetUI() {
+            submitBtn.disabled = false;
+            statusArea.style.display = 'none';
+        }
+
+        function saveToGarden(data) {
+            const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
+            garden.unshift({ ...data, id: Date.now(), created_at: new Date().toLocaleString() });
+            localStorage.setItem('garden_history', JSON.stringify(garden));
+        }
+
+        // 初始化语言
+        window.addEventListener('load', () => {
+            const savedLang = localStorage.getItem('user_lang') || 'zh-cn';
+            applyLanguage(savedLang);
+        });
+    </script>
+</body>
+</html>
+    raw_content: content
                     };
                     history.unshift(newRecord); // 最新数据放在最前面
                     localStorage.setItem('garden_history', JSON.stringify(history));
