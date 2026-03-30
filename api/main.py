@@ -1,29 +1,33 @@
 import os
+import sys
 import asyncio
+import traceback
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
 from dotenv import load_dotenv
 
-# 确保导入你的 Agent 模块
+# --- 1. 路径修复 ---
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+if CURRENT_DIR not in sys.path:
+    sys.path.append(CURRENT_DIR)
+
+# --- 2. 导入 Agent (带容错) ---
 try:
-    from .agent1 import run_ingestion
-    from .agent2 import run_synthesis
-    from .agent3 import run_growth
-except ImportError:
-    import agent1 as agent1_mod
-    import agent2 as agent2_mod
-    import agent3 as agent3_mod
-    run_ingestion = agent1_mod.run_ingestion
-    run_synthesis = agent2_mod.run_synthesis
-    run_growth = agent3_mod.run_growth
+    import agent1
+    import agent2
+    import agent3
+except Exception as e:
+    # 如果导入阶段就失败，记录下来
+    IMPORT_ERROR = str(e) + "\n" + traceback.format_exc()
+else:
+    IMPORT_ERROR = None
 
 load_dotenv()
 
 app = FastAPI()
 
-# 跨域配置
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -38,56 +42,53 @@ client = OpenAI(
 
 class KnowledgeRequest(BaseModel):
     content: str
-    lang: str = "zh-cn"  # 默认
-
-@app.get("/api/health")
-def health_check():
-    return {"status": "Garden Engine Online"}
+    lang: str = "zh-cn"
 
 @app.post("/api/grow")
 async def grow_knowledge(request: KnowledgeRequest):
-    user_content = request.content.strip()
-    target_lang = request.lang  # 获取前端传来的语言偏好
+    # 准备返回的初始结构
+    result = {
+        "success": False,
+        "data": None,
+        "debug_info": None
+    }
     
-    if not user_content:
-        raise HTTPException(status_code=400, detail="Empty content")
+    if IMPORT_ERROR:
+        return {"success": False, "error": "Import Error", "debug_info": IMPORT_ERROR}
 
-    # 2. 定义语言映射表，确保 Prompt 准确
+    user_content = request.content.strip()
+    target_lang = request.lang 
+    
     lang_map = {
-        "zh-cn": "Simplified Chinese (简体中文)",
-        "zh-tw": "Traditional Chinese (繁體中文)",
+        "zh-cn": "Simplified Chinese",
+        "zh-tw": "Traditional Chinese",
         "en": "English"
     }
     selected_lang = lang_map.get(target_lang, "Simplified Chinese")
-
-    # 3. 构建统一的语言指令后缀
-    lang_instruction = f"\n\nIMPORTANT: You MUST provide your response ONLY in {selected_lang}."
+    lang_instruction = f"\n\nIMPORTANT: Response ONLY in {selected_lang}."
 
     try:
-        # --- STAGE 1: Ingestion ---
-        # 传入语言指令给各个 Agent
+        # --- 依次执行 Agent ---
+        # 1. Ingestion
         summary = await asyncio.to_thread(
-            run_ingestion, client, user_content + lang_instruction
+            agent1.run_ingestion, client, user_content + lang_instruction
         )
 
-        # --- STAGE 2: Synthesis ---
+        # 2. Synthesis
         connections = await asyncio.to_thread(
-            run_synthesis, client, summary + lang_instruction
+            agent2.run_synthesis, client, summary + lang_instruction
         )
 
-        # --- STAGE 3: Growth ---
+        # 3. Growth
         growth_plan = await asyncio.to_thread(
-            run_growth, client, summary + connections + lang_instruction
+            agent3.run_growth, client, summary + connections + lang_instruction
         )
 
-        # 使用了 database.py，在此处保存
-        from .database import save_entry
-        save_entry(summary, connections, growth_plan, target_lang)
-
+        # 执行成功
         return {
             "success": True,
             "data": {
-                "title": summary[:30],
+                "title": summary[:20].split('\n')[0],
                 "summary": summary,
                 "connections": connections,
                 "growth_plan": growth_plan,
@@ -96,5 +97,17 @@ async def grow_knowledge(request: KnowledgeRequest):
         }
 
     except Exception as e:
-        print(f"Error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # --- 关键：如果报错，将错误堆栈抛出到前端 ---
+        full_error = traceback.format_exc()
+        print(f"Backend Error: {full_error}") # 服务器日志也能看到
+        
+        return {
+            "success": False,
+            "error": str(e),
+            "debug_info": full_error, # 这里包含了报错的具体行数
+            "data": {
+                "summary": "处理失败",
+                "connections": "N/A",
+                "growth_plan": f"错误详情: {str(e)}"
+            }
+        }
