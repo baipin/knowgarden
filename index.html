@@ -110,7 +110,7 @@
     </mdui-layout>
 
     <script>
-        const drawer = document.getElementById('main-drawer');
+        const drawerInstance = new mdui.Drawer('#main-drawer');
         const trigger = document.getElementById('drawer-trigger');
         const langMenu = document.getElementById('language-menu');
         const submitBtn = document.getElementById('submit-btn');
@@ -120,9 +120,7 @@
         const progressBar = document.getElementById('progress-bar');
         const statusIcon = document.getElementById('status-icon');
 
-        /**
-         * 1. 语言切换核心 (修复多语言失效)
-         */
+        // 语言切换核心
         function applyLanguage(lang) {
             if (typeof i18n === 'undefined') {
                 console.warn("lang.js 尚未加载或 i18n 未定义");
@@ -150,19 +148,19 @@
             localStorage.setItem('user_lang', lang);
         }
 
-        // 修复：MDUI 2 Menu 必须监听 'change' 事件来捕获选择
-        langMenu.addEventListener('change', (e) => {
-            applyLanguage(e.target.value);
+        // 监听菜单项点击事件
+        document.querySelectorAll('#language-menu .mdui-menu-item').forEach(item => {
+            item.addEventListener('click', () => {
+                applyLanguage(item.getAttribute('value'));
+            });
         });
 
         // 侧边栏开关
         trigger.addEventListener('click', () => {
-            drawer.opened = !drawer.opened;
+            drawerInstance.toggle();  // MDUI提供的Drawer API切换
         });
 
-        /**
-         * 2. 提交逻辑 (配合 main.py 的 Debug 模式)
-         */
+        // 提交逻辑
         submitBtn.addEventListener('click', async () => {
             const content = inputField.value.trim();
             const currentLang = localStorage.getItem('user_lang') || 'zh-cn';
@@ -187,7 +185,6 @@
 
                 const result = await response.json();
 
-                // 处理后端抛出的调试错误
                 if (result.success === false) {
                     console.error("Backend Debug Trace:", result.debug_info);
                     alert(`培育失败 (Backend Error):\n${result.error}\n\n请按 F12 在控制台查看详细堆栈。`);
@@ -195,45 +192,12 @@
                     return;
                 }
 
-                // 正常逻辑进度模拟
+                // 正常进度模拟
                 updateUI(langPack.agent2, 66, "hub");
                 await new Promise(r => setTimeout(r, 800));
                 updateUI(langPack.agent3, 95, "trending_up");
                 await new Promise(r => setTimeout(r, 1000));
 
-                // 保存并跳转
-                saveToGarden(result.data);
-                window.location.href = 'garden.html';
+                //
 
-            } catch (err) {
-                console.error("Fetch Error:", err);
-                alert("网络或系统解析错误，请检查后端服务。");
-                resetUI();
-            }
-        });
 
-        function updateUI(text, progress, icon) {
-            statusText.innerText = text;
-            progressBar.value = progress;
-            if (statusIcon) statusIcon.name = icon;
-        }
-
-        function resetUI() {
-            submitBtn.disabled = false;
-            statusArea.style.display = 'none';
-        }
-
-        function saveToGarden(data) {
-            const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
-            garden.unshift({ ...data, id: Date.now(), created_at: new Date().toLocaleString() });
-            localStorage.setItem('garden_history', JSON.stringify(garden));
-        }
-
-        // 初始化语言
-        window.addEventListener('load', () => {
-            const savedLang = localStorage.getItem('user_lang') || 'zh-cn';
-            applyLanguage(savedLang);
-        });
-    </script>
-</body>
-</html>
