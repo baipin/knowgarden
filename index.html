@@ -110,7 +110,7 @@
     </mdui-layout>
 
     <script>
-        // --- 1. 国际化数据包 ---
+        // --- 1. 语言包数据 ---
         const i18n = {
             "zh-cn": {
                 "title": "知识花园",
@@ -121,9 +121,9 @@
                 "navSow": "播种灵感",
                 "navGarden": "查看花园",
                 "footerCopy": "© 2026 知识花园",
-                "agent1": "正在分析你的灵感... 🌱",
-                "agent2": "连接知识脉络... 🔗",
-                "agent3": "即将绽放，正在整理花园 ✨"
+                "agent1": "正在分析你的灵感... ",
+                "agent2": "连接知识脉络... ",
+                "agent3": "即将绽放，正在整理花园"
             },
             "zh-tw": {
                 "title": "知識花園",
@@ -134,9 +134,9 @@
                 "navSow": "播種靈感",
                 "navGarden": "查看花園",
                 "footerCopy": "© 2026 知識花園",
-                "agent1": "正在分析你的靈感... 🌱",
-                "agent2": "連接知識脈絡... 🔗",
-                "agent3": "即將綻放，正在整理花園 ✨"
+                "agent1": "正在分析你的靈感... ",
+                "agent2": "連接知識脈絡... ",
+                "agent3": "即將綻放，正在整理花園"
             },
             "en": {
                 "title": "Knowledge Garden",
@@ -147,107 +147,130 @@
                 "navSow": "Sow Inspiration",
                 "navGarden": "View Garden",
                 "footerCopy": "© 2026 Knowledge Garden",
-                "agent1": "Analyzing your inspiration... 🌱",
-                "agent2": "Connecting knowledge paths... 🔗",
-                "agent3": "About to bloom, organizing garden ✨"
+                "agent1": "Analyzing your inspiration...",
+                "agent2": "Connecting knowledge paths...",
+                "agent3": "About to bloom, organizing garden"
             }
         };
 
-        let drawerInstance = null;
-
-        // --- 2. 初始化核心 ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // 初始化 Drawer
-            const drawerElement = document.querySelector('#main-drawer');
-            if (drawerElement) {
-                drawerInstance = new mdui.Drawer(drawerElement);
-            }
-
-            // 侧边栏开关
-            document.getElementById('drawer-trigger')?.addEventListener('click', () => {
-                drawerInstance?.toggle();
-            });
-
-            // 初始语言加载
-            const savedLang = localStorage.getItem('user_lang') || 'zh-cn';
-            applyLanguage(savedLang);
-
-            // 绑定提交按钮
-            document.getElementById('submit-btn')?.addEventListener('click', handleSubmit);
-        });
-
-        // --- 3. 语言切换增强版 (委托监听) ---
-        document.body.addEventListener('click', (e) => {
-            const menuItem = e.target.closest('mdui-menu-item');
-            if (menuItem && menuItem.closest('#language-menu')) {
-                const langVal = menuItem.getAttribute('value');
-                if (langVal && i18n[langVal]) {
-                    applyLanguage(langVal);
-                    // 兼容性关闭下拉框
-                    const dropdown = document.getElementById('language-dropdown');
-                    if (dropdown) dropdown.open = false;
-                }
-            }
-        });
-
+        // --- 2. 核心交互逻辑 ---
+        
+        // 应用语言函数
         function applyLanguage(lang) {
             const data = i18n[lang];
             if (!data) return;
 
-            // 更新静态文案
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (data[key]) el.textContent = data[key];
             });
 
-            // 更新输入框 Label & Placeholder (MDUI 2 标准写法)
             const textField = document.getElementById('knowledge-input');
             if (textField) {
                 textField.label = data.inputLabel;
                 textField.placeholder = data.inputPlaceholder;
             }
 
-            // 更新按钮文案
             const btnSpan = document.querySelector('#submit-btn span');
             if (btnSpan) btnSpan.textContent = data.btnSubmit;
 
             localStorage.setItem('user_lang', lang);
         }
 
-        // --- 4. 提交处理 ---
-        async function handleSubmit() {
-            const inputField = document.getElementById('knowledge-input');
-            const content = inputField?.value.trim();
-            const currentLang = localStorage.getItem('user_lang') || 'zh-cn';
-            const langPack = i18n[currentLang];
-
-            if (!content) {
-                alert(currentLang === 'en' ? "Please enter something!" : "请输入内容！");
-                return;
-            }
-
-            const submitBtn = document.getElementById('submit-btn');
-            const statusArea = document.getElementById('status-area');
+        // 统一初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            const drawer = document.querySelector('#main-drawer');
+            const drawerInstance = new mdui.Drawer(drawer);
             
-            submitBtn.disabled = true;
-            statusArea.style.display = 'block';
-            updateUI(langPack.agent1, 33, "data_exploration");
+            // 绑定侧边栏切换
+            document.getElementById('drawer-trigger').onclick = () => drawerInstance.toggle();
 
-            try {
-                const response = await fetch('/api/grow', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content, lang: currentLang })
-                });
+            // 初始语言
+            const savedLang = localStorage.getItem('user_lang') || 'zh-cn';
+            applyLanguage(savedLang);
 
-                const result = await response.json();
+            // 监听语言菜单点击 (使用委托)
+            document.getElementById('language-menu').onclick = (e) => {
+                const item = e.target.closest('mdui-menu-item');
+                if (item) {
+                    const val = item.getAttribute('value');
+                    applyLanguage(val);
+                    document.getElementById('language-dropdown').open = false;
+                }
+            };
 
-                if (!result.success) {
-                    throw new Error(result.error || "Backend Error");
+            // 核心：点击提交按钮
+            document.getElementById('submit-btn').onclick = async () => {
+                const inputField = document.getElementById('knowledge-input');
+                const content = inputField.value.trim();
+                const currentLang = localStorage.getItem('user_lang') || 'zh-cn';
+                const langPack = i18n[currentLang];
+
+                if (!content) {
+                    alert(currentLang === 'en' ? "Please enter something!" : "请输入内容！");
+                    return;
                 }
 
-                // 进度模拟
-                updateUI(langPack.agent2, 66, "hub");
+                const submitBtn = document.getElementById('submit-btn');
+                const statusArea = document.getElementById('status-area');
+                
+                // UI 状态切换
+                submitBtn.disabled = true;
+                statusArea.style.display = 'block';
+                
+                // Step 1
+                updateStatus(langPack.agent1, 33, "data_exploration");
+
+                try {
+                    const res = await fetch('/api/grow', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content, lang: currentLang })
+                    });
+                    
+                    const result = await res.json();
+
+                    if (!result.success) {
+                        throw new Error(result.error || "Backend Error");
+                    }
+
+                    // Step 2
+                    updateStatus(langPack.agent2, 66, "hub");
+                    await new Promise(r => setTimeout(r, 600));
+
+                    // Step 3
+                    updateStatus(langPack.agent3, 95, "trending_up");
+                    await new Promise(r => setTimeout(r, 800));
+
+                    // 保存并跳转
+                    const history = JSON.parse(localStorage.getItem('garden_history') || '[]');
+                    history.unshift({
+                        ...result.data,
+                        id: Date.now(),
+                        created_at: new Date().toLocaleString()
+                    });
+                    localStorage.setItem('garden_history', JSON.stringify(history));
+                    
+                    window.location.href = 'garden.html';
+
+                } catch (err) {
+                    console.error("Submission failed:", err);
+                    alert(`Error: ${err.message}`);
+                    submitBtn.disabled = false;
+                    statusArea.style.display = 'none';
+                }
+            };
+        });
+
+        function updateStatus(text, progress, icon) {
+            document.getElementById('status-text').innerText = text;
+            document.getElementById('progress-bar').value = progress;
+            document.getElementById('status-icon').name = icon;
+        }
+    </script>
+</body>
+</html>
+             updateUI(langPack.agent2, 66, "hub");
                 await new Promise(r => setTimeout(r, 600));
                 updateUI(langPack.agent3, 95, "trending_up");
                 await new Promise(r => setTimeout(r, 800));
