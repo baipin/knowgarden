@@ -100,10 +100,19 @@ async def grow_knowledge(request: KnowledgeRequest):
         # --- 关键：如果报错，将错误堆栈抛出到前端 ---
         full_error = traceback.format_exc()
         print(f"Backend Error: {full_error}") # 服务器日志也能看到
-        
+
+        # 定义不同语言的错误消息
+        error_messages = {
+            "zh-cn": "导入失败，请检查后端服务",
+            "zh-tw": "匯入失敗，請檢查後端服務",
+            "en": "Import Error, please check the backend service"
+        }
+
+        error_message = error_messages.get(target_lang, "Import Error")
+
         return {
             "success": False,
-            "error": str(e),
+            "error": error_message,
             "debug_info": full_error, # 这里包含了报错的具体行数
             "data": {
                 "summary": "处理失败",
