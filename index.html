@@ -40,6 +40,7 @@
             margin-top: 60px;
             opacity: 0.6;
         }
+        mdui-menu-item { cursor: pointer; }
     </style>
 </head>
 <body>
@@ -50,7 +51,7 @@
             <mdui-top-app-bar-title data-i18n="title">Knowledge Garden</mdui-top-app-bar-title>
             <div style="flex-grow: 1"></div>
             
-            <mdui-dropdown>
+            <mdui-dropdown id="language-dropdown">
                 <mdui-button-icon icon="language" slot="trigger"></mdui-button-icon>
                 <mdui-menu id="language-menu">
                     <mdui-menu-item value="zh-cn">简体中文</mdui-menu-item>
@@ -109,109 +110,125 @@
     </mdui-layout>
 
     <script>
-        // --- 1. 多语言数据集成 ---
+        // --- 1. 国际化数据包 ---
         const i18n = {
             "zh-cn": {
                 "title": "知识花园",
-                "subtitle": "输入想法或链接，AI 园丁将为您自动总结与关联",
-                "inputLabel": "今日所学 / 灵感链接",
-                "inputPlaceholder": "粘贴文章链接或输入你的感悟...",
-                "btnSubmit": "开始培育 (Sow Seeds)",
+                "subtitle": "培育你的灵感种子",
+                "inputLabel": "灵感内容",
+                "inputPlaceholder": "写下你的灵感、知识片段或任何想法...",
+                "btnSubmit": "开始培育",
                 "navSow": "播种灵感",
                 "navGarden": "查看花园",
-                "footerCopy": "© 2026 知识花园 - 你的数字记忆园林",
-                "agent1": "园丁正在阅读内容...",
-                "agent2": "正在寻找知识间的联系...",
-                "agent3": "正在制定生长方案...",
-                "emptyAlert": "请输入内容后再播种哦！"
+                "footerCopy": "© 2026 知识花园",
+                "agent1": "正在分析你的灵感... 🌱",
+                "agent2": "连接知识脉络... 🔗",
+                "agent3": "即将绽放，正在整理花园 ✨"
             },
             "zh-tw": {
                 "title": "知識花園",
-                "subtitle": "輸入想法或連結，AI 園丁將為您自動總結與關聯",
-                "inputLabel": "今日所學 / 靈感連結",
-                "inputPlaceholder": "粘貼文章連結或輸入你的感悟...",
-                "btnSubmit": "開始培育 (Sow Seeds)",
+                "subtitle": "培育你的靈感種子",
+                "inputLabel": "靈感內容",
+                "inputPlaceholder": "寫下你的靈感、知識片段或任何想法...",
+                "btnSubmit": "開始培育",
                 "navSow": "播種靈感",
                 "navGarden": "查看花園",
-                "footerCopy": "© 2026 知識花園 - 你的數字記憶園林",
-                "agent1": "園丁正在閱讀內容...",
-                "agent2": "正在尋找知識間的聯繫...",
-                "agent3": "正在制定生長方案...",
-                "emptyAlert": "請輸入內容後再播種哦！"
+                "footerCopy": "© 2026 知識花園",
+                "agent1": "正在分析你的靈感... 🌱",
+                "agent2": "連接知識脈絡... 🔗",
+                "agent3": "即將綻放，正在整理花園 ✨"
             },
             "en": {
                 "title": "Knowledge Garden",
-                "subtitle": "Input ideas or links, let AI gardeners summarize and connect them",
-                "inputLabel": "Today's Learning / Link",
-                "inputPlaceholder": "Paste a link or type your thoughts...",
+                "subtitle": "Cultivate your inspiration seeds",
+                "inputLabel": "Inspiration Content",
+                "inputPlaceholder": "Write down your ideas, knowledge snippets, or any thoughts...",
                 "btnSubmit": "Sow Seeds",
-                "navSow": "Sow Seeds",
-                "navGarden": "My Garden",
-                "footerCopy": "© 2026 Knowledge Garden - Your Digital Memory",
-                "agent1": "Gardener is reading...",
-                "agent2": "Connecting knowledge nodes...",
-                "agent3": "Creating growth plan...",
-                "emptyAlert": "Please enter something before sowing!"
+                "navSow": "Sow Inspiration",
+                "navGarden": "View Garden",
+                "footerCopy": "© 2026 Knowledge Garden",
+                "agent1": "Analyzing your inspiration... 🌱",
+                "agent2": "Connecting knowledge paths... 🔗",
+                "agent3": "About to bloom, organizing garden ✨"
             }
         };
 
-        // --- 2. 元素获取 ---
-        const drawer = document.getElementById('main-drawer');
-        const trigger = document.getElementById('drawer-trigger');
-        const langMenu = document.getElementById('language-menu');
-        const submitBtn = document.getElementById('submit-btn');
-        const inputField = document.getElementById('knowledge-input');
-        const statusArea = document.getElementById('status-area');
-        const statusText = document.getElementById('status-text');
-        const progressBar = document.getElementById('progress-bar');
-        const statusIcon = document.getElementById('status-icon');
+        let drawerInstance = null;
 
-        // --- 3. 核心功能 ---
+        // --- 2. 初始化核心 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化 Drawer
+            const drawerElement = document.querySelector('#main-drawer');
+            if (drawerElement) {
+                drawerInstance = new mdui.Drawer(drawerElement);
+            }
+
+            // 侧边栏开关
+            document.getElementById('drawer-trigger')?.addEventListener('click', () => {
+                drawerInstance?.toggle();
+            });
+
+            // 初始语言加载
+            const savedLang = localStorage.getItem('user_lang') || 'zh-cn';
+            applyLanguage(savedLang);
+
+            // 绑定提交按钮
+            document.getElementById('submit-btn')?.addEventListener('click', handleSubmit);
+        });
+
+        // --- 3. 语言切换增强版 (委托监听) ---
+        document.body.addEventListener('click', (e) => {
+            const menuItem = e.target.closest('mdui-menu-item');
+            if (menuItem && menuItem.closest('#language-menu')) {
+                const langVal = menuItem.getAttribute('value');
+                if (langVal && i18n[langVal]) {
+                    applyLanguage(langVal);
+                    // 兼容性关闭下拉框
+                    const dropdown = document.getElementById('language-dropdown');
+                    if (dropdown) dropdown.open = false;
+                }
+            }
+        });
 
         function applyLanguage(lang) {
             const data = i18n[lang];
             if (!data) return;
 
-            // 翻译文本
+            // 更新静态文案
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (data[key]) el.textContent = data[key];
             });
 
-            // 翻译 MDUI 组件属性
-            document.querySelectorAll('[data-i18n-label]').forEach(el => {
-                const key = el.getAttribute('data-i18n-label');
-                if (data[key]) el.label = data[key];
-            });
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-                const key = el.getAttribute('data-i18n-placeholder');
-                if (data[key]) el.placeholder = data[key];
-            });
+            // 更新输入框 Label & Placeholder (MDUI 2 标准写法)
+            const textField = document.getElementById('knowledge-input');
+            if (textField) {
+                textField.label = data.inputLabel;
+                textField.placeholder = data.inputPlaceholder;
+            }
+
+            // 更新按钮文案
+            const btnSpan = document.querySelector('#submit-btn span');
+            if (btnSpan) btnSpan.textContent = data.btnSubmit;
 
             localStorage.setItem('user_lang', lang);
         }
 
-        // 监听语言切换 (MDUI 2 标准 change 事件)
-        langMenu.addEventListener('change', (e) => {
-            applyLanguage(e.target.value);
-        });
-
-        // 侧边栏开关
-        trigger.addEventListener('click', () => {
-            drawer.opened = !drawer.opened;
-        });
-
-        // 提交逻辑
-        submitBtn.addEventListener('click', async () => {
-            const content = inputField.value.trim();
+        // --- 4. 提交处理 ---
+        async function handleSubmit() {
+            const inputField = document.getElementById('knowledge-input');
+            const content = inputField?.value.trim();
             const currentLang = localStorage.getItem('user_lang') || 'zh-cn';
             const langPack = i18n[currentLang];
 
             if (!content) {
-                alert(langPack.emptyAlert);
+                alert(currentLang === 'en' ? "Please enter something!" : "请输入内容！");
                 return;
             }
 
+            const submitBtn = document.getElementById('submit-btn');
+            const statusArea = document.getElementById('status-area');
+            
             submitBtn.disabled = true;
             statusArea.style.display = 'block';
             updateUI(langPack.agent1, 33, "data_exploration");
@@ -220,57 +237,47 @@
                 const response = await fetch('/api/grow', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: content, lang: currentLang })
+                    body: JSON.stringify({ content, lang: currentLang })
                 });
 
                 const result = await response.json();
 
-                if (result.success === false) {
-                    console.error("Debug Info:", result.debug_info);
-                    alert(`Error: ${result.error}`);
-                    resetUI();
-                    return;
+                if (!result.success) {
+                    throw new Error(result.error || "Backend Error");
                 }
 
                 // 进度模拟
                 updateUI(langPack.agent2, 66, "hub");
-                await new Promise(r => setTimeout(r, 800));
+                await new Promise(r => setTimeout(r, 600));
                 updateUI(langPack.agent3, 95, "trending_up");
-                await new Promise(r => setTimeout(r, 1000));
+                await new Promise(r => setTimeout(r, 800));
 
-                // 保存并跳转
                 saveToGarden(result.data);
                 window.location.href = 'garden.html';
 
             } catch (err) {
-                console.error("Fetch Error:", err);
-                alert("Server error, please check backend logs.");
-                resetUI();
+                console.error("Error:", err);
+                alert(`Error: ${err.message}`);
+                submitBtn.disabled = false;
+                statusArea.style.display = 'none';
             }
-        });
-
-        function updateUI(text, progress, icon) {
-            statusText.innerText = text;
-            progressBar.value = progress;
-            if (statusIcon) statusIcon.name = icon;
         }
 
-        function resetUI() {
-            submitBtn.disabled = false;
-            statusArea.style.display = 'none';
+        function updateUI(text, progress, icon) {
+            document.getElementById('status-text').innerText = text;
+            document.getElementById('progress-bar').value = progress;
+            document.getElementById('status-icon').name = icon;
         }
 
         function saveToGarden(data) {
-            const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
-            garden.unshift({ ...data, id: Date.now(), created_at: new Date().toLocaleString() });
-            localStorage.setItem('garden_history', JSON.stringify(garden));
+            const history = JSON.parse(localStorage.getItem('garden_history') || '[]');
+            history.unshift({
+                ...data,
+                id: Date.now(),
+                created_at: new Date().toLocaleString()
+            });
+            localStorage.setItem('garden_history', JSON.stringify(history));
         }
-
-        // 页面加载初始化
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedLang = localStorage.getItem('user_lang') || 'zh-cn';
-            applyLanguage(savedLang);
-        });
     </script>
 </body>
 </html>
