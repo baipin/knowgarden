@@ -39,6 +39,8 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: default;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
             mdui-card:hover {
@@ -113,6 +115,15 @@
             color: var(--mdui-color-on-secondary-container);
             padding: 12px;
             border-radius: 12px;
+        }
+
+        /* 新增：卡片操作栏样式 */
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 8px 16px 16px;
+            margin-top: auto;
         }
 
         footer {
@@ -353,6 +364,34 @@
             return localData;
         }
 
+        // 新增：删除单张卡片
+        function deleteCard(id) {
+            const ok = confirm(t('confirmDelete', '确定要删除这个灵感吗？'));
+            if (!ok) return;
+
+            const localData = readGardenData();
+            const filteredData = localData.filter(item => item.id !== id);
+            localStorage.setItem('garden_history', JSON.stringify(filteredData));
+            loadGarden({ silent: true });
+            showMessage(t('deleteDone', '已删除'));
+        }
+
+        // 新增：复制卡片内容
+        async function copyCard(id) {
+            const localData = readGardenData();
+            const item = localData.find(i => i.id === id);
+            if (!item) return;
+
+            const textToCopy = `【${item.title}】\n\n总结：\n${item.summary}\n\n关联：\n${item.connections}\n\n培育计划：\n${item.growth_plan}`;
+
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                showMessage(t('copySuccess', '内容已复制到剪贴板'));
+            } catch (err) {
+                showMessage('复制失败');
+            }
+        }
+
         function renderCards(dataList) {
             const langPack = getLangPack();
 
@@ -365,37 +404,42 @@
                 card.variant = 'elevated';
                 card.style.width = '100%';
 
+                const id = item.id;
                 const title = item.title || t('gardenUntitled', 'Knowledge');
                 const summary = item.summary || '';
                 const connections = item.connections || '';
                 const growthPlan = item.growth_plan || '';
                 const createdAt = item.created_at || '';
-                const modelUsed = item.model_used || 'unknown'; // 获取保存的模型信息
+                const modelUsed = item.model_used || 'unknown';
 
                 card.innerHTML = `
-              <div style="padding: 20px;">
-                <div class="card-header-row">
-                  <div class="card-title">🌱 ${escapeHtml(title)}</div>
-                  <div class="card-meta">
-                    <div class="model-tag">${escapeHtml(modelUsed)}</div>
-                    <div class="card-date">${escapeHtml(createdAt)}</div>
-                  </div>
-                </div>
+                      <div style="padding: 20px;">
+                        <div class="card-header-row">
+                          <div class="card-title">🌱 ${escapeHtml(title)}</div>
+                          <div class="card-meta">
+                            <div class="model-tag">${escapeHtml(modelUsed)}</div>
+                            <div class="card-date">${escapeHtml(createdAt)}</div>
+                          </div>
+                        </div>
 
-                <span class="section-label">${escapeHtml(agent1Title)}</span>
-                <p class="content-text">${nl2br(summary)}</p>
+                        <span class="section-label">${escapeHtml(agent1Title)}</span>
+                        <p class="content-text">${nl2br(summary)}</p>
 
-                <mdui-divider style="margin: 16px 0;"></mdui-divider>
+                        <mdui-divider style="margin: 16px 0;"></mdui-divider>
 
-                <span class="section-label">${escapeHtml(agent2Title)}</span>
-                <div style="margin-bottom: 16px;">${formatTags(connections)}</div>
+                        <span class="section-label">${escapeHtml(agent2Title)}</span>
+                        <div style="margin-bottom: 16px;">${formatTags(connections)}</div>
 
-                <div class="growth-box">
-                  <span class="section-label" style="color: inherit;">${escapeHtml(agent3Title)}</span>
-                  <div class="content-text" style="margin: 0;">${nl2br(growthPlan)}</div>
-                </div>
-              </div>
-            `;
+                        <div class="growth-box">
+                          <span class="section-label" style="color: inherit;">${escapeHtml(agent3Title)}</span>
+                          <div class="content-text" style="margin: 0;">${nl2br(growthPlan)}</div>
+                        </div>
+                      </div>
+                      <div class="card-actions">
+                        <mdui-button-icon icon="content_copy" onclick="copyCard(${id})"></mdui-button-icon>
+                        <mdui-button-icon icon="delete_outline" color="error" onclick="deleteCard(${id})"></mdui-button-icon>
+                      </div>
+                    `;
 
                 container.appendChild(card);
             });

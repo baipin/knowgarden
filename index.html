@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
-    <script src="./js/lang.js"></script>
+    <script src="/js/lang.js"></script>
     <style>
         :root {
             --max-width: 800px;
@@ -33,11 +33,13 @@
             background-color: var(--mdui-color-surface-container-high);
             box-shadow: var(--mdui-elevation-level1);
         }
-        /* 新增：配置栏样式 */
-        .config-bar {
+
+        .submit-area {
             display: flex;
-            justify-content: flex-end;
-            margin-bottom: 16px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 32px;
+            gap: 12px;
         }
 
         #status-area {
@@ -112,20 +114,6 @@
                         <p style="opacity: 0.7;" data-i18n="subtitle">培育你的灵感种子</p>
                     </div>
 
-                    <div class="config-bar">
-                        <mdui-select id="model-select" value="GPT-4o-mini" label="AI Model" variant="outlined" style="width: 200px;">
-                            <mdui-menu-item value="gpt-4o-mini">GPT-4o-mini</mdui-menu-item>
-                            <mdui-menu-item value="gpt-3.5-turbo">GPT-3.5-Turbo</mdui-menu-item>
-                            <mdui-menu-item value="gpt-4.1-mini">GPT-4.1-mini</mdui-menu-item>
-                            <mdui-menu-item value="gpt-4.1-nano">GPT-4.1-nano</mdui-menu-item>
-                            <mdui-menu-item value="gpt-5-mini">GPT-5-mini</mdui-menu-item>
-                            <mdui-menu-item value="gpt-5-nano">GPT-5-nano</mdui-menu-item>
-                            <mdui-menu-item value="gpt-5">GPT-5</mdui-menu-item>
-                            <mdui-menu-item value="deepseek-r1">Deepseek-r1</mdui-menu-item>
-                            <mdui-menu-item value="deepseek-v3">Deepseek-v3</mdui-menu-item>
-                        </mdui-select>
-                    </div>
-
                     <mdui-text-field id="knowledge-input"
                                      data-i18n-label="inputLabel"
                                      data-i18n-placeholder="inputPlaceholder"
@@ -133,7 +121,22 @@
                                      area
                                      variant="outlined"></mdui-text-field>
 
-                    <div style="display: flex; justify-content: center; margin-top: 32px;">
+                    <div class="submit-area">
+                        <mdui-dropdown>
+                            <mdui-button-icon icon="smart_toy" slot="trigger" id="model-trigger"></mdui-button-icon>
+                            <mdui-menu id="model-menu" selects="single" value="gpt-4o-mini">
+                                <mdui-menu-item value="gpt-4o-mini">GPT-4o-mini</mdui-menu-item>
+                                <mdui-menu-item value="gpt-3.5-turbo">GPT-3.5-Turbo</mdui-menu-item>
+                                <mdui-menu-item value="gpt-4.1-mini">GPT-4.1-mini</mdui-menu-item>
+                                <mdui-menu-item value="gpt-4.1-nano">GPT-4.1-nano</mdui-menu-item>
+                                <mdui-menu-item value="gpt-5-mini">GPT-5-mini</mdui-menu-item>
+                                <mdui-menu-item value="gpt-5-nano">GPT-5-nano</mdui-menu-item>
+                                <mdui-menu-item value="gpt-5">GPT-5</mdui-menu-item>
+                                <mdui-menu-item value="deepseek-r1">Deepseek-r1</mdui-menu-item>
+                                <mdui-menu-item value="deepseek-v3">Deepseek-v3</mdui-menu-item>
+                            </mdui-menu>
+                        </mdui-dropdown>
+
                         <mdui-button id="submit-btn" icon="auto_awesome" variant="filled">
                             <span data-i18n="btnSubmit">开始培育 (Sow Seeds)</span>
                         </mdui-button>
@@ -168,7 +171,7 @@
         const drawer = document.getElementById('main-drawer');
         const trigger = document.getElementById('drawer-trigger');
         const langMenu = document.getElementById('language-menu');
-        const modelSelect = document.getElementById('model-select'); // 获取模型选择器
+        const modelMenu = document.getElementById('model-menu');
         const submitBtn = document.getElementById('submit-btn');
         const inputField = document.getElementById('knowledge-input');
         const statusArea = document.getElementById('status-area');
@@ -186,17 +189,8 @@
             return localStorage.getItem('user_lang') || 'zh-cn';
         }
 
-        function getLangPack() {
-            const lang = getCurrentLang();
-            return i18n[lang] || i18n['zh-cn'];
-        }
-
         function applyLanguage(lang) {
-            if (typeof i18n === 'undefined') {
-                console.warn("lang.js 尚未加载或 i18n 未定义");
-                return;
-            }
-
+            if (typeof i18n === 'undefined') return;
             const data = i18n[lang];
             if (!data) return;
 
@@ -234,7 +228,7 @@
             const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
             garden.unshift({
                 ...data,
-                model_used: modelUsed, // 记录使用的模型
+                model_used: modelUsed,
                 id: Date.now(),
                 created_at: new Date().toLocaleString()
             });
@@ -250,45 +244,27 @@
 
         async function parseApiResponse(response) {
             const rawText = await response.text();
-
             let result = null;
             try {
                 result = JSON.parse(rawText);
             } catch (parseErr) {
-                throw new Error(
-                    `Server did not return valid JSON.\n` +
-                    `HTTP ${response.status} ${response.statusText}\n\n` +
-                    `===== Raw Response =====\n${rawText}`
-                );
+                throw new Error(`Server returned invalid JSON: ${response.status}`);
             }
-
             return { result, rawText };
         }
 
-        langMenu.addEventListener('change', () => {
-            applyLanguage(langMenu.value);
-        });
-
-        trigger.addEventListener('click', () => {
-            drawer.open = !drawer.open;
-        });
-
-        errorDialogClose.addEventListener('click', () => {
-            errorDialog.open = false;
-        });
+        langMenu.addEventListener('change', () => applyLanguage(langMenu.value));
+        trigger.addEventListener('click', () => drawer.open = !drawer.open);
+        errorDialogClose.addEventListener('click', () => errorDialog.open = false);
 
         submitBtn.addEventListener('click', async () => {
             const content = inputField.value.trim();
             const currentLang = getCurrentLang();
-            const selectedModel = modelSelect.value; // 获取模型值
+            const selectedModel = modelMenu.value;
             const langPack = i18n[currentLang] || i18n['zh-cn'];
 
             if (!content) {
-                showErrorDialog(
-                    langPack.backendErrorTitle || '提示',
-                    langPack.emptyInput || '请输入内容后再播种哦！',
-                    ''
-                );
+                showErrorDialog(langPack.backendErrorTitle || '提示', langPack.emptyInput || '请输入内容', '');
                 return;
             }
 
@@ -300,7 +276,6 @@
                 const response = await fetch('/api/grow', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    // 在请求体中包含了 model 字段
                     body: JSON.stringify({
                         content: content,
                         lang: currentLang,
@@ -310,30 +285,12 @@
 
                 const { result, rawText } = await parseApiResponse(response);
 
-                if (!response.ok) {
-                    const rawError = result?.debug_info || result?.error || rawText || 'Unknown HTTP error.';
-                    console.error("HTTP Error:", rawError);
-
+                if (!response.ok || result.success === false) {
                     showErrorDialog(
-                        langPack.backendErrorTitle || '培育失败 (Backend Error)',
-                        result?.error || `HTTP ${response.status} ${response.statusText}`,
-                        rawError
+                        langPack.backendErrorTitle || '培育失败',
+                        result?.error || `HTTP ${response.status}`,
+                        result?.debug_info || rawText
                     );
-
-                    resetUI();
-                    return;
-                }
-
-                if (result.success === false) {
-                    const rawError = result.debug_info || result.error || 'No raw error details.';
-                    console.error("Backend Debug Trace:", rawError);
-
-                    showErrorDialog(
-                        langPack.backendErrorTitle || '培育失败 (Backend Error)',
-                        result.error || 'Unknown backend error.',
-                        rawError
-                    );
-
                     resetUI();
                     return;
                 }
@@ -343,27 +300,16 @@
                 updateUI(langPack.agent3, 95, "trending_up");
                 await new Promise(r => setTimeout(r, 1000));
 
-                saveToGarden(result.data, selectedModel); // 传入选中的模型
+                saveToGarden(result.data, selectedModel);
                 window.location.href = 'garden.html';
 
             } catch (err) {
-                const rawError = err?.stack || err?.message || String(err);
-                console.error("Fetch Error:", rawError);
-
-                showErrorDialog(
-                    langPack.fetchError || "网络或系统解析错误，请检查后端服务。",
-                    "Request failed or server response could not be parsed.",
-                    rawError
-                );
-
+                showErrorDialog(langPack.fetchError || "解析错误", "Request failed", err.stack || err);
                 resetUI();
             }
         });
 
-        window.addEventListener('load', () => {
-            const savedLang = getCurrentLang();
-            applyLanguage(savedLang);
-        });
+        window.addEventListener('load', () => applyLanguage(getCurrentLang()));
     </script>
 </body>
 </html>
