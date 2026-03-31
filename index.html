@@ -75,6 +75,30 @@
             line-height: 1.5;
             border: 1px solid var(--mdui-color-outline-variant);
         }
+
+        /* Cookie Banner Floating Style */
+        #cookie-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            padding: 16px 24px;
+            background-color: var(--mdui-color-surface-container-highest);
+            box-shadow: var(--mdui-elevation-level4);
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 600px) {
+            #cookie-banner {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -154,7 +178,10 @@
 
             <footer>
                 <script async defer src="https://buttons.github.io/buttons.js"></script>
-                <div class="mdui-typo-body-medium" style="opacity: 0.6;"><p data-i18n="footerCopy"> © 2026 Knowledge Garden </p><a class="github-button" href="https://github.com/baipin/knowgarden" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Star baipin/knowgarden on GitHub">Star</a></div>
+                <div class="mdui-typo-body-medium" style="opacity: 0.6;">
+                    <p data-i18n="footerCopy"> © 2026 Knowledge Garden </p>
+                    <a class="github-button" href="https://github.com/baipin/knowgarden" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Star baipin/knowgarden on GitHub">Star</a>
+                </div>
             </footer>
         </mdui-layout-main>
     </mdui-layout>
@@ -167,6 +194,7 @@
         </div>
         <mdui-button slot="action" variant="text" id="error-dialog-close">OK</mdui-button>
     </mdui-dialog>
+
     <div id="cookie-banner">
         <div style="display: flex; align-items: center; gap: 12px;">
             <mdui-icon name="cookie"></mdui-icon>
@@ -213,6 +241,12 @@
         const errorDialogMessage = document.getElementById('error-dialog-message');
         const errorDialogRaw = document.getElementById('error-dialog-raw');
         const errorDialogClose = document.getElementById('error-dialog-close');
+
+        const cookieBanner = document.getElementById('cookie-banner');
+        const privacyDialog = document.getElementById('privacy-dialog');
+        const acceptBtn = document.getElementById('accept-cookies');
+        const openPrivacyBtn = document.getElementById('open-privacy-btn');
+        const closePrivacyBtn = document.getElementById('close-privacy-btn');
 
         function getCurrentLang() {
             return localStorage.getItem('user_lang') || 'zh-cn';
@@ -282,9 +316,27 @@
             return { result, rawText };
         }
 
+        // Cookie & Privacy Logic
+        function checkConsent() {
+            if (!localStorage.getItem('cookie_accepted')) {
+                cookieBanner.style.display = 'flex';
+            }
+        }
+
+        // Event Listeners
         langMenu.addEventListener('change', () => applyLanguage(langMenu.value));
         trigger.addEventListener('click', () => drawer.open = !drawer.open);
         errorDialogClose.addEventListener('click', () => errorDialog.open = false);
+
+        acceptBtn.addEventListener('click', () => {
+            localStorage.setItem('cookie_accepted', 'true');
+            cookieBanner.style.transition = 'opacity 0.3s ease';
+            cookieBanner.style.opacity = '0';
+            setTimeout(() => cookieBanner.style.display = 'none', 300);
+        });
+
+        openPrivacyBtn.addEventListener('click', () => privacyDialog.open = true);
+        closePrivacyBtn.addEventListener('click', () => privacyDialog.open = false);
 
         submitBtn.addEventListener('click', async () => {
             const content = inputField.value.trim();
@@ -338,39 +390,7 @@
             }
         });
 
-        window.addEventListener('load', () => applyLanguage(getCurrentLang()));
-
-        // --- Privacy & Cookie Logic ---
-        const cookieBanner = document.getElementById('cookie-banner');
-        const privacyDialog = document.getElementById('privacy-dialog');
-        const acceptBtn = document.getElementById('accept-cookies');
-        const openPrivacyBtn = document.getElementById('open-privacy-btn');
-        const closePrivacyBtn = document.getElementById('close-privacy-btn');
-
-        // 检查是否已接受
-        function checkConsent() {
-            if (!localStorage.getItem('cookie_accepted')) {
-                cookieBanner.style.display = 'flex';
-            }
-        }
-
-        // 按钮事件绑定
-        acceptBtn.addEventListener('click', () => {
-            localStorage.setItem('cookie_accepted', 'true');
-            cookieBanner.style.transition = 'opacity 0.3s ease';
-            cookieBanner.style.opacity = '0';
-            setTimeout(() => cookieBanner.style.display = 'none', 300);
-        });
-
-        openPrivacyBtn.addEventListener('click', () => {
-            privacyDialog.open = true;
-        });
-
-        closePrivacyBtn.addEventListener('click', () => {
-            privacyDialog.open = false;
-        });
-
-        // 在页面载入时执行
+        // Initialize on load
         window.addEventListener('load', () => {
             applyLanguage(getCurrentLang());
             checkConsent();
