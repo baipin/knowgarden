@@ -10,21 +10,28 @@ Nowadays, many people read articles, listen to podcasts, and browse news every d
 
 ```
 knowledge-garden-ai/
-├── backend/                # Backend service powered by FastAPI/Flask
+├── api/                # Backend service powered by FastAPI/Flask
 │   ├── main.py             # Entry point: API route definitions and orchestration
 │   ├── agents/             # Core AI logic modules
-│   │   ├── ingestion.py    # Agent 1: Content processing and summarization
-│   │   ├── synthesis.py    # Agent 2: Relationship discovery and graph linking
-│   │   └── growth.py       # Agent 3: Spaced repetition and output suggestions
-│   ├── database.py         # Data persistence layer (SQLite/SQLAlchemy)
+│   │   ├── agent1.py    # Agent 1 ingestion: Content processing and summarization
+│   │   ├── agent2.py    # Agent 2 synthesis: Relationship discovery and graph linking
+│   │   └── agent3.py       # Agent 3 growth: Spaced repetition and output suggestions
 │   └── requirements.txt    # Python dependencies
-├── frontend/               # Frontend application (Root for web files)
+├── ./                 # Frontend application (Root for web files)
 │   ├── index.html          # Homepage: Inspiration capture and input
 │   ├── garden.html         # Visualization: Knowledge graph and card grid
-│   ├── assets/             # Static assets (Custom CSS, JS logic)
-│   └── components/         # Reusable MDUI 2 web components
+│   ├── js/             # Static assets (Custom CSS, JS logic)
+│   │   └──  lang.js    # JS file for multi-language
 └── README.md               # Project documentation and setup guide
 ```
+
+## Deployment
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fbaipin%2Fknowgarden&env=DEEPSEEK_BASE_URL,DEEPSEEK_API_KEY&envDefaults=%7B%22DEEPSEEK_BASE_URL%22%3A%22*input%20your%20openai%20url%2C%20not%20limited%20to%20deepseek%2C%20any%20model%20is%20ok.*%22%2C%22DEEPSEEK_API_KEY%22%3A%22*input%20your%20openai%20api%2C%20not%20limited%20to%20deepseek%2C%20any%20model%20is%20ok.*%22%7D&demo-title=Knowledge%20Garden&demo-url=https%3A%2F%2Fkg.baipon.com%2F)  
+Or you can clone this repos and deploy it on your own server, you should set the following environment variables, or change it in `api/main.py`.
+|  Environment Variables Keys   | Description  |
+|  ----  | ----  |
+| DEEPSEEK_BASE_URL  | input your openai url, not limited to deepseek, any model is ok. |
+| DEEPSEEK_API_KEY  | input your openai api, not limited to deepseek, any model is ok. |
 
 ## Three Agent Roles:
 
