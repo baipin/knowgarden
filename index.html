@@ -162,8 +162,14 @@
     <!-- Cookie 提示 -->
     <mdui-snackbar id="cookie-snackbar" closeable>
         <span data-i18n="cookieMsg">我们使用Cookies以在本地存储阁下的数据。</span>
-        <mdui-button variant="text" id="cookie-learn-more" data-i18n="cookieLearnMore"></mdui-button>
-        <mdui-button variant="filled" id="cookie-accept" data-i18n="cookieAccept"></mdui-button>
+
+        <mdui-button slot="action" variant="text" id="cookie-learn-more">
+            <span data-i18n="cookieLearnMore">了解更多</span>
+        </mdui-button>
+
+        <mdui-button slot="action" variant="filled" id="cookie-accept">
+            <span data-i18n="cookieAccept">接受</span>
+        </mdui-button>
     </mdui-snackbar>
 
     <!--  隐私说明 -->
