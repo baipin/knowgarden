@@ -39,7 +39,13 @@ const i18n = {
     gardenInvalidFile: "非法文件格式！",
     gardenClearConfirm: "确定要拔掉所有的知识植物吗？此操作不可撤销。",
     gardenClearDone: "花园已清空",
-    gardenUntitled: "未命名知识"
+    gardenUntitled: "未命名知识",
+    "confirmDelete": "确定要从花园中铲除这个灵感吗？此操作不可撤销。",
+    "deleteDone": "灵感已铲除",
+    "copySuccess": "内容已复制到剪贴板",
+    "copyError": "复制失败，请手动选择复制",
+    "btnCopy": "复制内容",
+    "btnDelete": "删除灵感"
   },
 
   'zh-tw': {
@@ -82,7 +88,13 @@ const i18n = {
     gardenInvalidFile: "非法檔案格式！",
     gardenClearConfirm: "確定要拔掉所有知識植物嗎？此操作無法撤銷。",
     gardenClearDone: "花園已清空",
-    gardenUntitled: "未命名知識"
+    gardenUntitled: "未命名知識",
+    "confirmDelete": "確定要從花園中鏟除這個靈感嗎？此操作不可撤銷。",
+    "deleteDone": "靈感已鏟除",
+    "copySuccess": "內容已複製到剪貼簿",
+    "copyError": "複製失敗，請手動選擇複製",
+    "btnCopy": "複製內容",
+    "btnDelete": "刪除靈感"
   },
 
   'en': {
@@ -125,6 +137,12 @@ const i18n = {
     gardenInvalidFile: "Invalid file format!",
     gardenClearConfirm: "Are you sure you want to clear all plants? This action cannot be undone.",
     gardenClearDone: "Garden cleared",
-    gardenUntitled: "Untitled Knowledge"
+    gardenUntitled: "Untitled Knowledge",
+    "confirmDelete": "Are you sure you want to remove this inspiration? This action cannot be undone.",
+    "deleteDone": "Inspiration removed",
+    "copySuccess": "Copied to clipboard",
+    "copyError": "Copy failed, please copy manually",
+    "btnCopy": "Copy Content",
+    "btnDelete": "Delete Inspiration"
   }
 };

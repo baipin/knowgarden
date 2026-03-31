@@ -364,9 +364,9 @@
             return localData;
         }
 
-        // 新增：删除单张卡片
+        //删除卡片
         function deleteCard(id) {
-            const ok = confirm(t('confirmDelete', '确定要删除这个灵感吗？'));
+            const ok = confirm(t('confirmDelete', '确定要删除吗？'));
             if (!ok) return;
 
             const localData = readGardenData();
@@ -376,19 +376,24 @@
             showMessage(t('deleteDone', '已删除'));
         }
 
-        // 新增：复制卡片内容
+        // 复制卡片内容
         async function copyCard(id) {
             const localData = readGardenData();
             const item = localData.find(i => i.id === id);
             if (!item) return;
 
-            const textToCopy = `【${item.title}】\n\n总结：\n${item.summary}\n\n关联：\n${item.connections}\n\n培育计划：\n${item.growth_plan}`;
+            // 构建复制文本的结构
+            const agent1Title = (getLangPack().agent1 || 'Summary').split(':')[0];
+            const agent2Title = (getLangPack().agent2 || 'Connections').split(':')[0];
+            const agent3Title = (getLangPack().agent3 || 'Growth').split(':')[0];
+
+            const textToCopy = `【${item.title}】\n\n${agent1Title}:\n${item.summary}\n\n${agent2Title}:\n${item.connections}\n\n${agent3Title}:\n${item.growth_plan}`;
 
             try {
                 await navigator.clipboard.writeText(textToCopy);
-                showMessage(t('copySuccess', '内容已复制到剪贴板'));
+                showMessage(t('copySuccess', '已复制'));
             } catch (err) {
-                showMessage('复制失败');
+                showMessage(t('copyError', '复制失败'));
             }
         }
 
@@ -435,10 +440,10 @@
                           <div class="content-text" style="margin: 0;">${nl2br(growthPlan)}</div>
                         </div>
                       </div>
-                      <div class="card-actions">
-                        <mdui-button-icon icon="content_copy" onclick="copyCard(${id})"></mdui-button-icon>
-                        <mdui-button-icon icon="delete_outline" color="error" onclick="deleteCard(${id})"></mdui-button-icon>
-                      </div>
+                        <div class="card-actions">
+                            <mdui-button-icon icon="content_copy" onclick="copyCard(${id})" title="${t('btnCopy')}"></mdui-button-icon>
+                            <mdui-button-icon icon="delete_outline" color="error" onclick="deleteCard(${id})" title="${t('btnDelete')}"></mdui-button-icon>
+                        </div>
                     `;
 
                 container.appendChild(card);
