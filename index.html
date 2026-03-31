@@ -3,77 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Knowledge Garden | Capture</title>
+    <title>Knowledge Garden | My Plants</title>
+
     <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
     <script src="/js/lang.js"></script>
+
     <style>
         :root {
-            --max-width: 800px;
+            --max-width: 1200px;
         }
 
         body {
-            background-color: var(--mdui-color-surface);
+            background-color: var(--mdui-color-surface-container-lowest);
             color: var(--mdui-color-on-surface);
+            padding-bottom: 50px;
             margin: 0;
-            font-family: system-ui, -apple-system, sans-serif;
         }
 
-        .main-container {
+        .garden-header {
+            text-align: center;
+            margin: 60px 0 40px;
+            padding: 0 20px;
+        }
+
+        .knowledge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
             max-width: var(--max-width);
-            margin: 40px auto;
-            padding: 0 24px;
-            min-height: calc(100vh - 300px);
+            margin: 0 auto;
+            padding: 0 20px;
         }
 
-        .input-card {
-            padding: 40px;
-            border-radius: 28px;
-            background-color: var(--mdui-color-surface-container-high);
-            box-shadow: var(--mdui-elevation-level1);
-        }
-
-        .submit-area {
+        mdui-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: default;
+            overflow: hidden;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 32px;
-            gap: 12px;
+            flex-direction: column;
         }
 
-        #status-area {
-            margin-top: 32px;
-            padding: 24px;
-            border-radius: 16px;
+            mdui-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--mdui-elevation-level3);
+            }
+
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1.4;
+            word-break: break-word;
+            flex-grow: 1;
+        }
+
+        .card-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .card-date {
+            font-size: 11px;
+            opacity: 0.6;
+            white-space: nowrap;
+        }
+
+        .model-tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color: var(--mdui-color-surface-container-highest);
+            color: var(--mdui-color-primary);
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .tag-chip {
+            margin-right: 8px;
+            margin-top: 8px;
+        }
+
+        .section-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--mdui-color-primary);
+            font-weight: bold;
+            margin-bottom: 6px;
+            display: block;
+            letter-spacing: 0.4px;
+        }
+
+        /* Markdown Content Styling */
+        .markdown-body {
+            font-size: 14px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+            .markdown-body p {
+                margin: 4px 0 12px;
+            }
+
+            .markdown-body code {
+                background-color: var(--mdui-color-secondary-container);
+                padding: 2px 4px;
+                border-radius: 4px;
+                font-family: monospace;
+            }
+
+        .growth-box {
             background-color: var(--mdui-color-secondary-container);
-            display: none;
+            color: var(--mdui-color-on-secondary-container);
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 8px 16px 16px;
+            margin-top: auto;
         }
 
         footer {
-            padding: 32px 24px;
+            padding: 40px 24px;
             text-align: center;
-            margin-top: 60px;
-            opacity: 0.6;
+            background-color: var(--mdui-color-surface-container-low);
+            margin-top: 80px;
         }
 
-        .error-message {
-            white-space: pre-wrap;
-            line-height: 1.6;
-            margin-bottom: 16px;
+        .admin-tools {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
-        .error-raw {
-            background: var(--mdui-color-surface-container);
-            border-radius: 12px;
-            padding: 16px;
-            white-space: pre-wrap;
-            word-break: break-word;
-            max-height: 320px;
-            overflow: auto;
-            font-size: 13px;
-            line-height: 1.5;
-            border: 1px solid var(--mdui-color-outline-variant);
+        .empty-state {
+            text-align: center;
+            margin-top: 100px;
+            display: none;
+            padding: 0 20px;
+        }
+
+        /* Fix LaTeX display overflow */
+        .katex-display {
+            overflow-x: auto;
+            overflow-y: hidden;
         }
     </style>
 </head>
@@ -82,7 +179,7 @@
     <mdui-layout>
         <mdui-top-app-bar variant="flat">
             <mdui-button-icon icon="menu" id="drawer-trigger"></mdui-button-icon>
-            <mdui-top-app-bar-title data-i18n="title">Knowledge Garden</mdui-top-app-bar-title>
+            <mdui-top-app-bar-title data-i18n="navGarden">My Garden</mdui-top-app-bar-title>
             <div style="flex-grow: 1"></div>
 
             <mdui-dropdown>
@@ -93,223 +190,241 @@
                     <mdui-menu-item value="en">English</mdui-menu-item>
                 </mdui-menu>
             </mdui-dropdown>
+
+            <mdui-button-icon icon="refresh" id="refresh-btn"></mdui-button-icon>
         </mdui-top-app-bar>
 
         <mdui-navigation-drawer id="main-drawer" close-on-overlay-click>
             <div style="padding: 16px;">
-                <span class="mdui-typo-title" data-i18n="title">Knowledge Garden</span>
+                <div class="mdui-typo-title" data-i18n="title">Knowledge Garden</div>
             </div>
             <mdui-list>
-                <mdui-list-item icon="add_box" href="index.html" data-i18n="navSow" selected>播种灵感</mdui-list-item>
-                <mdui-list-item icon="local_florist" href="garden.html" data-i18n="navGarden">查看花园</mdui-list-item>
+                <mdui-list-item icon="add_box" href="index.html"><span data-i18n="navSow">Go Sow</span></mdui-list-item>
+                <mdui-list-item icon="local_florist" href="garden.html" selected><span data-i18n="navGarden">My Garden</span></mdui-list-item>
             </mdui-list>
         </mdui-navigation-drawer>
 
         <mdui-layout-main>
-            <div class="main-container">
-                <div class="input-card">
-                    <div style="text-align: center; margin-bottom: 40px;">
-                        <div style="font-size: 56px; margin-bottom: 16px;">🌱</div>
-                        <h1 class="mdui-typo-display-small" data-i18n="title">知识花园</h1>
-                        <p style="opacity: 0.7;" data-i18n="subtitle">输入想法或链接，AI 园丁将为您自动培育知识</p>
-                    </div>
+            <div class="garden-header">
+                <h1 class="mdui-typo-display-medium" data-i18n="navGarden">Knowledge Garden</h1>
+                <p style="opacity: 0.7;" data-i18n="subtitle">Cultivating seeds of inspiration</p>
+            </div>
 
-                    <mdui-text-field id="knowledge-input"
-                                     data-i18n-label="inputLabel"
-                                     data-i18n-placeholder="inputPlaceholder"
-                                     rows="6"
-                                     area
-                                     variant="outlined"></mdui-text-field>
+            <div class="knowledge-grid" id="garden-container"></div>
 
-                    <div class="submit-area">
-                        <mdui-dropdown>
-                            <mdui-button-icon icon="smart_toy" slot="trigger" id="model-trigger"></mdui-button-icon>
-                            <mdui-menu id="model-menu" selects="single" value="gpt-4o-mini">
-                                <mdui-menu-item value="gpt-4o-mini">GPT-4o-mini</mdui-menu-item>
-                                <mdui-menu-item value="gpt-3.5-turbo">GPT-3.5-Turbo</mdui-menu-item>
-                                <mdui-menu-item value="gpt-4.1-mini">GPT-4.1-mini</mdui-menu-item>
-                                <mdui-menu-item value="gpt-4.1-nano">GPT-4.1-nano</mdui-menu-item>
-                                <mdui-menu-item value="gpt-5-mini">GPT-5-mini</mdui-menu-item>
-                                <mdui-menu-item value="gpt-5-nano">GPT-5-nano</mdui-menu-item>
-                                <mdui-menu-item value="gpt-5">GPT-5</mdui-menu-item>
-                                <mdui-menu-item value="deepseek-r1">Deepseek-r1</mdui-menu-item>
-                                <mdui-menu-item value="deepseek-v3">Deepseek-v3</mdui-menu-item>
-                            </mdui-menu>
-                        </mdui-dropdown>
-
-                        <mdui-button id="submit-btn" icon="auto_awesome" variant="filled">
-                            <span data-i18n="btnSubmit">开始培育 (Sow Seeds)</span>
-                        </mdui-button>
-                    </div>
-
-                    <div id="status-area">
-                        <div style="display: flex; align-items: center; margin-bottom: 12px;">
-                            <mdui-icon name="hourglass_empty" id="status-icon" style="margin-right: 12px; color: var(--mdui-color-primary);"></mdui-icon>
-                            <span id="status-text" style="font-weight: 500;">...</span>
-                        </div>
-                        <mdui-linear-progress id="progress-bar"></mdui-linear-progress>
-                    </div>
-                </div>
+            <div id="empty-state" class="empty-state">
+                <mdui-icon name="filter_vintage" style="font-size: 80px; opacity: 0.2;"></mdui-icon>
+                <p data-i18n="gardenEmpty">Garden is empty.</p>
+                <mdui-button variant="tonal" href="index.html"><span data-i18n="navSow">Go Sow</span></mdui-button>
             </div>
 
             <footer>
+                <div class="admin-tools">
+                    <mdui-button variant="outlined" icon="file_download" id="export-btn"><span data-i18n="gardenExport">导出备份</span></mdui-button>
+                    <mdui-button variant="outlined" icon="file_upload" id="import-btn"><span data-i18n="gardenImport">导入备份</span></mdui-button>
+                    <mdui-button variant="outlined" icon="delete_sweep" color="error" id="clear-btn"><span data-i18n="gardenClear">清空花园</span></mdui-button>
+                    <input type="file" id="file-input" style="display: none;" accept=".json">
+                </div>
                 <script async defer src="https://buttons.github.io/buttons.js"></script>
                 <div class="mdui-typo-body-medium" style="opacity: 0.6;"><p data-i18n="footerCopy"> © 2026 Knowledge Garden </p><a class="github-button" href="https://github.com/baipin/knowgarden" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Star baipin/knowgarden on GitHub">Star</a></div>
+
             </footer>
         </mdui-layout-main>
     </mdui-layout>
 
-    <mdui-dialog id="error-dialog" close-on-overlay-click>
-        <div slot="headline" id="error-dialog-title">Error</div>
-        <div slot="description">
-            <div id="error-dialog-message" class="error-message"></div>
-            <pre id="error-dialog-raw" class="error-raw"></pre>
-        </div>
-        <mdui-button slot="action" variant="text" id="error-dialog-close">OK</mdui-button>
-    </mdui-dialog>
-
     <script>
-        const drawer = document.getElementById('main-drawer');
-        const trigger = document.getElementById('drawer-trigger');
-        const langMenu = document.getElementById('language-menu');
-        const modelMenu = document.getElementById('model-menu');
-        const submitBtn = document.getElementById('submit-btn');
-        const inputField = document.getElementById('knowledge-input');
-        const statusArea = document.getElementById('status-area');
-        const statusText = document.getElementById('status-text');
-        const progressBar = document.getElementById('progress-bar');
-        const statusIcon = document.getElementById('status-icon');
+        const container = document.querySelector('#garden-container');
+        const emptyState = document.querySelector('#empty-state');
+        const refreshBtn = document.querySelector('#refresh-btn');
+        const langMenu = document.querySelector('#language-menu');
+        const drawer = document.querySelector('#main-drawer');
+        const drawerTrigger = document.querySelector('#drawer-trigger');
+        const exportBtn = document.querySelector('#export-btn');
+        const importBtn = document.querySelector('#import-btn');
+        const clearBtn = document.querySelector('#clear-btn');
+        const fileInput = document.querySelector('#file-input');
 
-        const errorDialog = document.getElementById('error-dialog');
-        const errorDialogTitle = document.getElementById('error-dialog-title');
-        const errorDialogMessage = document.getElementById('error-dialog-message');
-        const errorDialogRaw = document.getElementById('error-dialog-raw');
-        const errorDialogClose = document.getElementById('error-dialog-close');
+        // --- Internationalization Logic ---
+        function getCurrentLang() { return localStorage.getItem('user_lang') || 'zh-cn'; }
+        function getLangPack() {
+            const lang = getCurrentLang();
+            return (typeof i18n !== 'undefined' && i18n[lang]) ? i18n[lang] : (i18n['zh-cn'] || {});
+        }
+        function t(key, fallback = '') {
+            const pack = getLangPack();
+            return pack[key] || fallback || key;
+        }
 
-        function getCurrentLang() {
-            return localStorage.getItem('user_lang') || 'zh-cn';
+        // --- Core Rendering Logic ---
+        function renderContent(text) {
+            if (!text) return '';
+            // 使用 marked 渲染 Markdown
+            return `<div class="markdown-body">${marked.parse(text)}</div>`;
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#39;" }[m]));
+        }
+
+        function formatTags(tagsString) {
+            if (!tagsString) return '';
+            const tags = String(tagsString).split(/[，,、\n]+/).map(tag => tag.trim()).filter(Boolean).slice(0, 6);
+            return tags.map(tag => `<mdui-chip class="tag-chip" variant="filled">${escapeHtml(tag)}</mdui-chip>`).join('');
+        }
+
+        // --- Data Management ---
+        function readGardenData() {
+            try {
+                const raw = localStorage.getItem('garden_history') || '[]';
+                return JSON.parse(raw).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+            } catch (err) { return []; }
+        }
+
+        function loadGarden() {
+            container.innerHTML = '';
+            const localData = readGardenData();
+            if (localData.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+                renderCards(localData);
+            }
+            return localData;
+        }
+
+        function renderCards(dataList) {
+            const langPack = getLangPack();
+            const a1T = (langPack.agent1 || 'Summary').split(':')[0];
+            const a2T = (langPack.agent2 || 'Connections').split(':')[0];
+            const a3T = (langPack.agent3 || 'Growth').split(':')[0];
+
+            dataList.forEach(item => {
+                const card = document.createElement('mdui-card');
+                card.variant = 'elevated';
+                card.style.width = '100%';
+
+                const id = item.id;
+                card.innerHTML = `
+                        <div style="padding: 20px;">
+                            <div class="card-header-row">
+                                <div class="card-title">🌱 ${escapeHtml(item.title || t('gardenUntitled'))}</div>
+                                <div class="card-meta">
+                                    <div class="model-tag">${escapeHtml(item.model_used || 'AI')}</div>
+                                    <div class="card-date">${escapeHtml(item.created_at || '')}</div>
+                                </div>
+                            </div>
+                            <span class="section-label">${escapeHtml(a1T)}</span>
+                            <div class="content-text">${renderContent(item.summary)}</div>
+                            <mdui-divider style="margin: 16px 0;"></mdui-divider>
+                            <span class="section-label">${escapeHtml(a2T)}</span>
+                            <div style="margin-bottom: 16px;">${formatTags(item.connections)}</div>
+                            <div class="growth-box">
+                                <span class="section-label" style="color: inherit;">${escapeHtml(a3T)}</span>
+                                <div class="content-text" style="margin: 0;">${renderContent(item.growth_plan)}</div>
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <mdui-button-icon icon="content_copy" onclick="copyCard('${id}')" title="${t('btnCopy')}"></mdui-button-icon>
+                            <mdui-button-icon icon="delete_outline" color="error" onclick="deleteCard('${id}')" title="${t('btnDelete')}"></mdui-button-icon>
+                        </div>
+                    `;
+                container.appendChild(card);
+            });
+
+            // 触发 LaTeX 渲染
+            if (window.renderMathInElement) {
+                renderMathInElement(container, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false },
+                        { left: '\\(', right: '\\)', display: false },
+                        { left: '\\[', right: '\\]', display: true }
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        // --- Interaction Handlers ---
+        function deleteCard(id) {
+            if (!confirm(t('confirmDelete', '确定要删除吗？'))) return;
+            const filtered = readGardenData().filter(item => String(item.id) !== String(id));
+            localStorage.setItem('garden_history', JSON.stringify(filtered));
+            loadGarden();
+            showMessage(t('deleteDone'));
+        }
+
+        async function copyCard(id) {
+            const item = readGardenData().find(i => String(i.id) === String(id));
+            if (!item) return;
+            const text = `【${item.title}】\n\n${item.summary}\n\nTags: ${item.connections}\n\nPlan: ${item.growth_plan}`;
+            try {
+                await navigator.clipboard.writeText(text);
+                showMessage(t('copySuccess'));
+            } catch (err) { showMessage(t('copyError')); }
+        }
+
+        function showMessage(message) {
+            if (window.mdui && mdui.snackbar) mdui.snackbar({ message });
+            else alert(message);
         }
 
         function applyLanguage(lang) {
             if (typeof i18n === 'undefined') return;
-            const data = i18n[lang];
-            if (!data) return;
-
+            const data = i18n[lang] || i18n['zh-cn'];
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (data[key]) el.textContent = data[key];
             });
-
-            document.querySelectorAll('[data-i18n-label]').forEach(el => {
-                const key = el.getAttribute('data-i18n-label');
-                if (data[key]) el.label = data[key];
-            });
-
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-                const key = el.getAttribute('data-i18n-placeholder');
-                if (data[key]) el.placeholder = data[key];
-            });
-
-            langMenu.value = lang;
             localStorage.setItem('user_lang', lang);
+            langMenu.value = lang;
+            document.title = `${data.title || 'Garden'} | ${data.navGarden || 'My Plants'}`;
+            loadGarden();
         }
 
-        function updateUI(text, progress, icon) {
-            statusText.innerText = text;
-            progressBar.value = progress;
-            if (statusIcon) statusIcon.name = icon;
-        }
-
-        function resetUI() {
-            submitBtn.disabled = false;
-            statusArea.style.display = 'none';
-        }
-
-
-        function saveToGarden(data, modelUsed) {
-            const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
-            garden.unshift({
-                ...data,
-                model_used: modelUsed,
-                id: Date.now(),
-                created_at: new Date().toLocaleString()
-            });
-            localStorage.setItem('garden_history', JSON.stringify(garden));
-        }
-
-        function showErrorDialog(title, message, rawError = '') {
-            errorDialogTitle.textContent = title || 'Error';
-            errorDialogMessage.textContent = message || '';
-            errorDialogRaw.textContent = rawError || 'No raw error details.';
-            errorDialog.open = true;
-        }
-
-        async function parseApiResponse(response) {
-            const rawText = await response.text();
-            let result = null;
-            try {
-                result = JSON.parse(rawText);
-            } catch (parseErr) {
-                throw new Error(`Server returned invalid JSON: ${response.status}`);
-            }
-            return { result, rawText };
-        }
-
+        // --- Event Listeners ---
+        drawerTrigger.addEventListener('click', () => drawer.open = !drawer.open);
         langMenu.addEventListener('change', () => applyLanguage(langMenu.value));
-        trigger.addEventListener('click', () => drawer.open = !drawer.open);
-        errorDialogClose.addEventListener('click', () => errorDialog.open = false);
+        refreshBtn.addEventListener('click', () => loadGarden());
 
-        submitBtn.addEventListener('click', async () => {
-            const content = inputField.value.trim();
-            const currentLang = getCurrentLang();
-            const selectedModel = modelMenu.value;
-            const langPack = i18n[currentLang] || i18n['zh-cn'];
+        exportBtn.addEventListener('click', () => {
+            const data = localStorage.getItem('garden_history') || '[]';
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `garden_backup_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            showMessage(t('gardenExportDone'));
+        });
 
-            if (!content) {
-                showErrorDialog(langPack.backendErrorTitle || '提示', langPack.emptyInput || '请输入内容', '');
-                return;
-            }
+        importBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    const local = readGardenData();
+                    const combined = [...imported, ...local];
+                    const unique = Array.from(new Map(combined.map(item => [item.id || item.created_at, item])).values());
+                    localStorage.setItem('garden_history', JSON.stringify(unique));
+                    loadGarden();
+                    showMessage(t('gardenImportSuccess'));
+                } catch (e) { showMessage(t('gardenInvalidFile')); }
+            };
+            reader.readAsText(file);
+        });
 
-            submitBtn.disabled = true;
-            statusArea.style.display = 'block';
-            updateUI(langPack.agent1, 33, "data_exploration");
-
-            try {
-                const response = await fetch('/api/grow', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        content: content,
-                        lang: currentLang,
-                        model: selectedModel
-                    })
-                });
-
-                const { result, rawText } = await parseApiResponse(response);
-
-                if (!response.ok || result.success === false) {
-                    showErrorDialog(
-                        langPack.backendErrorTitle || '培育失败',
-                        result?.error || `HTTP ${response.status}`,
-                        result?.debug_info || rawText
-                    );
-                    resetUI();
-                    return;
-                }
-
-                updateUI(langPack.agent2, 66, "hub");
-                await new Promise(r => setTimeout(r, 800));
-                updateUI(langPack.agent3, 95, "trending_up");
-                await new Promise(r => setTimeout(r, 1000));
-
-                saveToGarden(result.data, selectedModel);
-                window.location.href = 'garden.html';
-
-            } catch (err) {
-                showErrorDialog(langPack.fetchError || "解析错误", "Request failed", err.stack || err);
-                resetUI();
+        clearBtn.addEventListener('click', () => {
+            if (confirm(t('gardenClearConfirm'))) {
+                localStorage.removeItem('garden_history');
+                loadGarden();
             }
         });
+
+        window.addEventListener('load', () => applyLanguage(getCurrentLang()));
     </script>
 </body>
 </html>
