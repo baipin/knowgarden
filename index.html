@@ -156,33 +156,6 @@
                 <script async defer src="https://buttons.github.io/buttons.js"></script>
                 <div class="mdui-typo-body-medium" style="opacity: 0.6;"><p data-i18n="footerCopy"> © 2026 Knowledge Garden </p><a class="github-button" href="https://github.com/baipin/knowgarden" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Star baipin/knowgarden on GitHub">Star</a></div>
             </footer>
-            <!-- Cookie 提示 -->
-            <mdui-snackbar id="cookie-snackbar" closeable>
-                <span data-i18n="cookieMsg">我们使用Cookies以在本地存储阁下的数据。</span>
-
-                <mdui-button slot="action" variant="text" id="cookie-learn-more">
-                    <span data-i18n="cookieLearnMore">了解更多</span>
-                </mdui-button>
-
-                <mdui-button slot="action" variant="filled" id="cookie-accept">
-                    <span data-i18n="cookieAccept">接受</span>
-                </mdui-button>
-            </mdui-snackbar>
-
-            <!--  隐私说明 -->
-            <mdui-dialog id="privacy-dialog" close-on-overlay-click>
-                <div slot="headline" data-i18n="privacyTitle"></div>
-                <div slot="description">
-                    <p data-i18n="privacyIntro"></p>
-                    <ul style="padding-left: 18px; line-height: 1.6;">
-                        <li data-i18n="privacyPoint1"></li>
-                        <li data-i18n="privacyPoint2"></li>
-                        <li data-i18n="privacyPoint3"></li>
-                        <li data-i18n="privacyPoint4"></li>
-                    </ul>
-                </div>
-                <mdui-button slot="action" variant="text" id="privacy-close">OK</mdui-button>
-            </mdui-dialog>
         </mdui-layout-main>
     </mdui-layout>
 
@@ -212,26 +185,6 @@
         const errorDialogMessage = document.getElementById('error-dialog-message');
         const errorDialogRaw = document.getElementById('error-dialog-raw');
         const errorDialogClose = document.getElementById('error-dialog-close');
-
-        // Cookie 相关
-        const cookieSnackbar = document.getElementById('cookie-snackbar');
-        const cookieAcceptBtn = document.getElementById('cookie-accept');
-        const cookieLearnMoreBtn = document.getElementById('cookie-learn-more');
-        const privacyDialog = document.getElementById('privacy-dialog');
-        const privacyClose = document.getElementById('privacy-close');
-
-        cookieAcceptBtn.addEventListener('click', () => {
-            localStorage.setItem('cookie_consent', 'true');
-            cookieSnackbar.open = false;
-        });
-
-        cookieLearnMoreBtn.addEventListener('click', () => {
-            privacyDialog.open = true;
-        });
-
-        privacyClose.addEventListener('click', () => {
-            privacyDialog.open = false;
-        });
 
         function getCurrentLang() {
             return localStorage.getItem('user_lang') || 'zh-cn';
@@ -270,29 +223,6 @@
         function resetUI() {
             submitBtn.disabled = false;
             statusArea.style.display = 'none';
-        }
-
-        function hasCookieConsent() {
-            return localStorage.getItem('cookie_consent') === 'true';
-        }
-
-        function showCookieBanner() {
-            if (!hasCookieConsent()) {
-                cookieSnackbar.open = true;
-
-                // 等待 MDUI Portal 完成渲染后再应用翻译
-                setTimeout(() => {
-                    const lang = getCurrentLang();
-                    if (typeof i18n === 'undefined' || !i18n[lang]) return;
-                    const data = i18n[lang];
-
-                    // 从整个 document 重新查询（因为 snackbar 可能已被移动到 body 底部）
-                    document.querySelectorAll('[data-i18n]').forEach(el => {
-                        const key = el.getAttribute('data-i18n');
-                        if (data[key]) el.textContent = data[key];
-                    });
-                }, 150); // 给 MDUI Portal 足够时间完成 DOM 移动
-            }
         }
 
 
@@ -379,11 +309,6 @@
                 showErrorDialog(langPack.fetchError || "解析错误", "Request failed", err.stack || err);
                 resetUI();
             }
-        });
-
-        window.addEventListener('load', () => {
-            applyLanguage(getCurrentLang());
-            showCookieBanner(); 
         });
     </script>
 </body>
