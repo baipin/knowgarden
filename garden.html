@@ -1,463 +1,489 @@
 <!DOCTYPE html>
 <html class="mdui-theme-auto">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Knowledge Garden | My Plants</title>
-  <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
-  <script src="/js/lang.js"></script>
-  <style>
-    :root { --max-width: 1200px; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Garden | My Plants</title>
+    <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
+    <script src="/js/lang.js"></script>
+    <style>
+        :root {
+            --max-width: 1200px;
+        }
 
-    body {
-      background-color: var(--mdui-color-surface-container-lowest);
-      color: var(--mdui-color-on-surface);
-      padding-bottom: 50px;
-      margin: 0;
-    }
+        body {
+            background-color: var(--mdui-color-surface-container-lowest);
+            color: var(--mdui-color-on-surface);
+            padding-bottom: 50px;
+            margin: 0;
+        }
 
-    .garden-header {
-      text-align: center;
-      margin: 60px 0 40px;
-      padding: 0 20px;
-    }
+        .garden-header {
+            text-align: center;
+            margin: 60px 0 40px;
+            padding: 0 20px;
+        }
 
-    .knowledge-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-      gap: 24px;
-      max-width: var(--max-width);
-      margin: 0 auto;
-      padding: 0 20px;
-    }
+        .knowledge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 20px;
+        }
 
-    mdui-card {
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      cursor: default;
-      overflow: hidden;
-    }
+        mdui-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: default;
+            overflow: hidden;
+        }
 
-    mdui-card:hover {
-      transform: translateY(-5px);
-      box-shadow: var(--mdui-elevation-level3);
-    }
+            mdui-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--mdui-elevation-level3);
+            }
 
-    .card-title {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 12px;
-      line-height: 1.4;
-      word-break: break-word;
-    }
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
 
-    .card-date {
-      font-size: 12px;
-      opacity: 0.6;
-      white-space: nowrap;
-      margin-left: 12px;
-    }
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1.4;
+            word-break: break-word;
+            flex-grow: 1;
+        }
 
-    .tag-chip {
-      margin-right: 8px;
-      margin-top: 8px;
-    }
+        .card-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            flex-shrink: 0;
+        }
 
-    .section-label {
-      font-size: 12px;
-      text-transform: uppercase;
-      color: var(--mdui-color-primary);
-      font-weight: bold;
-      margin-bottom: 6px;
-      display: block;
-      letter-spacing: 0.4px;
-    }
+        .card-date {
+            font-size: 11px;
+            opacity: 0.6;
+            white-space: nowrap;
+        }
 
-    .content-text {
-      margin-top: 0;
-      line-height: 1.7;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
+        .model-tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color: var(--mdui-color-surface-container-highest);
+            color: var(--mdui-color-primary);
+            text-transform: uppercase;
+            font-weight: bold;
+        }
 
-    .growth-box {
-      background-color: var(--mdui-color-secondary-container);
-      color: var(--mdui-color-on-secondary-container);
-      padding: 12px;
-      border-radius: 12px;
-    }
+        .tag-chip {
+            margin-right: 8px;
+            margin-top: 8px;
+        }
 
-    footer {
-      padding: 40px 24px;
-      text-align: center;
-      background-color: var(--mdui-color-surface-container-low);
-      margin-top: 80px;
-    }
+        .section-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--mdui-color-primary);
+            font-weight: bold;
+            margin-bottom: 6px;
+            display: block;
+            letter-spacing: 0.4px;
+        }
 
-    .admin-tools {
-      margin-bottom: 24px;
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
+        .content-text {
+            margin-top: 0;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
 
-    .empty-state {
-      text-align: center;
-      margin-top: 100px;
-      display: none;
-      padding: 0 20px;
-    }
-  </style>
+        .growth-box {
+            background-color: var(--mdui-color-secondary-container);
+            color: var(--mdui-color-on-secondary-container);
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        footer {
+            padding: 40px 24px;
+            text-align: center;
+            background-color: var(--mdui-color-surface-container-low);
+            margin-top: 80px;
+        }
+
+        .admin-tools {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            margin-top: 100px;
+            display: none;
+            padding: 0 20px;
+        }
+    </style>
 </head>
 <body>
 
-  <mdui-layout>
-    <mdui-top-app-bar variant="flat">
-      <mdui-button-icon icon="menu" id="drawer-trigger"></mdui-button-icon>
-      <mdui-top-app-bar-title data-i18n="navGarden">My Garden</mdui-top-app-bar-title>
-      <div style="flex-grow: 1"></div>
+    <mdui-layout>
+        <mdui-top-app-bar variant="flat">
+            <mdui-button-icon icon="menu" id="drawer-trigger"></mdui-button-icon>
+            <mdui-top-app-bar-title data-i18n="navGarden">My Garden</mdui-top-app-bar-title>
+            <div style="flex-grow: 1"></div>
 
-      <mdui-dropdown>
-        <mdui-button-icon icon="language" slot="trigger"></mdui-button-icon>
-        <mdui-menu id="language-menu" selects="single">
-          <mdui-menu-item value="zh-cn">简体中文</mdui-menu-item>
-          <mdui-menu-item value="zh-tw">繁體中文</mdui-menu-item>
-          <mdui-menu-item value="en">English</mdui-menu-item>
-        </mdui-menu>
-      </mdui-dropdown>
+            <mdui-dropdown>
+                <mdui-button-icon icon="language" slot="trigger"></mdui-button-icon>
+                <mdui-menu id="language-menu" selects="single">
+                    <mdui-menu-item value="zh-cn">简体中文</mdui-menu-item>
+                    <mdui-menu-item value="zh-tw">繁體中文</mdui-menu-item>
+                    <mdui-menu-item value="en">English</mdui-menu-item>
+                </mdui-menu>
+            </mdui-dropdown>
 
-      <mdui-button-icon icon="refresh" id="refresh-btn"></mdui-button-icon>
-    </mdui-top-app-bar>
+            <mdui-button-icon icon="refresh" id="refresh-btn"></mdui-button-icon>
+        </mdui-top-app-bar>
 
-    <mdui-navigation-drawer id="main-drawer" close-on-overlay-click>
-      <div style="padding: 16px;">
-        <div class="mdui-typo-title" data-i18n="title">Knowledge Garden</div>
-      </div>
+        <mdui-navigation-drawer id="main-drawer" close-on-overlay-click>
+            <div style="padding: 16px;">
+                <div class="mdui-typo-title" data-i18n="title">Knowledge Garden</div>
+            </div>
 
-      <mdui-list>
-        <mdui-list-item icon="add_box" href="index.html">
-          <span data-i18n="navSow">Go Sow</span>
-        </mdui-list-item>
-        <mdui-list-item icon="local_florist" href="garden.html" selected>
-          <span data-i18n="navGarden">My Garden</span>
-        </mdui-list-item>
-      </mdui-list>
-    </mdui-navigation-drawer>
+            <mdui-list>
+                <mdui-list-item icon="add_box" href="index.html">
+                    <span data-i18n="navSow">Go Sow</span>
+                </mdui-list-item>
+                <mdui-list-item icon="local_florist" href="garden.html" selected>
+                    <span data-i18n="navGarden">My Garden</span>
+                </mdui-list-item>
+            </mdui-list>
+        </mdui-navigation-drawer>
 
-    <mdui-layout-main>
-      <div class="garden-header">
-        <h1 class="mdui-typo-display-medium" data-i18n="navGarden">Knowledge Garden</h1>
-        <p style="opacity: 0.7;" data-i18n="subtitle">Cultivating seeds of inspiration</p>
-      </div>
+        <mdui-layout-main>
+            <div class="garden-header">
+                <h1 class="mdui-typo-display-medium" data-i18n="navGarden">Knowledge Garden</h1>
+                <p style="opacity: 0.7;" data-i18n="subtitle">Cultivating seeds of inspiration</p>
+            </div>
 
-      <div class="knowledge-grid" id="garden-container"></div>
+            <div class="knowledge-grid" id="garden-container"></div>
 
-      <div id="empty-state" class="empty-state">
-        <mdui-icon name="filter_vintage" style="font-size: 80px; opacity: 0.2;"></mdui-icon>
-        <p data-i18n="gardenEmpty">Garden is empty.</p>
-        <mdui-button variant="tonal" href="index.html">
-          <span data-i18n="navSow">Go Sow</span>
-        </mdui-button>
-      </div>
+            <div id="empty-state" class="empty-state">
+                <mdui-icon name="filter_vintage" style="font-size: 80px; opacity: 0.2;"></mdui-icon>
+                <p data-i18n="gardenEmpty">Garden is empty.</p>
+                <mdui-button variant="tonal" href="index.html">
+                    <span data-i18n="navSow">Go Sow</span>
+                </mdui-button>
+            </div>
 
-      <footer>
-        <div class="admin-tools">
-          <mdui-button variant="outlined" icon="file_download" id="export-btn">
-            <span data-i18n="gardenExport">导出备份</span>
-          </mdui-button>
+            <footer>
+                <div class="admin-tools">
+                    <mdui-button variant="outlined" icon="file_download" id="export-btn">
+                        <span data-i18n="gardenExport">导出备份</span>
+                    </mdui-button>
 
-          <mdui-button variant="outlined" icon="file_upload" id="import-btn">
-            <span data-i18n="gardenImport">导入备份</span>
-          </mdui-button>
+                    <mdui-button variant="outlined" icon="file_upload" id="import-btn">
+                        <span data-i18n="gardenImport">导入备份</span>
+                    </mdui-button>
 
-          <mdui-button variant="outlined" icon="delete_sweep" color="error" id="clear-btn">
-            <span data-i18n="gardenClear">清空花园</span>
-          </mdui-button>
+                    <mdui-button variant="outlined" icon="delete_sweep" color="error" id="clear-btn">
+                        <span data-i18n="gardenClear">清空花园</span>
+                    </mdui-button>
 
-          <input type="file" id="file-input" style="display: none;" accept=".json">
-        </div>
+                    <input type="file" id="file-input" style="display: none;" accept=".json">
+                </div>
 
-        <div class="mdui-typo-body-medium" style="opacity: 0.6;" data-i18n="footerCopy">© 2026 Knowledge Garden</div>
-        <div style="margin-top: 12px;">
-          <a href="https://github.com/baipin/knowgarden" target="_blank" style="text-decoration: none;">
-            <mdui-button variant="tonal" icon="code">GitHub</mdui-button>
-          </a>
-        </div>
-      </footer>
-    </mdui-layout-main>
-  </mdui-layout>
+                <div class="mdui-typo-body-medium" style="opacity: 0.6;" data-i18n="footerCopy">© 2026 Knowledge Garden</div>
+            </footer>
+        </mdui-layout-main>
+    </mdui-layout>
 
-  <script>
-    const container = document.querySelector('#garden-container');
-    const emptyState = document.querySelector('#empty-state');
-    const refreshBtn = document.querySelector('#refresh-btn');
-    const langMenu = document.querySelector('#language-menu');
-    const drawer = document.querySelector('#main-drawer');
-    const drawerTrigger = document.querySelector('#drawer-trigger');
+    <script>
+        const container = document.querySelector('#garden-container');
+        const emptyState = document.querySelector('#empty-state');
+        const refreshBtn = document.querySelector('#refresh-btn');
+        const langMenu = document.querySelector('#language-menu');
+        const drawer = document.querySelector('#main-drawer');
+        const drawerTrigger = document.querySelector('#drawer-trigger');
 
-    const exportBtn = document.querySelector('#export-btn');
-    const importBtn = document.querySelector('#import-btn');
-    const clearBtn = document.querySelector('#clear-btn');
-    const fileInput = document.querySelector('#file-input');
+        const exportBtn = document.querySelector('#export-btn');
+        const importBtn = document.querySelector('#import-btn');
+        const clearBtn = document.querySelector('#clear-btn');
+        const fileInput = document.querySelector('#file-input');
 
-    function getCurrentLang() {
-      return localStorage.getItem('user_lang') || 'zh-cn';
-    }
-
-    function getLangPack() {
-      const lang = getCurrentLang();
-      if (typeof i18n === 'undefined') return {};
-      return i18n[lang] || i18n['zh-cn'] || {};
-    }
-
-    function t(key, fallback = '') {
-      const pack = getLangPack();
-      return pack[key] || fallback || key;
-    }
-
-    function showMessage(message) {
-      if (window.mdui && typeof mdui.snackbar === 'function') {
-        mdui.snackbar({ message });
-      } else {
-        alert(message);
-      }
-    }
-
-    function escapeHtml(value) {
-      return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function nl2br(value) {
-      return escapeHtml(value).replace(/\n/g, '<br>');
-    }
-
-    function safeArray(data) {
-      return Array.isArray(data) ? data : [];
-    }
-
-    drawerTrigger.addEventListener('click', () => {
-      drawer.open = !drawer.open;
-    });
-
-    function applyLanguage(lang) {
-      if (typeof i18n === 'undefined') return;
-
-      const data = i18n[lang] || i18n['zh-cn'];
-      if (!data) return;
-
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (data[key]) {
-          el.textContent = data[key];
+        function getCurrentLang() {
+            return localStorage.getItem('user_lang') || 'zh-cn';
         }
-      });
 
-      localStorage.setItem('user_lang', lang);
-      langMenu.value = lang;
+        function getLangPack() {
+            const lang = getCurrentLang();
+            if (typeof i18n === 'undefined') return {};
+            return i18n[lang] || i18n['zh-cn'] || {};
+        }
 
-      document.title = `${data.title || 'Knowledge Garden'} | ${data.navGarden || 'My Garden'}`;
+        function t(key, fallback = '') {
+            const pack = getLangPack();
+            return pack[key] || fallback || key;
+        }
 
-      loadGarden({ silent: true });
-    }
-
-    langMenu.addEventListener('change', () => applyLanguage(langMenu.value));
-
-    window.addEventListener('load', () => {
-      const savedLang = getCurrentLang();
-      applyLanguage(savedLang);
-    });
-
-    refreshBtn.addEventListener('click', async () => {
-      refreshBtn.disabled = true;
-      refreshBtn.loading = true;
-
-      try {
-        await refreshGarden();
-      } finally {
-        refreshBtn.loading = false;
-        setTimeout(() => {
-          refreshBtn.disabled = false;
-        }, 200);
-      }
-    });
-
-    async function refreshGarden() {
-      await new Promise(resolve => setTimeout(resolve, 120));
-      const data = loadGarden({ silent: true });
-
-      if (!data.length) {
-        showMessage(t('gardenRefreshEmpty', 'Garden is empty'));
-      } else {
-        showMessage(t('gardenRefreshCount', 'Garden refreshed').replace('{count}', data.length));
-      }
-    }
-
-    function readGardenData() {
-      try {
-        const raw = localStorage.getItem('garden_history') || '[]';
-        const parsed = JSON.parse(raw);
-        const list = safeArray(parsed);
-
-        return list.sort((a, b) => {
-          const aTime = new Date(a.created_at || 0).getTime();
-          const bTime = new Date(b.created_at || 0).getTime();
-          return bTime - aTime;
-        });
-      } catch (err) {
-        console.error('Failed to parse garden_history:', err);
-        return [];
-      }
-    }
-
-    function loadGarden(options = {}) {
-      container.innerHTML = '';
-
-      const localData = readGardenData();
-
-      if (localData.length === 0) {
-        emptyState.style.display = 'block';
-      } else {
-        emptyState.style.display = 'none';
-        renderCards(localData);
-      }
-
-      return localData;
-    }
-
-    function renderCards(dataList) {
-      const langPack = getLangPack();
-
-      const agent1Title = (langPack.agent1 || 'Agent 1: Summary').split(':')[0];
-      const agent2Title = (langPack.agent2 || 'Agent 2: Connections').split(':')[0];
-      const agent3Title = (langPack.agent3 || 'Agent 3: Growth').split(':')[0];
-
-      dataList.forEach(item => {
-        const card = document.createElement('mdui-card');
-        card.variant = 'elevated';
-        card.style.width = '100%';
-
-        const title = item.title || t('gardenUntitled', 'Knowledge');
-        const summary = item.summary || '';
-        const connections = item.connections || '';
-        const growthPlan = item.growth_plan || '';
-        const createdAt = item.created_at || '';
-
-        card.innerHTML = `
-          <div style="padding: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
-              <div class="card-title">🌱 ${escapeHtml(title)}</div>
-              <div class="card-date">${escapeHtml(createdAt)}</div>
-            </div>
-
-            <span class="section-label">${escapeHtml(agent1Title)}</span>
-            <p class="content-text">${nl2br(summary)}</p>
-
-            <mdui-divider style="margin: 16px 0;"></mdui-divider>
-
-            <span class="section-label">${escapeHtml(agent2Title)}</span>
-            <div style="margin-bottom: 16px;">${formatTags(connections)}</div>
-
-            <div class="growth-box">
-              <span class="section-label" style="color: inherit;">${escapeHtml(agent3Title)}</span>
-              <div class="content-text" style="margin: 0;">${nl2br(growthPlan)}</div>
-            </div>
-          </div>
-        `;
-
-        container.appendChild(card);
-      });
-    }
-
-    function formatTags(tagsString) {
-      if (!tagsString) return '';
-
-      const tags = String(tagsString)
-        .split(/[，,、\n]+/)
-        .map(tag => tag.trim())
-        .filter(Boolean)
-        .slice(0, 6);
-
-      return tags.map(tag => {
-        return `<mdui-chip class="tag-chip" variant="filled">${escapeHtml(tag)}</mdui-chip>`;
-      }).join('');
-    }
-
-    exportBtn.addEventListener('click', () => {
-      const data = localStorage.getItem('garden_history') || '[]';
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `garden_backup_${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showMessage(t('gardenExportDone', 'Backup exported'));
-    });
-
-    importBtn.addEventListener('click', () => fileInput.click());
-
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const importedData = JSON.parse(event.target.result);
-          const importedList = safeArray(importedData);
-          const localData = readGardenData();
-
-          const combined = [...importedList, ...localData];
-          const uniqueMap = new Map();
-
-          combined.forEach(item => {
-            const key = item.id || `${item.title || ''}_${item.created_at || ''}`;
-            if (!uniqueMap.has(key)) {
-              uniqueMap.set(key, item);
+        function showMessage(message) {
+            if (window.mdui && typeof mdui.snackbar === 'function') {
+                mdui.snackbar({ message });
+            } else {
+                alert(message);
             }
-          });
-
-          const unique = Array.from(uniqueMap.values());
-          localStorage.setItem('garden_history', JSON.stringify(unique));
-
-          loadGarden({ silent: true });
-          showMessage(t('gardenImportSuccess', 'Import successful. Data merged.'));
-        } catch (err) {
-          console.error(err);
-          showMessage(t('gardenInvalidFile', 'Invalid file format!'));
-        } finally {
-          fileInput.value = '';
         }
-      };
 
-      reader.readAsText(file);
-    });
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
 
-    clearBtn.addEventListener('click', async () => {
-      const ok = confirm(t('gardenClearConfirm', 'Are you sure you want to clear all plants?'));
-      if (!ok) return;
+        function nl2br(value) {
+            return escapeHtml(value).replace(/\n/g, '<br>');
+        }
 
-      localStorage.removeItem('garden_history');
-      loadGarden({ silent: true });
-      showMessage(t('gardenClearDone', 'Garden cleared'));
-    });
+        function safeArray(data) {
+            return Array.isArray(data) ? data : [];
+        }
 
-    window.addEventListener('storage', (event) => {
-      if (event.key === 'garden_history') {
-        loadGarden({ silent: true });
-      }
-      if (event.key === 'user_lang') {
-        const lang = getCurrentLang();
-        applyLanguage(lang);
-      }
-    });
-  </script>
+        drawerTrigger.addEventListener('click', () => {
+            drawer.open = !drawer.open;
+        });
+
+        function applyLanguage(lang) {
+            if (typeof i18n === 'undefined') return;
+
+            const data = i18n[lang] || i18n['zh-cn'];
+            if (!data) return;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (data[key]) {
+                    el.textContent = data[key];
+                }
+            });
+
+            localStorage.setItem('user_lang', lang);
+            langMenu.value = lang;
+
+            document.title = `${data.title || 'Knowledge Garden'} | ${data.navGarden || 'My Garden'}`;
+
+            loadGarden({ silent: true });
+        }
+
+        langMenu.addEventListener('change', () => applyLanguage(langMenu.value));
+
+        window.addEventListener('load', () => {
+            const savedLang = getCurrentLang();
+            applyLanguage(savedLang);
+        });
+
+        refreshBtn.addEventListener('click', async () => {
+            refreshBtn.disabled = true;
+            refreshBtn.loading = true;
+
+            try {
+                await refreshGarden();
+            } finally {
+                refreshBtn.loading = false;
+                setTimeout(() => {
+                    refreshBtn.disabled = false;
+                }, 200);
+            }
+        });
+
+        async function refreshGarden() {
+            await new Promise(resolve => setTimeout(resolve, 120));
+            const data = loadGarden({ silent: true });
+
+            if (!data.length) {
+                showMessage(t('gardenRefreshEmpty', 'Garden is empty'));
+            } else {
+                showMessage(t('gardenRefreshCount', 'Garden refreshed').replace('{count}', data.length));
+            }
+        }
+
+        function readGardenData() {
+            try {
+                const raw = localStorage.getItem('garden_history') || '[]';
+                const parsed = JSON.parse(raw);
+                const list = safeArray(parsed);
+
+                return list.sort((a, b) => {
+                    const aTime = new Date(a.created_at || 0).getTime();
+                    const bTime = new Date(b.created_at || 0).getTime();
+                    return bTime - aTime;
+                });
+            } catch (err) {
+                console.error('Failed to parse garden_history:', err);
+                return [];
+            }
+        }
+
+        function loadGarden(options = {}) {
+            container.innerHTML = '';
+
+            const localData = readGardenData();
+
+            if (localData.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+                renderCards(localData);
+            }
+
+            return localData;
+        }
+
+        function renderCards(dataList) {
+            const langPack = getLangPack();
+
+            const agent1Title = (langPack.agent1 || 'Agent 1: Summary').split(':')[0];
+            const agent2Title = (langPack.agent2 || 'Agent 2: Connections').split(':')[0];
+            const agent3Title = (langPack.agent3 || 'Agent 3: Growth').split(':')[0];
+
+            dataList.forEach(item => {
+                const card = document.createElement('mdui-card');
+                card.variant = 'elevated';
+                card.style.width = '100%';
+
+                const title = item.title || t('gardenUntitled', 'Knowledge');
+                const summary = item.summary || '';
+                const connections = item.connections || '';
+                const growthPlan = item.growth_plan || '';
+                const createdAt = item.created_at || '';
+                const modelUsed = item.model_used || 'unknown'; // 获取保存的模型信息
+
+                card.innerHTML = `
+              <div style="padding: 20px;">
+                <div class="card-header-row">
+                  <div class="card-title">🌱 ${escapeHtml(title)}</div>
+                  <div class="card-meta">
+                    <div class="model-tag">${escapeHtml(modelUsed)}</div>
+                    <div class="card-date">${escapeHtml(createdAt)}</div>
+                  </div>
+                </div>
+
+                <span class="section-label">${escapeHtml(agent1Title)}</span>
+                <p class="content-text">${nl2br(summary)}</p>
+
+                <mdui-divider style="margin: 16px 0;"></mdui-divider>
+
+                <span class="section-label">${escapeHtml(agent2Title)}</span>
+                <div style="margin-bottom: 16px;">${formatTags(connections)}</div>
+
+                <div class="growth-box">
+                  <span class="section-label" style="color: inherit;">${escapeHtml(agent3Title)}</span>
+                  <div class="content-text" style="margin: 0;">${nl2br(growthPlan)}</div>
+                </div>
+              </div>
+            `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function formatTags(tagsString) {
+            if (!tagsString) return '';
+
+            const tags = String(tagsString)
+                .split(/[，,、\n]+/)
+                .map(tag => tag.trim())
+                .filter(Boolean)
+                .slice(0, 6);
+
+            return tags.map(tag => {
+                return `<mdui-chip class="tag-chip" variant="filled">${escapeHtml(tag)}</mdui-chip>`;
+            }).join('');
+        }
+
+        exportBtn.addEventListener('click', () => {
+            const data = localStorage.getItem('garden_history') || '[]';
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `garden_backup_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showMessage(t('gardenExportDone', 'Backup exported'));
+        });
+
+        importBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const importedData = JSON.parse(event.target.result);
+                    const importedList = safeArray(importedData);
+                    const localData = readGardenData();
+
+                    const combined = [...importedList, ...localData];
+                    const uniqueMap = new Map();
+
+                    combined.forEach(item => {
+                        const key = item.id || `${item.title || ''}_${item.created_at || ''}`;
+                        if (!uniqueMap.has(key)) {
+                            uniqueMap.set(key, item);
+                        }
+                    });
+
+                    const unique = Array.from(uniqueMap.values());
+                    localStorage.setItem('garden_history', JSON.stringify(unique));
+
+                    loadGarden({ silent: true });
+                    showMessage(t('gardenImportSuccess', 'Import successful. Data merged.'));
+                } catch (err) {
+                    console.error(err);
+                    showMessage(t('gardenInvalidFile', 'Invalid file format!'));
+                } finally {
+                    fileInput.value = '';
+                }
+            };
+
+            reader.readAsText(file);
+        });
+
+        clearBtn.addEventListener('click', async () => {
+            const ok = confirm(t('gardenClearConfirm', 'Are you sure you want to clear all plants?'));
+            if (!ok) return;
+
+            localStorage.removeItem('garden_history');
+            loadGarden({ silent: true });
+            showMessage(t('gardenClearDone', 'Garden cleared'));
+        });
+
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'garden_history') {
+                loadGarden({ silent: true });
+            }
+            if (event.key === 'user_lang') {
+                const lang = getCurrentLang();
+                applyLanguage(lang);
+            }
+        });
+    </script>
 </body>
 </html>

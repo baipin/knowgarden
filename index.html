@@ -9,25 +9,37 @@
     <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
     <script src="./js/lang.js"></script>
     <style>
-        :root { --max-width: 800px; }
-        body { 
-            background-color: var(--mdui-color-surface); 
+        :root {
+            --max-width: 800px;
+        }
+
+        body {
+            background-color: var(--mdui-color-surface);
             color: var(--mdui-color-on-surface);
             margin: 0;
             font-family: system-ui, -apple-system, sans-serif;
         }
+
         .main-container {
             max-width: var(--max-width);
             margin: 40px auto;
             padding: 0 24px;
             min-height: calc(100vh - 300px);
         }
+
         .input-card {
             padding: 40px;
             border-radius: 28px;
             background-color: var(--mdui-color-surface-container-high);
             box-shadow: var(--mdui-elevation-level1);
         }
+        /* 新增：配置栏样式 */
+        .config-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 16px;
+        }
+
         #status-area {
             margin-top: 32px;
             padding: 24px;
@@ -35,17 +47,20 @@
             background-color: var(--mdui-color-secondary-container);
             display: none;
         }
+
         footer {
             padding: 32px 24px;
             text-align: center;
             margin-top: 60px;
             opacity: 0.6;
         }
+
         .error-message {
             white-space: pre-wrap;
             line-height: 1.6;
             margin-bottom: 16px;
         }
+
         .error-raw {
             background: var(--mdui-color-surface-container);
             border-radius: 12px;
@@ -67,7 +82,7 @@
             <mdui-button-icon icon="menu" id="drawer-trigger"></mdui-button-icon>
             <mdui-top-app-bar-title data-i18n="title">Knowledge Garden</mdui-top-app-bar-title>
             <div style="flex-grow: 1"></div>
-            
+
             <mdui-dropdown>
                 <mdui-button-icon icon="language" slot="trigger"></mdui-button-icon>
                 <mdui-menu id="language-menu" selects="single">
@@ -95,6 +110,20 @@
                         <div style="font-size: 56px; margin-bottom: 16px;">🌱</div>
                         <h1 class="mdui-typo-display-small" data-i18n="title">Knowledge Garden</h1>
                         <p style="opacity: 0.7;" data-i18n="subtitle">培育你的灵感种子</p>
+                    </div>
+
+                    <div class="config-bar">
+                        <mdui-select id="model-select" value="GPT-4o-mini" label="AI Model" variant="outlined" style="width: 200px;">
+                            <mdui-menu-item value="gpt-4o-mini">GPT-4o-mini</mdui-menu-item>
+                            <mdui-menu-item value="gpt-3.5-turbo">GPT-3.5-Turbo</mdui-menu-item>
+                            <mdui-menu-item value="gpt-4.1-mini">GPT-4.1-mini</mdui-menu-item>
+                            <mdui-menu-item value="gpt-4.1-nano">GPT-4.1-nano</mdui-menu-item>
+                            <mdui-menu-item value="gpt-5-mini">GPT-5-mini</mdui-menu-item>
+                            <mdui-menu-item value="gpt-5-nano">GPT-5-nano</mdui-menu-item>
+                            <mdui-menu-item value="gpt-5">GPT-5</mdui-menu-item>
+                            <mdui-menu-item value="deepseek-r1">Deepseek-r1</mdui-menu-item>
+                            <mdui-menu-item value="deepseek-v3">Deepseek-v3</mdui-menu-item>
+                        </mdui-select>
                     </div>
 
                     <mdui-text-field id="knowledge-input"
@@ -126,7 +155,6 @@
         </mdui-layout-main>
     </mdui-layout>
 
-    <!-- 错误对话框 -->
     <mdui-dialog id="error-dialog" close-on-overlay-click>
         <div slot="headline" id="error-dialog-title">Error</div>
         <div slot="description">
@@ -140,6 +168,7 @@
         const drawer = document.getElementById('main-drawer');
         const trigger = document.getElementById('drawer-trigger');
         const langMenu = document.getElementById('language-menu');
+        const modelSelect = document.getElementById('model-select'); // 获取模型选择器
         const submitBtn = document.getElementById('submit-btn');
         const inputField = document.getElementById('knowledge-input');
         const statusArea = document.getElementById('status-area');
@@ -201,10 +230,11 @@
             statusArea.style.display = 'none';
         }
 
-        function saveToGarden(data) {
+        function saveToGarden(data, modelUsed) {
             const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
             garden.unshift({
                 ...data,
+                model_used: modelUsed, // 记录使用的模型
                 id: Date.now(),
                 created_at: new Date().toLocaleString()
             });
@@ -250,6 +280,7 @@
         submitBtn.addEventListener('click', async () => {
             const content = inputField.value.trim();
             const currentLang = getCurrentLang();
+            const selectedModel = modelSelect.value; // 获取模型值
             const langPack = i18n[currentLang] || i18n['zh-cn'];
 
             if (!content) {
@@ -269,7 +300,12 @@
                 const response = await fetch('/api/grow', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: content, lang: currentLang })
+                    // 在请求体中包含了 model 字段
+                    body: JSON.stringify({
+                        content: content,
+                        lang: currentLang,
+                        model: selectedModel
+                    })
                 });
 
                 const { result, rawText } = await parseApiResponse(response);
@@ -307,7 +343,7 @@
                 updateUI(langPack.agent3, 95, "trending_up");
                 await new Promise(r => setTimeout(r, 1000));
 
-                saveToGarden(result.data);
+                saveToGarden(result.data, selectedModel); // 传入选中的模型
                 window.location.href = 'garden.html';
 
             } catch (err) {

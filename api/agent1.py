@@ -61,7 +61,7 @@ Style:
 - readable
 """
 
-def run_ingestion(client, content: str) -> str:
+def run_ingestion(client, content: str, model_name: str) -> str:
     """
     Convert raw user input into a structured knowledge summary.
 
@@ -90,7 +90,7 @@ Requirements:
 """
 
     response = client.chat.completions.create(
-        model="deepseek-r1",
+        model=model_name,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_prompt},

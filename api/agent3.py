@@ -34,7 +34,7 @@ Your response must contain these 5 sections, but the section titles themselves m
 5. Next small action
 """
 
-def run_growth(client, content: str) -> str:
+def run_growth(client, content: str, model_name: str) -> str:
     user_prompt = f"""
 Based on the material below, help this knowledge seed grow.
 
@@ -53,7 +53,7 @@ Requirements:
 """
 
     response = client.chat.completions.create(
-        model="deepseek-r1",
+        model=model_name,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_prompt},

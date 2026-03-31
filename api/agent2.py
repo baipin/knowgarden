@@ -53,7 +53,7 @@ Output style:
 - practical and insightful
 """
 
-def run_synthesis(client, content: str) -> str:
+def run_synthesis(client, content: str, model_name: str) -> str:
     """
     Generate knowledge connections and synthesis.
 
@@ -82,7 +82,7 @@ Requirements:
 """
 
     response = client.chat.completions.create(
-        model="deepseek-r1",
+        model=model_name,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_prompt},

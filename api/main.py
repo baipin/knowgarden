@@ -88,16 +88,11 @@ client = OpenAI(
 
 # =========================================================
 # 7) 请求体定义
-# ---------------------------------------------------------
-# 前端应传：
-# {
-#   "content": "用户输入的文本或链接",
-#   "lang": "zh-cn" | "zh-tw" | "en"
-# }
 # =========================================================
 class KnowledgeRequest(BaseModel):
     content: str
     lang: str = "zh-cn"
+    model: str = "gpt-4o-mini"
 
 
 # =========================================================
@@ -229,6 +224,7 @@ async def grow_knowledge(request: KnowledgeRequest) -> Dict[str, Any]:
     }
     """
     target_lang = request.lang or "zh-cn"
+    chosen_model = request.model
 
     if IMPORT_ERROR:
         return {
@@ -270,7 +266,8 @@ User Input:
         summary = await asyncio.to_thread(
             agent1.run_ingestion,
             client,
-            ingestion_input
+            ingestion_input,
+            chosen_model
         )
 
         # =================================================
@@ -289,7 +286,8 @@ Knowledge Summary:
         connections = await asyncio.to_thread(
             agent2.run_synthesis,
             client,
-            synthesis_input
+            synthesis_input,
+            chosen_model
         )
 
         # =================================================
@@ -311,7 +309,8 @@ Discovered Connections:
         growth_plan = await asyncio.to_thread(
             agent3.run_growth,
             client,
-            growth_input
+            growth_input,
+            chosen_model
         )
 
         return {
