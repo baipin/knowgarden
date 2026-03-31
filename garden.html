@@ -44,17 +44,31 @@
         }
 
         mdui-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: default;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
             mdui-card:hover {
                 transform: translateY(-5px);
                 box-shadow: var(--mdui-elevation-level3);
             }
+            /* 选中状态样式 */
+            mdui-card[selected] {
+                outline: 3px solid var(--mdui-color-primary);
+                box-shadow: var(--mdui-elevation-level4);
+            }
+
+        .card-checkbox {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 2;
+            pointer-events: none;
+        }
 
         .card-header-row {
             display: flex;
@@ -62,6 +76,7 @@
             align-items: flex-start;
             gap: 12px;
             margin-bottom: 12px;
+            padding-right: 32px;
         }
 
         .card-title {
@@ -111,7 +126,6 @@
             letter-spacing: 0.4px;
         }
 
-        /* Markdown Content Styling */
         .markdown-body {
             font-size: 14px;
             line-height: 1.6;
@@ -120,13 +134,6 @@
 
             .markdown-body p {
                 margin: 4px 0 12px;
-            }
-
-            .markdown-body code {
-                background-color: var(--mdui-color-secondary-container);
-                padding: 2px 4px;
-                border-radius: 4px;
-                font-family: monospace;
             }
 
         .growth-box {
@@ -143,6 +150,17 @@
             gap: 8px;
             padding: 8px 16px 16px;
             margin-top: auto;
+        }
+
+        /* 浮动整合按钮 */
+        .fab-combine {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: none;
+            z-index: 100;
+            align-items: center;
+            gap: 10px;
         }
 
         footer {
@@ -167,10 +185,23 @@
             padding: 0 20px;
         }
 
-        /* Fix LaTeX display overflow */
         .katex-display {
             overflow-x: auto;
             overflow-y: hidden;
+        }
+
+        .rotating {
+            animation: mdui-rotate 0.8s linear;
+        }
+
+        @keyframes mdui-rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
@@ -195,9 +226,7 @@
         </mdui-top-app-bar>
 
         <mdui-navigation-drawer id="main-drawer" close-on-overlay-click>
-            <div style="padding: 16px;">
-                <div class="mdui-typo-title" data-i18n="title">Knowledge Garden</div>
-            </div>
+            <div style="padding: 16px;"><div class="mdui-typo-title" data-i18n="title">Knowledge Garden</div></div>
             <mdui-list>
                 <mdui-list-item icon="add_box" href="index.html"><span data-i18n="navSow">Go Sow</span></mdui-list-item>
                 <mdui-list-item icon="local_florist" href="garden.html" selected><span data-i18n="navGarden">My Garden</span></mdui-list-item>
@@ -218,6 +247,13 @@
                 <mdui-button variant="tonal" href="index.html"><span data-i18n="navSow">Go Sow</span></mdui-button>
             </div>
 
+            <div class="fab-combine" id="combine-fab">
+                <mdui-button variant="filled" icon="auto_fix_high" id="combine-btn">
+                    <span id="combine-btn-text" data-i18n="btnCombine">Combine Seeds</span>
+                </mdui-button>
+                <mdui-button-icon icon="close" onclick="clearSelection()" style="background: var(--mdui-color-surface-container-high);"></mdui-button-icon>
+            </div>
+
             <footer>
                 <div class="admin-tools">
                     <mdui-button variant="outlined" icon="file_download" id="export-btn"><span data-i18n="gardenExport">导出备份</span></mdui-button>
@@ -226,11 +262,20 @@
                     <input type="file" id="file-input" style="display: none;" accept=".json">
                 </div>
                 <script async defer src="https://buttons.github.io/buttons.js"></script>
-                <div class="mdui-typo-body-medium" style="opacity: 0.6;"><p data-i18n="footerCopy"> © 2026 Knowledge Garden </p><a class="github-button" href="https://github.com/baipin/knowgarden" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Star baipin/knowgarden on GitHub">Star</a></div>
-
+                <div class="mdui-typo-body-medium" style="opacity: 0.6;">
+                    <p data-i18n="footerCopy"> © 2026 Knowledge Garden </p>
+                    <a class="github-button" href="https://github.com/baipin/knowgarden" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Star baipin/knowgarden on GitHub">Star</a>
+                </div>
             </footer>
         </mdui-layout-main>
     </mdui-layout>
+
+    <mdui-dialog id="ppt-dialog" close-on-overlay-click style="--mdui-dialog-width: 800px;">
+        <span slot="headline" data-i18n="pptHeadline">Presentation Outline</span>
+        <div id="ppt-content" style="white-space: pre-wrap; font-family: monospace; background: var(--mdui-color-surface-container-lowest); padding: 20px; border-radius: 8px; max-height: 500px; overflow-y: auto; border: 1px solid var(--mdui-color-outline-variant);"></div>
+        <mdui-button slot="action" variant="text" id="copy-marp-btn" data-i18n="copyMarp">Copy</mdui-button>
+        <mdui-button slot="action" variant="tonal" onclick="document.getElementById('ppt-dialog').open = false">Close</mdui-button>
+    </mdui-dialog>
 
     <script>
         const container = document.querySelector('#garden-container');
@@ -243,8 +288,11 @@
         const importBtn = document.querySelector('#import-btn');
         const clearBtn = document.querySelector('#clear-btn');
         const fileInput = document.querySelector('#file-input');
+        const combineFab = document.querySelector('#combine-fab');
+        const combineBtn = document.querySelector('#combine-btn');
 
-        // --- Internationalization Logic ---
+        let selectedIds = new Set();
+
         function getCurrentLang() { return localStorage.getItem('user_lang') || 'zh-cn'; }
         function getLangPack() {
             const lang = getCurrentLang();
@@ -255,40 +303,24 @@
             return pack[key] || fallback || key;
         }
 
-        // --- Core Rendering Logic ---
-        function renderContent(text) {
-            if (!text) return '';
-            // 使用 marked 渲染 Markdown
-            return `<div class="markdown-body">${marked.parse(text)}</div>`;
-        }
-
-        function escapeHtml(value) {
-            return String(value ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#39;" }[m]));
-        }
-
+        function renderContent(text) { return text ? `<div class="markdown-body">${marked.parse(text)}</div>` : ''; }
+        function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#39;" }[m])); }
         function formatTags(tagsString) {
             if (!tagsString) return '';
-            const tags = String(tagsString).split(/[，,、\n]+/).map(tag => tag.trim()).filter(Boolean).slice(0, 6);
-            return tags.map(tag => `<mdui-chip class="tag-chip" variant="filled">${escapeHtml(tag)}</mdui-chip>`).join('');
+            return String(tagsString).split(/[，,、\n]+/).map(t => t.trim()).filter(Boolean).slice(0, 6)
+                .map(tag => `<mdui-chip class="tag-chip" variant="filled">${escapeHtml(tag)}</mdui-chip>`).join('');
         }
 
-        // --- Data Management ---
         function readGardenData() {
-            try {
-                const raw = localStorage.getItem('garden_history') || '[]';
-                return JSON.parse(raw).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-            } catch (err) { return []; }
+            try { return JSON.parse(localStorage.getItem('garden_history') || '[]').sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)); } catch (e) { return []; }
         }
 
         function loadGarden() {
             container.innerHTML = '';
             const localData = readGardenData();
-            if (localData.length === 0) {
-                emptyState.style.display = 'block';
-            } else {
-                emptyState.style.display = 'none';
-                renderCards(localData);
-            }
+            if (localData.length === 0) { emptyState.style.display = 'block'; }
+            else { emptyState.style.display = 'none'; renderCards(localData); }
+            updateFab();
             return localData;
         }
 
@@ -302,9 +334,16 @@
                 const card = document.createElement('mdui-card');
                 card.variant = 'elevated';
                 card.style.width = '100%';
+                const id = String(item.id);
+                if (selectedIds.has(id)) card.setAttribute('selected', '');
 
-                const id = item.id;
+                card.onclick = (e) => {
+                    if (e.target.closest('mdui-button-icon')) return;
+                    toggleSelect(id, card);
+                };
+
                 card.innerHTML = `
+                        <mdui-checkbox class="card-checkbox" ${selectedIds.has(id) ? 'checked' : ''}></mdui-checkbox>
                         <div style="padding: 20px;">
                             <div class="card-header-row">
                                 <div class="card-title">🌱 ${escapeHtml(item.title || t('gardenUntitled'))}</div>
@@ -324,50 +363,101 @@
                             </div>
                         </div>
                         <div class="card-actions">
+                            <mdui-button-icon icon="present_to_all" onclick="generatePPT('${id}')" title="${t('btnGeneratePPT')}"></mdui-button-icon>
                             <mdui-button-icon icon="content_copy" onclick="copyCard('${id}')" title="${t('btnCopy')}"></mdui-button-icon>
                             <mdui-button-icon icon="delete_outline" color="error" onclick="deleteCard('${id}')" title="${t('btnDelete')}"></mdui-button-icon>
                         </div>
                     `;
                 container.appendChild(card);
             });
-
-            // 触发 LaTeX 渲染
-            if (window.renderMathInElement) {
-                renderMathInElement(container, {
-                    delimiters: [
-                        { left: '$$', right: '$$', display: true },
-                        { left: '$', right: '$', display: false },
-                        { left: '\\(', right: '\\)', display: false },
-                        { left: '\\[', right: '\\]', display: true }
-                    ],
-                    throwOnError: false
-                });
-            }
+            if (window.renderMathInElement) renderMathInElement(container, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });
         }
 
-        // --- Interaction Handlers ---
+        // --- New Interaction Logic ---
+        function toggleSelect(id, cardElement) {
+            const checkbox = cardElement.querySelector('.card-checkbox');
+            if (selectedIds.has(id)) {
+                selectedIds.delete(id);
+                cardElement.removeAttribute('selected');
+                checkbox.checked = false;
+            } else {
+                selectedIds.add(id);
+                cardElement.setAttribute('selected', '');
+                checkbox.checked = true;
+            }
+            updateFab();
+        }
+
+        function updateFab() {
+            const count = selectedIds.size;
+            if (count >= 2) {
+                const label = (t('btnCombine') || "Combine {count} Seeds").replace("{count}", count);
+                document.getElementById('combine-btn-text').textContent = label;
+                combineFab.style.display = 'flex';
+            } else { combineFab.style.display = 'none'; }
+        }
+
+        function clearSelection() { selectedIds.clear(); loadGarden(); }
+
+        combineBtn.onclick = async () => {
+            const history = readGardenData();
+            const selected = history.filter(h => selectedIds.has(String(h.id)));
+            const combinedContent = selected.map(s => `### ${s.title}\n${s.summary}\n${s.growth_plan}`).join('\n\n---\n\n');
+            showMessage(t('combineLoading'));
+            try {
+                const response = await fetch('/api/grow', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: `Synthesis request:\n\n${combinedContent}`, lang: getCurrentLang(), model: selected[0].model_used || "deepseek-chat" })
+                });
+                const res = await response.json();
+                if (res.success) {
+                    const newSeed = { ...res.data, id: Date.now(), created_at: new Date().toLocaleString() };
+                    localStorage.setItem('garden_history', JSON.stringify([newSeed, ...history]));
+                    clearSelection();
+                    showMessage(t('combineSuccess'));
+                }
+            } catch (err) { showMessage("Error during combination"); }
+        };
+
+        async function generatePPT(id) {
+            const item = readGardenData().find(i => String(i.id) === String(id));
+            if (!item) return;
+            showMessage(t('combineLoading'));
+            try {
+                const response = await fetch('/api/generate_ppt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...item, lang: getCurrentLang(), model: item.model_used || "deepseek-chat" })
+                });
+                const res = await response.json();
+                if (res.success) {
+                    document.getElementById('ppt-content').textContent = res.data.ppt_markdown;
+                    document.getElementById('ppt-dialog').open = true;
+                }
+            } catch (e) { showMessage("PPT generation failed"); }
+        }
+
+        // --- Original Handlers ---
         function deleteCard(id) {
-            if (!confirm(t('confirmDelete', '确定要删除吗？'))) return;
-            const filtered = readGardenData().filter(item => String(item.id) !== String(id));
-            localStorage.setItem('garden_history', JSON.stringify(filtered));
+            if (!confirm(t('confirmDelete'))) return;
+            localStorage.setItem('garden_history', JSON.stringify(readGardenData().filter(i => String(i.id) !== String(id))));
             loadGarden();
-            showMessage(t('deleteDone'));
         }
 
         async function copyCard(id) {
             const item = readGardenData().find(i => String(i.id) === String(id));
-            if (!item) return;
-            const text = `【${item.title}】\n\n${item.summary}\n\nTags: ${item.connections}\n\nPlan: ${item.growth_plan}`;
-            try {
-                await navigator.clipboard.writeText(text);
-                showMessage(t('copySuccess'));
-            } catch (err) { showMessage(t('copyError')); }
+            const text = `【${item.title}】\n\n${item.summary}\n\nPlan: ${item.growth_plan}`;
+            await navigator.clipboard.writeText(text);
+            showMessage(t('copySuccess'));
         }
 
-        function showMessage(message) {
-            if (window.mdui && mdui.snackbar) mdui.snackbar({ message });
-            else alert(message);
-        }
+        document.getElementById('copy-marp-btn').onclick = () => {
+            navigator.clipboard.writeText(document.getElementById('ppt-content').textContent);
+            showMessage(t('copySuccess'));
+        };
+
+        function showMessage(m) { if (window.mdui) mdui.snackbar({ message: m }); }
 
         function applyLanguage(lang) {
             if (typeof i18n === 'undefined') return;
@@ -378,53 +468,31 @@
             });
             localStorage.setItem('user_lang', lang);
             langMenu.value = lang;
-            document.title = `${data.title || 'Garden'} | ${data.navGarden || 'My Plants'}`;
             loadGarden();
         }
 
-        // --- Event Listeners ---
-        drawerTrigger.addEventListener('click', () => drawer.open = !drawer.open);
-        langMenu.addEventListener('change', () => applyLanguage(langMenu.value));
-        refreshBtn.addEventListener('click', () => loadGarden());
-
-        exportBtn.addEventListener('click', () => {
-            const data = localStorage.getItem('garden_history') || '[]';
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `garden_backup_${new Date().toISOString().slice(0, 10)}.json`;
-            a.click();
-            showMessage(t('gardenExportDone'));
-        });
-
-        importBtn.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+        drawerTrigger.onclick = () => drawer.open = !drawer.open;
+        langMenu.onchange = () => applyLanguage(langMenu.value);
+        refreshBtn.onclick = () => { refreshBtn.classList.add('rotating'); loadGarden(); setTimeout(() => refreshBtn.classList.remove('rotating'), 800); };
+        exportBtn.onclick = () => {
+            const blob = new Blob([localStorage.getItem('garden_history')], { type: 'application/json' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = `garden_backup_${Date.now()}.json`; a.click();
+        };
+        importBtn.onclick = () => fileInput.click();
+        fileInput.onchange = (e) => {
             const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const imported = JSON.parse(event.target.result);
-                    const local = readGardenData();
-                    const combined = [...imported, ...local];
-                    const unique = Array.from(new Map(combined.map(item => [item.id || item.created_at, item])).values());
-                    localStorage.setItem('garden_history', JSON.stringify(unique));
-                    loadGarden();
-                    showMessage(t('gardenImportSuccess'));
-                } catch (e) { showMessage(t('gardenInvalidFile')); }
-            };
-            reader.readAsText(file);
-        });
-
-        clearBtn.addEventListener('click', () => {
-            if (confirm(t('gardenClearConfirm'))) {
-                localStorage.removeItem('garden_history');
+            reader.onload = (ev) => {
+                const imported = JSON.parse(ev.target.result);
+                const unique = Array.from(new Map([...imported, ...readGardenData()].map(i => [i.id || i.created_at, i])).values());
+                localStorage.setItem('garden_history', JSON.stringify(unique));
                 loadGarden();
-            }
-        });
+            };
+            reader.readAsText(e.target.files[0]);
+        };
+        clearBtn.onclick = () => { if (confirm(t('gardenClearConfirm'))) { localStorage.removeItem('garden_history'); loadGarden(); } };
 
-        window.addEventListener('load', () => applyLanguage(getCurrentLang()));
+        window.onload = () => applyLanguage(getCurrentLang());
     </script>
 </body>
 </html>

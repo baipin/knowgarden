@@ -119,20 +119,15 @@ LANG_MAP = {
 
 
 def build_language_instruction(target_lang: str) -> str:
-    """
-    根据前端传入的语言代码，构造统一的语言约束提示。
-
-    这段提示会传给所有 Agent，确保：
-    - 输出正文使用用户选择的语言
-    - 标题、项目符号、例子也使用同一种语言
-    - 不要中英混杂（除非用户明确要求）
-    """
     selected_lang = LANG_MAP.get(target_lang, "Simplified Chinese")
     return f"""
+{'-'*20}
 IMPORTANT LANGUAGE RULE:
-Respond ONLY in {selected_lang}.
-All section headings, bullets, labels, examples, and explanations must also be in {selected_lang}.
-Do not mix languages unless the user explicitly asks for it.
+1. All output must be in {selected_lang}.
+2. For PPT/Marp: Slide titles, bullet points, and speaker notes must be in {selected_lang}.
+3. For Combined Seeds: Ensure the synthesis and new insights are purely in {selected_lang}.
+4. Do not translate technical terms if they are commonly used in English, but provide explanations in {selected_lang}.
+{'-'*20}
 """
 
 

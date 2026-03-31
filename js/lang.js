@@ -45,7 +45,13 @@ const i18n = {
     copySuccess: "内容已复制到剪贴板",
     copyError: "复制失败，请手动选择复制",
     btnCopy: "复制内容",
-    btnDelete: "删除灵感"
+    btnDelete: "删除灵感",
+    btnCombine: "整合 {count} 个想法",
+    btnGeneratePPT: "生成演示大纲",
+    pptHeadline: "演示大纲 (Marp Markdown)",
+    copyMarp: "复制 Markdown",
+    combineLoading: "正在融合见解...",
+    combineSuccess: "新混合种子已诞生！",
   },
 
   'zh-tw': {
@@ -94,7 +100,13 @@ const i18n = {
     copySuccess: "內容已複製到剪貼簿",
     copyError: "複製失敗，請手動選擇複製",
     btnCopy: "複製內容",
-    btnDelete: "刪除靈感"
+    btnDelete: "刪除靈感",
+    btnCombine: "整合 {count} 個想法",
+    btnGeneratePPT: "生成演示大綱",
+    pptHeadline: "演示大綱 (Marp Markdown)",
+    copyMarp: "複製 Markdown",
+    combineLoading: "正在融合見解...",
+    combineSuccess: "新混合種子已誕生！"
   },
 
   'en': {
@@ -143,6 +155,20 @@ const i18n = {
     copySuccess: "Copied to clipboard",
     copyError: "Copy failed, please copy manually",
     btnCopy: "Copy Content",
-    btnDelete: "Delete Inspiration"
+    btnDelete: "Delete Inspiration",
+    btnCombine: "整合 {count} 个想法",
+    btnGeneratePPT: "生成演示大纲",
+    pptHeadline: "演示大纲 (Marp Markdown)",
+    copyMarp: "复制 Markdown",
+    combineLoading: "正在融合见解...",
+    combineSuccess: "新混合种子已诞生！",
+    confirmDelete: "确定要删除这条灵感吗？",
+    copySuccess: "已复制到剪贴板",
+    btnCombine: "Combine {count} Seeds",
+    btnGeneratePPT: "Generate PPT",
+    pptHeadline: "Presentation Outline (Marp)",
+    copyMarp: "Copy Markdown",
+    combineLoading: "Fusing insights...",
+    combineSuccess: "New Hybrid Seed Created!"
   }
 };
