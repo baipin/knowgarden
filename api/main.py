@@ -48,6 +48,7 @@ try:
     import agent1
     import agent2
     import agent3
+    import agent4
 except Exception as e:
     IMPORT_ERROR = str(e) + "\n" + traceback.format_exc()
 else:
@@ -93,6 +94,16 @@ class KnowledgeRequest(BaseModel):
     content: str
     lang: str = "zh-cn"
     model: str = "gpt-4o-mini"
+
+# 用于生成 PPT 的请求体
+class PPTRequest(BaseModel):
+    title: str
+    summary: str
+    connections: str
+    growth_plan: str
+    lang: str = "zh-cn"
+    model: str = "gpt-4o-mini"
+
 
 
 # =========================================================
@@ -342,3 +353,64 @@ Discovered Connections:
                 "lang": target_lang
             }
         }
+
+# =========================================================
+# 10) 路由：唤醒 Agent 4 生成 PPT (/api/generate_ppt)
+# =========================================================
+@app.post("/api/generate_ppt")
+async def generate_ppt(request: PPTRequest) -> Dict[str, Any]:
+    """
+    接收 Garden 卡片数据，调用 Agent 4 转化为 Marp PPT 格式
+    """
+    target_lang = request.lang or "zh-cn"
+    chosen_model = request.model
+    language_instruction = build_language_instruction(target_lang)
+
+    if IMPORT_ERROR:
+        return {"success": False, "error": "Agent 4 not found"}
+
+    # 构建给 Agent 4 的专业指令
+    ppt_context = f"""
+Topic: {request.title}
+---
+Summary:
+{request.summary}
+---
+Connections:
+{request.connections}
+---
+Roadmap:
+{request.growth_plan}
+---
+{language_instruction}
+"""
+
+    try:
+        # 调用新 Agent
+        ppt_content = await asyncio.to_thread(
+            agent4.run_presentation_design,
+            client,
+            ppt_context,
+            chosen_model
+        )
+
+        return {
+            "success": True,
+            "data": {
+                "ppt_markdown": ppt_content,
+                "model_used": chosen_model
+            }
+        }
+    except Exception as e:
+        return {
+            "success": False, 
+            "error": "PPT Generation failed", 
+            "debug_info": traceback.format_exc()
+        }
+
+# =========================================================
+# 11) 运行配置
+# =========================================================
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
