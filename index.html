@@ -156,34 +156,34 @@
                 <script async defer src="https://buttons.github.io/buttons.js"></script>
                 <div class="mdui-typo-body-medium" style="opacity: 0.6;"><p data-i18n="footerCopy"> © 2026 Knowledge Garden </p><a class="github-button" href="https://github.com/baipin/knowgarden" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Star baipin/knowgarden on GitHub">Star</a></div>
             </footer>
+            <!-- Cookie 提示 -->
+            <mdui-snackbar id="cookie-snackbar" closeable>
+                <span data-i18n="cookieMsg">我们使用Cookies以在本地存储阁下的数据。</span>
+
+                <mdui-button slot="action" variant="text" id="cookie-learn-more">
+                    <span data-i18n="cookieLearnMore">了解更多</span>
+                </mdui-button>
+
+                <mdui-button slot="action" variant="filled" id="cookie-accept">
+                    <span data-i18n="cookieAccept">接受</span>
+                </mdui-button>
+            </mdui-snackbar>
+
+            <!--  隐私说明 -->
+            <mdui-dialog id="privacy-dialog" close-on-overlay-click>
+                <div slot="headline" data-i18n="privacyTitle"></div>
+                <div slot="description">
+                    <p data-i18n="privacyIntro"></p>
+                    <ul style="padding-left: 18px; line-height: 1.6;">
+                        <li data-i18n="privacyPoint1"></li>
+                        <li data-i18n="privacyPoint2"></li>
+                        <li data-i18n="privacyPoint3"></li>
+                        <li data-i18n="privacyPoint4"></li>
+                    </ul>
+                </div>
+                <mdui-button slot="action" variant="text" id="privacy-close">OK</mdui-button>
+            </mdui-dialog>
         </mdui-layout-main>
-        <!-- Cookie 提示 -->
-        <mdui-snackbar id="cookie-snackbar" closeable>
-            <span data-i18n="cookieMsg">我们使用Cookies以在本地存储阁下的数据。</span>
-
-            <mdui-button slot="action" variant="text" id="cookie-learn-more">
-                <span data-i18n="cookieLearnMore">了解更多</span>
-            </mdui-button>
-
-            <mdui-button slot="action" variant="filled" id="cookie-accept">
-                <span data-i18n="cookieAccept">接受</span>
-            </mdui-button>
-        </mdui-snackbar>
-
-        <!--  隐私说明 -->
-        <mdui-dialog id="privacy-dialog" close-on-overlay-click>
-            <div slot="headline" data-i18n="privacyTitle"></div>
-            <div slot="description">
-                <p data-i18n="privacyIntro"></p>
-                <ul style="padding-left: 18px; line-height: 1.6;">
-                    <li data-i18n="privacyPoint1"></li>
-                    <li data-i18n="privacyPoint2"></li>
-                    <li data-i18n="privacyPoint3"></li>
-                    <li data-i18n="privacyPoint4"></li>
-                </ul>
-            </div>
-            <mdui-button slot="action" variant="text" id="privacy-close">OK</mdui-button>
-        </mdui-dialog>
     </mdui-layout>
 
     <mdui-dialog id="error-dialog" close-on-overlay-click>
