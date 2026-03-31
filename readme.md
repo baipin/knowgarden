@@ -33,6 +33,9 @@ Or you can clone this repos and deploy it on your own server, you should set the
 | DEEPSEEK_BASE_URL  | input your openai url, not limited to deepseek, any model is ok. |
 | DEEPSEEK_API_KEY  | input your openai api, not limited to deepseek, any model is ok. |
 
+## Demo
+[Demo Website](https://kg.baipon.com)
+
 ## Three Agent Roles:
 
 - Ingestion Agent: Helps users input/summarize what they've learned today (supports links or text). → Automatic summary.
