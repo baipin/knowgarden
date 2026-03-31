@@ -154,7 +154,7 @@
 
             <footer>
                 <script async defer src="https://buttons.github.io/buttons.js"></script>
-                <div class="mdui-typo-body-medium" style="opacity: 0.6;"><p  data-i18n="footerCopy"> © 2026 Knowledge Garden </p><a class="github-button" href="https://github.com/baipin/knowgarden" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Star baipin/knowgarden on GitHub">Star</a></div>
+                <div class="mdui-typo-body-medium" style="opacity: 0.6;"><p data-i18n="footerCopy"> © 2026 Knowledge Garden </p><a class="github-button" href="https://github.com/baipin/knowgarden" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Star baipin/knowgarden on GitHub">Star</a></div>
             </footer>
         </mdui-layout-main>
     </mdui-layout>
@@ -166,6 +166,34 @@
             <pre id="error-dialog-raw" class="error-raw"></pre>
         </div>
         <mdui-button slot="action" variant="text" id="error-dialog-close">OK</mdui-button>
+    </mdui-dialog>
+    <div id="cookie-banner">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <mdui-icon name="cookie"></mdui-icon>
+            <span class="mdui-typo-body-medium" data-i18n="cookieMsg">Loading...</span>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <mdui-button variant="text" id="open-privacy-btn">
+                <span data-i18n="cookieLearnMore">Privacy</span>
+            </mdui-button>
+            <mdui-button variant="tonal" id="accept-cookies">
+                <span data-i18n="cookieAccept">Got it</span>
+            </mdui-button>
+        </div>
+    </div>
+
+    <mdui-dialog id="privacy-dialog" close-on-overlay-click>
+        <div slot="headline" data-i18n="privacyTitle">Privacy Policy</div>
+        <div slot="description" class="mdui-typo">
+            <p data-i18n="privacyIntro" style="margin-bottom: 16px;"></p>
+            <ul style="list-style: none; padding: 0; line-height: 1.8;">
+                <li data-i18n="privacyPoint1" style="margin-bottom: 8px;"></li>
+                <li data-i18n="privacyPoint2" style="margin-bottom: 8px;"></li>
+                <li data-i18n="privacyPoint3" style="margin-bottom: 8px;"></li>
+                <li data-i18n="privacyPoint4"></li>
+            </ul>
+        </div>
+        <mdui-button slot="action" variant="text" id="close-privacy-btn">OK</mdui-button>
     </mdui-dialog>
 
     <script>
@@ -311,6 +339,42 @@
         });
 
         window.addEventListener('load', () => applyLanguage(getCurrentLang()));
+
+        // --- Privacy & Cookie Logic ---
+        const cookieBanner = document.getElementById('cookie-banner');
+        const privacyDialog = document.getElementById('privacy-dialog');
+        const acceptBtn = document.getElementById('accept-cookies');
+        const openPrivacyBtn = document.getElementById('open-privacy-btn');
+        const closePrivacyBtn = document.getElementById('close-privacy-btn');
+
+        // 检查是否已接受
+        function checkConsent() {
+            if (!localStorage.getItem('cookie_accepted')) {
+                cookieBanner.style.display = 'flex';
+            }
+        }
+
+        // 按钮事件绑定
+        acceptBtn.addEventListener('click', () => {
+            localStorage.setItem('cookie_accepted', 'true');
+            cookieBanner.style.transition = 'opacity 0.3s ease';
+            cookieBanner.style.opacity = '0';
+            setTimeout(() => cookieBanner.style.display = 'none', 300);
+        });
+
+        openPrivacyBtn.addEventListener('click', () => {
+            privacyDialog.open = true;
+        });
+
+        closePrivacyBtn.addEventListener('click', () => {
+            privacyDialog.open = false;
+        });
+
+        // 在页面载入时执行
+        window.addEventListener('load', () => {
+            applyLanguage(getCurrentLang());
+            checkConsent();
+        });
     </script>
 </body>
 </html>
