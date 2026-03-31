@@ -26,6 +26,17 @@
             color: var(--mdui-color-on-surface);
             padding-bottom: 50px;
             margin: 0;
+            /* 2. 为固定导航栏预留顶部空间 */
+            padding-top: 64px;
+        }
+
+        /* 2. 顶部导航栏始终固定 */
+        mdui-top-app-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
         }
 
         .garden-header {
@@ -56,7 +67,7 @@
                 transform: translateY(-5px);
                 box-shadow: var(--mdui-elevation-level3);
             }
-            /* 选中状态样式 */
+
             mdui-card[selected] {
                 outline: 3px solid var(--mdui-color-primary);
                 box-shadow: var(--mdui-elevation-level4);
@@ -111,10 +122,25 @@
             font-weight: bold;
         }
 
-        .tag-chip {
-            margin-right: 8px;
-            margin-top: 8px;
+        /* 1. 标签容器：支持左右滑动 */
+        .tags-scroll-container {
+            display: flex;
+            flex-wrap: nowrap; /* 强制不换行 */
+            overflow-x: auto; /* 开启横向滚动 */
+            padding-bottom: 8px;
+            gap: 8px;
+            scrollbar-width: none; /* Firefox 隐藏滚动条 */
+            -ms-overflow-style: none; /* IE 隐藏滚动条 */
         }
+            /* Chrome/Safari 隐藏滚动条但保留功能 */
+            .tags-scroll-container::-webkit-scrollbar {
+                display: none;
+            }
+
+        .tag-chip {
+            flex-shrink: 0;
+        }
+        /* 防止纸片被压缩 */
 
         .section-label {
             font-size: 12px;
@@ -152,7 +178,6 @@
             margin-top: auto;
         }
 
-        /* 浮动整合按钮 */
         .fab-combine {
             position: fixed;
             bottom: 30px;
@@ -305,10 +330,14 @@
 
         function renderContent(text) { return text ? `<div class="markdown-body">${marked.parse(text)}</div>` : ''; }
         function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#39;" }[m])); }
+
+        // 1. 修改后的标签渲染逻辑：放入 tags-scroll-container
         function formatTags(tagsString) {
             if (!tagsString) return '';
-            return String(tagsString).split(/[，,、\n]+/).map(t => t.trim()).filter(Boolean).slice(0, 6)
-                .map(tag => `<mdui-chip class="tag-chip" variant="filled">${escapeHtml(tag)}</mdui-chip>`).join('');
+            const tags = String(tagsString).split(/[，,、\n]+/).map(t => t.trim()).filter(Boolean);
+            return `<div class="tags-scroll-container">` +
+                tags.map(tag => `<mdui-chip class="tag-chip" variant="filled">${escapeHtml(tag)}</mdui-chip>`).join('') +
+                `</div>`;
         }
 
         function readGardenData() {
@@ -338,7 +367,7 @@
                 if (selectedIds.has(id)) card.setAttribute('selected', '');
 
                 card.onclick = (e) => {
-                    if (e.target.closest('mdui-button-icon')) return;
+                    if (e.target.closest('mdui-button-icon') || e.target.closest('mdui-chip')) return;
                     toggleSelect(id, card);
                 };
 
@@ -354,7 +383,7 @@
                             </div>
                             <span class="section-label">${escapeHtml(a1T)}</span>
                             <div class="content-text">${renderContent(item.summary)}</div>
-                            <mdui-divider style="margin: 16px 0;"></mdui-divider>
+                            <mdui-divider style="margin: 16px 0; opacity: 0.3;"></mdui-divider>
                             <span class="section-label">${escapeHtml(a2T)}</span>
                             <div style="margin-bottom: 16px;">${formatTags(item.connections)}</div>
                             <div class="growth-box">
@@ -363,9 +392,9 @@
                             </div>
                         </div>
                         <div class="card-actions">
-                            <mdui-button-icon icon="present_to_all" onclick="generatePPT('${id}')" title="${t('btnGeneratePPT')}"></mdui-button-icon>
-                            <mdui-button-icon icon="content_copy" onclick="copyCard('${id}')" title="${t('btnCopy')}"></mdui-button-icon>
-                            <mdui-button-icon icon="delete_outline" color="error" onclick="deleteCard('${id}')" title="${t('btnDelete')}"></mdui-button-icon>
+                            <mdui-button-icon icon="present_to_all" onclick="generatePPT('${id}')"></mdui-button-icon>
+                            <mdui-button-icon icon="content_copy" onclick="copyCard('${id}')"></mdui-button-icon>
+                            <mdui-button-icon icon="delete_outline" color="error" onclick="deleteCard('${id}')"></mdui-button-icon>
                         </div>
                     `;
                 container.appendChild(card);
@@ -373,7 +402,6 @@
             if (window.renderMathInElement) renderMathInElement(container, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });
         }
 
-        // --- New Interaction Logic ---
         function toggleSelect(id, cardElement) {
             const checkbox = cardElement.querySelector('.card-checkbox');
             if (selectedIds.has(id)) {
@@ -438,7 +466,6 @@
             } catch (e) { showMessage("PPT generation failed"); }
         }
 
-        // --- Original Handlers ---
         function deleteCard(id) {
             if (!confirm(t('confirmDelete'))) return;
             localStorage.setItem('garden_history', JSON.stringify(readGardenData().filter(i => String(i.id) !== String(id))));
