@@ -4,10 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Knowledge Garden | Capture</title>
+
     <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
     <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
-    <script src="/js/lang.js"></script>
+
+    <!--   关键：用 onload 确保 i18n 已加载 -->
+    <script src="/js/lang.js" onload="initI18n()"></script>
+
     <style>
         :root {
             --max-width: 800px;
@@ -69,10 +74,9 @@
             border: 1px solid var(--mdui-color-outline-variant);
         }
 
-        /* 修复对话框透明度及 Cookie Banner 样式 */
+        /*   修复 dialog & banner */
         mdui-dialog {
             background-color: var(--mdui-color-surface-container-high) !important;
-            --mdui-color-surface-container-high: var(--mdui-color-surface-container-high);
         }
 
         #cookie-banner {
@@ -82,7 +86,8 @@
             right: 0;
             z-index: 9999;
             padding: 16px 24px;
-            background-color: var(--mdui-color-surface-container-highest) !important;
+            /*   改成更明显颜色（关键） */
+            background-color: var(--mdui-color-surface-container) !important;
             box-shadow: var(--mdui-elevation-level4);
             display: none;
             align-items: center;
@@ -99,13 +104,17 @@
         }
     </style>
 </head>
+
 <body>
 
     <mdui-layout>
+
         <mdui-top-app-bar variant="flat">
             <mdui-button-icon icon="menu" id="drawer-trigger"></mdui-button-icon>
             <mdui-top-app-bar-title data-i18n="title">Knowledge Garden</mdui-top-app-bar-title>
+
             <div style="flex-grow: 1"></div>
+
             <mdui-dropdown>
                 <mdui-button-icon icon="language" slot="trigger"></mdui-button-icon>
                 <mdui-menu id="language-menu" selects="single">
@@ -117,7 +126,10 @@
         </mdui-top-app-bar>
 
         <mdui-navigation-drawer id="main-drawer" close-on-overlay-click>
-            <div style="padding: 16px;"><span class="mdui-typo-title" data-i18n="title">Knowledge Garden</span></div>
+            <div style="padding: 16px;">
+                <span class="mdui-typo-title" data-i18n="title">Knowledge Garden</span>
+            </div>
+
             <mdui-list>
                 <mdui-list-item icon="add_box" href="index.html" data-i18n="navSow" selected>播种灵感</mdui-list-item>
                 <mdui-list-item icon="local_florist" href="garden.html" data-i18n="navGarden">查看花园</mdui-list-item>
@@ -125,15 +137,24 @@
         </mdui-navigation-drawer>
 
         <mdui-layout-main>
+
             <div class="main-container">
                 <div class="input-card">
+
                     <div style="text-align: center; margin-bottom: 40px;">
                         <div style="font-size: 56px; margin-bottom: 16px;">🌱</div>
                         <h1 class="mdui-typo-display-small" data-i18n="title">Knowledge Garden</h1>
                         <p style="opacity: 0.7;" data-i18n="subtitle">培育你的灵感种子</p>
                     </div>
-                    <mdui-text-field id="knowledge-input" data-i18n-label="inputLabel" data-i18n-placeholder="inputPlaceholder" rows="6" area variant="outlined"></mdui-text-field>
+
+                    <mdui-text-field id="knowledge-input"
+                                     data-i18n-label="inputLabel"
+                                     data-i18n-placeholder="inputPlaceholder"
+                                     rows="6" area variant="outlined">
+                    </mdui-text-field>
+
                     <div class="submit-area">
+
                         <mdui-dropdown>
                             <mdui-button-icon icon="smart_toy" slot="trigger"></mdui-button-icon>
                             <mdui-menu id="model-menu" selects="single" value="gpt-4o-mini">
@@ -141,48 +162,64 @@
                                 <mdui-menu-item value="deepseek-r1">Deepseek-r1</mdui-menu-item>
                             </mdui-menu>
                         </mdui-dropdown>
+
                         <mdui-button id="submit-btn" icon="auto_awesome" variant="filled">
                             <span data-i18n="btnSubmit">开始培育</span>
                         </mdui-button>
+
                     </div>
+
                     <div id="status-area">
                         <div style="display: flex; align-items: center; margin-bottom: 12px;">
-                            <mdui-icon name="hourglass_empty" id="status-icon" style="margin-right: 12px; color: var(--mdui-color-primary);"></mdui-icon>
-                            <span id="status-text" style="font-weight: 500;">...</span>
+                            <mdui-icon name="hourglass_empty" style="margin-right: 12px;"></mdui-icon>
+                            <span id="status-text">...</span>
                         </div>
-                        <mdui-linear-progress id="progress-bar"></mdui-linear-progress>
+                        <mdui-linear-progress></mdui-linear-progress>
                     </div>
+
                 </div>
             </div>
+
             <footer>
-                <div class="mdui-typo-body-medium" style="opacity: 0.6;"><p data-i18n="footerCopy">© 2026 Knowledge Garden</p></div>
+                <div class="mdui-typo-body-medium">
+                    <p data-i18n="footerCopy">© 2026 Knowledge Garden</p>
+                </div>
             </footer>
+
         </mdui-layout-main>
     </mdui-layout>
 
+    <!--   Cookie Banner -->
     <div id="cookie-banner">
         <div style="display: flex; align-items: center; gap: 12px;">
             <mdui-icon name="cookie"></mdui-icon>
-            <span class="mdui-typo-body-medium" data-i18n="cookieMsg">数据处理说明</span>
+            <span data-i18n="cookieMsg">数据处理说明</span>
         </div>
+
         <div style="display: flex; gap: 8px;">
-            <mdui-button variant="text" id="open-privacy-btn"><span data-i18n="cookieLearnMore">Privacy</span></mdui-button>
-            <mdui-button variant="tonal" id="accept-cookies"><span data-i18n="cookieAccept">Got it</span></mdui-button>
+            <mdui-button variant="text" id="open-privacy-btn">
+                <span data-i18n="cookieLearnMore">Privacy</span>
+            </mdui-button>
+
+            <mdui-button variant="tonal" id="accept-cookies">
+                <span data-i18n="cookieAccept">Got it</span>
+            </mdui-button>
         </div>
     </div>
 
+    <!-- Dialog -->
     <mdui-dialog id="privacy-dialog" close-on-overlay-click>
         <div slot="headline" data-i18n="privacyTitle">Privacy Policy</div>
-        <div slot="description" class="mdui-typo">
-            <p data-i18n="privacyIntro" style="margin-bottom: 16px;"></p>
-            <ul style="list-style: none; padding: 0; line-height: 1.8;">
-                <li data-i18n="privacyPoint1" style="margin-bottom: 8px;"></li>
-                <li data-i18n="privacyPoint2" style="margin-bottom: 8px;"></li>
-                <li data-i18n="privacyPoint3" style="margin-bottom: 8px;"></li>
+        <div slot="description">
+            <p data-i18n="privacyIntro"></p>
+            <ul>
+                <li data-i18n="privacyPoint1"></li>
+                <li data-i18n="privacyPoint2"></li>
+                <li data-i18n="privacyPoint3"></li>
                 <li data-i18n="privacyPoint4"></li>
             </ul>
         </div>
-        <mdui-button slot="action" variant="text" id="close-privacy-btn">OK</mdui-button>
+        <mdui-button slot="action" id="close-privacy-btn">OK</mdui-button>
     </mdui-dialog>
 
     <script>
@@ -191,19 +228,18 @@
         const cookieBanner = document.getElementById('cookie-banner');
         const privacyDialog = document.getElementById('privacy-dialog');
 
-        function getCurrentLang() { return localStorage.getItem('user_lang') || 'zh-cn'; }
+        function getCurrentLang() {
+            return localStorage.getItem('user_lang') || 'zh-cn';
+        }
 
         function applyLanguage(lang) {
-            if (typeof i18n === 'undefined') return;
-            const data = i18n[lang];
+            const data = window.i18n?.[lang];
             if (!data) return;
 
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (data[key]) {
-                    // 兼容普通元素和 MDUI 组件内部文字渲染
-                    el.textContent = data[key];
-                    if (el.tagName.startsWith('MDUI-')) { el.innerHTML = data[key]; }
+                    el.innerText = data[key]; //   更稳定
                 }
             });
 
@@ -221,34 +257,28 @@
             localStorage.setItem('user_lang', lang);
         }
 
+        /*   关键初始化（由 lang.js onload 触发） */
+        function initI18n() {
+            applyLanguage(getCurrentLang());
+            checkConsent();
+        }
+
         function checkConsent() {
             if (!localStorage.getItem('cookie_accepted')) {
                 cookieBanner.style.display = 'flex';
             }
         }
 
-        // 初始化
-        window.addEventListener('DOMContentLoaded', () => {
-            // 立即执行一次
-            applyLanguage(getCurrentLang());
-            checkConsent();
-        });
-
-        // 兜底执行（针对加载慢的 lang.js）
-        window.addEventListener('load', () => {
-            applyLanguage(getCurrentLang());
-        });
-
         langMenu.addEventListener('change', () => applyLanguage(langMenu.value));
-        document.getElementById('drawer-trigger').addEventListener('click', () => drawer.open = !drawer.open);
-        document.getElementById('open-privacy-btn').addEventListener('click', () => privacyDialog.open = true);
-        document.getElementById('close-privacy-btn').addEventListener('click', () => privacyDialog.open = false);
-        document.getElementById('accept-cookies').addEventListener('click', () => {
+        document.getElementById('drawer-trigger').onclick = () => drawer.open = !drawer.open;
+        document.getElementById('open-privacy-btn').onclick = () => privacyDialog.open = true;
+        document.getElementById('close-privacy-btn').onclick = () => privacyDialog.open = false;
+
+        document.getElementById('accept-cookies').onclick = () => {
             localStorage.setItem('cookie_accepted', 'true');
             cookieBanner.style.display = 'none';
-        });
-
-        // ... 提交逻辑保持不变 ...
+        };
     </script>
+
 </body>
 </html>
