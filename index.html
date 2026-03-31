@@ -279,6 +279,16 @@
         function showCookieBanner() {
             if (!hasCookieConsent()) {
                 cookieSnackbar.open = true;
+
+                // snackbar 打开后，重新对其内部 [data-i18n] 元素应用翻译
+                const lang = getCurrentLang();
+                if (typeof i18n !== 'undefined' && i18n[lang]) {
+                    const data = i18n[lang];
+                    cookieSnackbar.querySelectorAll('[data-i18n]').forEach(el => {
+                        const key = el.getAttribute('data-i18n');
+                        if (data[key]) el.textContent = data[key];
+                    });
+                }
             }
         }
 
