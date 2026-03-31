@@ -82,7 +82,7 @@ app.add_middleware(
 # =========================================================
 client = OpenAI(
     api_key=os.getenv("DEEPSEEK_API_KEY"),
-    base_url="https://api.deepseek.com"
+    base_url=os.getenv("DEEPSEEK_BASE_URL")
 )
 
 

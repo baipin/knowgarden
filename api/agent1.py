@@ -90,7 +90,7 @@ Requirements:
 """
 
     response = client.chat.completions.create(
-        model="deepseek-chat",
+        model="deepseek-r1",
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_prompt},
