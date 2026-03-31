@@ -220,16 +220,6 @@
         const privacyDialog = document.getElementById('privacy-dialog');
         const privacyClose = document.getElementById('privacy-close');
 
-        function hasCookieConsent() {
-            return localStorage.getItem('cookie_consent') === 'true';
-        }
-
-        function showCookieBanner() {
-            if (!hasCookieConsent()) {
-                cookieSnackbar.open = true;
-            }
-        }
-
         cookieAcceptBtn.addEventListener('click', () => {
             localStorage.setItem('cookie_consent', 'true');
             cookieSnackbar.open = false;
@@ -280,6 +270,16 @@
         function resetUI() {
             submitBtn.disabled = false;
             statusArea.style.display = 'none';
+        }
+
+        function hasCookieConsent() {
+            return localStorage.getItem('cookie_consent') === 'true';
+        }
+
+        function showCookieBanner() {
+            if (!hasCookieConsent()) {
+                cookieSnackbar.open = true;
+            }
         }
 
         function saveToGarden(data, modelUsed) {
