@@ -259,7 +259,11 @@
 
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if (data[key]) el.textContent = data[key];
+                if (data[key]) {
+                    // 针对 MDUI 组件和普通 HTML 元素的双重处理
+                    el.textContent = data[key];
+                    if (el.innerHTML === "") el.innerText = data[key];
+                }
             });
 
             document.querySelectorAll('[data-i18n-label]').forEach(el => {
@@ -316,14 +320,13 @@
             return { result, rawText };
         }
 
-        // Cookie & Privacy Logic
         function checkConsent() {
             if (!localStorage.getItem('cookie_accepted')) {
                 cookieBanner.style.display = 'flex';
             }
         }
 
-        // Event Listeners
+        // --- Event Listeners ---
         langMenu.addEventListener('change', () => applyLanguage(langMenu.value));
         trigger.addEventListener('click', () => drawer.open = !drawer.open);
         errorDialogClose.addEventListener('click', () => errorDialog.open = false);
@@ -390,10 +393,12 @@
             }
         });
 
-        // Initialize on load
+        // 核心：等待所有组件就绪后再执行翻译
         window.addEventListener('load', () => {
-            applyLanguage(getCurrentLang());
-            checkConsent();
+            setTimeout(() => {
+                applyLanguage(getCurrentLang());
+                checkConsent();
+            }, 100); // 轻微延迟确保 MDUI 组件已经渲染
         });
     </script>
 </body>
