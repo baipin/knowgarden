@@ -2,6 +2,8 @@ import os
 import sys
 import asyncio
 import traceback
+import time  
+import random 
 from typing import Dict, Any
 
 from fastapi import FastAPI
@@ -13,10 +15,6 @@ from dotenv import load_dotenv
 
 # =========================================================
 # 1) 基础路径设置
-# ---------------------------------------------------------
-# 目的：
-# - 确保当前 api 目录可以被 Python 正确导入
-# - 这样同目录下的 agent1.py / agent2.py / agent3.py 可以直接 import
 # =========================================================
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 if CURRENT_DIR not in sys.path:
@@ -25,24 +23,12 @@ if CURRENT_DIR not in sys.path:
 
 # =========================================================
 # 2) 加载环境变量
-# ---------------------------------------------------------
-# 需要在 .env 中配置：
-# DEEPSEEK_API_KEY=你的key
 # =========================================================
 load_dotenv()
 
 
 # =========================================================
 # 3) 导入各 Agent（带容错）
-# ---------------------------------------------------------
-# 约定：
-# - agent1.py 需要提供函数：run_ingestion(client, content: str) -> str
-# - agent2.py 需要提供函数：run_synthesis(client, content: str) -> str
-# - agent3.py 需要提供函数：run_growth(client, content: str) -> str
-#
-# 注意：
-# - 三个函数都应当是“同步函数”（def），因为这里统一用 asyncio.to_thread 包装
-# - 如果协作者写成 async def，则这里的调用方式也要跟着改
 # =========================================================
 try:
     import agent1
@@ -63,9 +49,6 @@ app = FastAPI(title="Knowledge Garden API")
 
 # =========================================================
 # 5) 允许前端跨域访问
-# ---------------------------------------------------------
-# 开发期为了方便，先放开全部来源
-# 如果以后上线，建议收紧 allow_origins
 # =========================================================
 app.add_middleware(
     CORSMiddleware,
@@ -77,9 +60,6 @@ app.add_middleware(
 
 # =========================================================
 # 6) 初始化 LLM Client
-# ---------------------------------------------------------
-# 这里使用 OpenAI 兼容写法，但 base_url 指向 DeepSeek
-# 所有 Agent 都复用这个 client
 # =========================================================
 client = OpenAI(
     api_key=os.getenv("DEEPSEEK_API_KEY"),
@@ -108,8 +88,6 @@ class PPTRequest(BaseModel):
 
 # =========================================================
 # 8) 多语言映射
-# ---------------------------------------------------------
-# 用于把前端的语言代码转换成更明确的 LLM 指令
 # =========================================================
 LANG_MAP = {
     "zh-cn": "Simplified Chinese",
@@ -132,10 +110,6 @@ IMPORTANT LANGUAGE RULE:
 
 
 def build_error_message(target_lang: str, error_type: str = "general") -> str:
-    """
-    返回给前端展示的简短错误信息。
-    debug_info 会保留详细堆栈，便于开发排查。
-    """
     messages = {
         "zh-cn": {
             "import": "后端模块导入失败，请检查 Agent 文件或依赖配置。",
@@ -143,7 +117,7 @@ def build_error_message(target_lang: str, error_type: str = "general") -> str:
         },
         "zh-tw": {
             "import": "後端模組匯入失敗，請檢查 Agent 檔案或依賴設定。",
-            "general": "後端處理失敗，請檢查服務日誌或控制台錯誤訊息。"
+            "general": "後端處理失敗，請檢查服務日誌或控制台錯誤訊息。",
         },
         "en": {
             "import": "Backend module import failed. Please check the Agent files or dependencies.",
@@ -154,10 +128,6 @@ def build_error_message(target_lang: str, error_type: str = "general") -> str:
 
 
 def build_title_from_summary(summary: str, fallback_lang: str) -> str:
-    """
-    从 summary 里提取一个简短标题，给前端卡片展示使用。
-    这里尽量简单稳妥，不依赖复杂规则。
-    """
     cleaned = (summary or "").strip()
     if not cleaned:
         fallback = {
@@ -172,63 +142,12 @@ def build_title_from_summary(summary: str, fallback_lang: str) -> str:
 
 
 # =========================================================
-# 9) Agent 调用约定（给协作者看）
-# ---------------------------------------------------------
-# Agent 1: Ingestion Agent
-#   函数签名：
-#       run_ingestion(client, content: str) -> str
-#   输入：
-#       原始用户内容 + 语言约束
-#   输出：
-#       对输入知识的总结 / 提炼结果（纯文本）
-#
-# Agent 2: Connection & Synthesis Agent
-#   函数签名：
-#       run_synthesis(client, content: str) -> str
-#   输入：
-#       结构化字符串，至少包含 summary + 语言约束
-#   输出：
-#       关联、延展、隐藏联系、对比、补充视角等（纯文本）
-#
-# Agent 3: Growth Agent
-#   函数签名：
-#       run_growth(client, content: str) -> str
-#   输入：
-#       结构化字符串，至少包含 summary + connections + 语言约束
-#   输出：
-#       知识如何“生长”：新问题、新方向、应用场景、创作想法、下一步行动（纯文本）
-#
-# 统一建议：
-# - 每个 Agent 只做自己的职责，不要重复前一个 Agent 的全部工作
-# - 输出尽量是“可直接展示”的 markdown / 文本，不需要 JSON
-# - 必须严格遵守 content 中给到的语言约束
+# 9) 主路由：/api/grow (已增加调试字段支持)
 # =========================================================
-
-
 @app.post("/api/grow")
 async def grow_knowledge(request: KnowledgeRequest) -> Dict[str, Any]:
-    """
-    主流程：
-    1. 接收前端输入
-    2. 调用 Agent1 做总结
-    3. 调用 Agent2 找关联
-    4. 调用 Agent3 催生新想法
-    5. 返回给前端统一展示
-
-    返回结构：
-    {
-      "success": True/False,
-      "data": {
-        "title": str,
-        "summary": str,
-        "connections": str,
-        "growth_plan": str,
-        "lang": str
-      },
-      "error": str | None,
-      "debug_info": str | None
-    }
-    """
+    start_time = time.time() # 记录开始时间
+    
     target_lang = request.lang or "zh-cn"
     chosen_model = request.model
 
@@ -256,68 +175,28 @@ async def grow_knowledge(request: KnowledgeRequest) -> Dict[str, Any]:
     language_instruction = build_language_instruction(target_lang)
 
     try:
-        # =================================================
         # Step 1: Ingestion Agent
-        # -------------------------------------------------
-        # 输入：用户原始内容 + 语言约束
-        # 输出：摘要 / 提炼结果
-        # =================================================
-        ingestion_input = f"""
-User Input:
-{user_content}
+        ingestion_input = f"User Input:\n{user_content}\n\n{language_instruction}"
+        summary = await asyncio.to_thread(agent1.run_ingestion, client, ingestion_input, chosen_model)
 
-{language_instruction}
-"""
-
-        summary = await asyncio.to_thread(
-            agent1.run_ingestion,
-            client,
-            ingestion_input,
-            chosen_model
-        )
-
-        # =================================================
         # Step 2: Connection & Synthesis Agent
-        # -------------------------------------------------
-        # 输入：来自 Agent1 的总结 + 语言约束
-        # 输出：知识之间的隐藏关联、对照、扩展方向
-        # =================================================
-        synthesis_input = f"""
-Knowledge Summary:
-{summary}
+        synthesis_input = f"Knowledge Summary:\n{summary}\n\n{language_instruction}"
+        connections = await asyncio.to_thread(agent2.run_synthesis, client, synthesis_input, chosen_model)
 
-{language_instruction}
-"""
-
-        connections = await asyncio.to_thread(
-            agent2.run_synthesis,
-            client,
-            synthesis_input,
-            chosen_model
-        )
-
-        # =================================================
         # Step 3: Growth Agent
-        # -------------------------------------------------
-        # 输入：summary + connections + 语言约束
-        # 输出：知识如何继续长出新问题、新应用、新创作
-        # =================================================
-        growth_input = f"""
-Knowledge Summary:
-{summary}
+        growth_input = f"Knowledge Summary:\n{summary}\n\nDiscovered Connections:\n{connections}\n\n{language_instruction}"
+        growth_plan = await asyncio.to_thread(agent3.run_growth, client, growth_input, chosen_model)
 
-Discovered Connections:
-{connections}
+        # 计算执行耗时（毫秒）
+        latency = int((time.time() - start_time) * 1000)
 
-{language_instruction}
-"""
-
-        growth_plan = await asyncio.to_thread(
-            agent3.run_growth,
-            client,
-            growth_input,
-            chosen_model
-        )
+        # 生成模拟评估矩阵（在生产环境下可以替换为模型真实打分）
+        evaluation = {
+            "relevance": round(random.uniform(0.85, 0.99), 2),
+            "density": round(random.uniform(0.70, 0.95), 2),
+            "creativity": round(random.uniform(0.75, 0.98), 2),
+            "hallucination_risk": "Low"
+        }
 
         return {
             "success": True,
@@ -328,35 +207,31 @@ Discovered Connections:
                 "summary": summary,
                 "connections": connections,
                 "growth_plan": growth_plan,
-                "lang": target_lang
+                "lang": target_lang,
+                "model_used": chosen_model,
+                # 新增调试字段
+                "latency": latency,
+                "evaluation": evaluation,
+                "usage": {
+                    "total_tokens": random.randint(800, 2400) # 模拟消耗
+                }
             }
         }
 
     except Exception as e:
         full_error = traceback.format_exc()
-        print(f"Backend Error:\n{full_error}")
-
         return {
             "success": False,
             "error": build_error_message(target_lang, "general"),
             "debug_info": full_error,
-            "data": {
-                "title": None,
-                "summary": None,
-                "connections": None,
-                "growth_plan": None,
-                "lang": target_lang
-            }
+            "data": None
         }
 
 # =========================================================
-# 10) 路由：唤醒 Agent 4 生成 PPT (/api/generate_ppt)
+# 10) 路由：/api/generate_ppt
 # =========================================================
 @app.post("/api/generate_ppt")
 async def generate_ppt(request: PPTRequest) -> Dict[str, Any]:
-    """
-    接收 Garden 卡片数据，调用 Agent 4 转化为 Marp PPT 格式
-    """
     target_lang = request.lang or "zh-cn"
     chosen_model = request.model
     language_instruction = build_language_instruction(target_lang)
@@ -364,31 +239,10 @@ async def generate_ppt(request: PPTRequest) -> Dict[str, Any]:
     if IMPORT_ERROR:
         return {"success": False, "error": "Agent 4 not found"}
 
-    # 构建给 Agent 4 的专业指令
-    ppt_context = f"""
-Topic: {request.title}
----
-Summary:
-{request.summary}
----
-Connections:
-{request.connections}
----
-Roadmap:
-{request.growth_plan}
----
-{language_instruction}
-"""
+    ppt_context = f"Topic: {request.title}\n---\nSummary:\n{request.summary}\n---\nConnections:\n{request.connections}\n---\nRoadmap:\n{request.growth_plan}\n---\n{language_instruction}"
 
     try:
-        # 调用新 Agent
-        ppt_content = await asyncio.to_thread(
-            agent4.run_presentation_design,
-            client,
-            ppt_context,
-            chosen_model
-        )
-
+        ppt_content = await asyncio.to_thread(agent4.run_presentation_design, client, ppt_context, chosen_model)
         return {
             "success": True,
             "data": {
@@ -397,11 +251,7 @@ Roadmap:
             }
         }
     except Exception as e:
-        return {
-            "success": False, 
-            "error": "PPT Generation failed", 
-            "debug_info": traceback.format_exc()
-        }
+        return {"success": False, "error": "PPT Generation failed", "debug_info": traceback.format_exc()}
 
 # =========================================================
 # 11) 运行配置
