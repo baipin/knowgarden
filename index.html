@@ -225,11 +225,11 @@
             statusArea.style.display = 'none';
         }
 
-        function saveToGarden(data, modelUsed) {
+        // 修改点：确保数据项完整包含后端返回的所有元数据字段
+        function saveToGarden(data) {
             const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
             garden.unshift({
-                ...data,
-                model_used: modelUsed,
+                ...data, // 这里会自动解构包含 summary, connections, growth_plan, latency, evaluation, usage 等
                 id: Date.now(),
                 created_at: new Date().toLocaleString()
             });
@@ -301,7 +301,8 @@
                 updateUI(langPack.agent3, 95, "trending_up");
                 await new Promise(r => setTimeout(r, 1000));
 
-                saveToGarden(result.data, selectedModel);
+                // 修改点：直接传入返回的 data 对象，它现在包含 latency 和 evaluation
+                saveToGarden(result.data);
                 window.location.href = 'garden.html';
 
             } catch (err) {
