@@ -203,6 +203,18 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* 调试面板项样式 */
+        .debug-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--mdui-color-outline-variant);
+        }
+        .debug-label {
+            font-weight: bold;
+            color: var(--mdui-color-primary);
+        }
     </style>
 </head>
 <body>
@@ -275,6 +287,12 @@
         <div id="ppt-content" style="white-space: pre-wrap; font-family: monospace; background: var(--mdui-color-surface-container-lowest); padding: 20px; border-radius: 8px; max-height: 500px; overflow-y: auto; border: 1px solid var(--mdui-color-outline-variant);"></div>
         <mdui-button slot="action" variant="text" id="copy-marp-btn" data-i18n="copyMarp">Copy</mdui-button>
         <mdui-button slot="action" variant="tonal" onclick="document.getElementById('ppt-dialog').open = false">Close</mdui-button>
+    </mdui-dialog>
+
+    <mdui-dialog id="debug-dialog" close-on-overlay-click>
+        <span slot="headline" data-i18n="debugHeadline">Generation Metadata</span>
+        <div id="debug-content" style="padding: 0 8px;"></div>
+        <mdui-button slot="action" variant="tonal" onclick="document.getElementById('debug-dialog').open = false">Close</mdui-button>
     </mdui-dialog>
 
     <script>
@@ -363,6 +381,7 @@
                             </div>
                         </div>
                         <div class="card-actions">
+                            <mdui-button-icon icon="bug_report" onclick="showDebugInfo('${id}')" title="Debug Info"></mdui-button-icon>
                             <mdui-button-icon icon="present_to_all" onclick="generatePPT('${id}')" title="${t('btnGeneratePPT')}"></mdui-button-icon>
                             <mdui-button-icon icon="content_copy" onclick="copyCard('${id}')" title="${t('btnCopy')}"></mdui-button-icon>
                             <mdui-button-icon icon="delete_outline" color="error" onclick="deleteCard('${id}')" title="${t('btnDelete')}"></mdui-button-icon>
@@ -373,7 +392,34 @@
             if (window.renderMathInElement) renderMathInElement(container, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });
         }
 
-        // --- New Interaction Logic ---
+        // --- Debug Info Logic ---
+        function showDebugInfo(id) {
+            const item = readGardenData().find(i => String(i.id) === String(id));
+            if (!item) return;
+
+            const content = document.getElementById('debug-content');
+            const latency = item.latency ? `${item.latency}ms` : 'N/A';
+            const evalMatrix = item.evaluation ? JSON.stringify(item.evaluation, null, 2) : 'No evaluation data';
+            const tokens = item.usage ? (item.usage.total_tokens || 'N/A') : 'N/A';
+
+            content.innerHTML = `
+                <div class="debug-item">
+                    <span class="debug-label">Response Latency</span>
+                    <span>${latency}</span>
+                </div>
+                <div class="debug-item">
+                    <span class="debug-label">Token Usage</span>
+                    <span>${tokens}</span>
+                </div>
+                <div style="margin-top: 16px;">
+                    <span class="debug-label">Evaluation Matrix</span>
+                    <pre style="background: var(--mdui-color-surface-container-high); padding: 12px; border-radius: 8px; font-size: 12px; overflow-x: auto; margin-top: 8px;">${evalMatrix}</pre>
+                </div>
+            `;
+            document.getElementById('debug-dialog').open = true;
+        }
+
+        // --- Interaction Logic ---
         function toggleSelect(id, cardElement) {
             const checkbox = cardElement.querySelector('.card-checkbox');
             if (selectedIds.has(id)) {
@@ -438,7 +484,6 @@
             } catch (e) { showMessage("PPT generation failed"); }
         }
 
-        // --- Original Handlers ---
         function deleteCard(id) {
             if (!confirm(t('confirmDelete'))) return;
             localStorage.setItem('garden_history', JSON.stringify(readGardenData().filter(i => String(i.id) !== String(id))));
