@@ -29,7 +29,7 @@ Guidelines:
 5. **KNOWLEDGE VISUALIZATION**: Always generate a Mermaid.js syntax mindmap inside Section 2 to represent the structural relationships.
 6. Keep the output readable and structured
 7. **UI TAG OPTIMIZATION**: Keywords must be extremely concise for chip display. 
-   - Each tag: Max 4 characters (Chinese) or 1-2 words (English).
+   - Each tag: Max 8 characters (Chinese) or 1-2 words (English).
    - Use only core nouns/concepts. No descriptive phrases or sentences.
 
 Your response must contain exactly these 4 sections.
@@ -54,7 +54,7 @@ The section titles themselves must be written in the requested language:
 
 4. Keywords
    - 4 to 8 short keyword-like phrases, separated by commas.
-   - **CRITICAL**: Max 4 characters per tag for Chinese. No phrases.
+   - **CRITICAL**: Max 8 characters per tag for Chinese. No phrases.
 
 Output style:
 - analytical and structured
