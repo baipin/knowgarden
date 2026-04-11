@@ -70,8 +70,8 @@ duration = (time.time() - start_time) * 1000 # milliseconds
 # Tokens count
 tokens = response.usage.total_tokens
 
-return {
-  "content": response.choices[0].message.content.strip(),
-  "tokens": tokens,
-  "latency": int(duration)
-}
+ return {
+   "content": response.choices[0].message.content.strip(),
+   "tokens": tokens,
+   "latency": int(duration)
+ }
