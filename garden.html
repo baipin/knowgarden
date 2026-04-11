@@ -45,29 +45,27 @@
 
         mdui-card {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             position: relative;
         }
 
-            mdui-card:hover {
-                transform: translateY(-5px);
-                box-shadow: var(--mdui-elevation-level3);
-            }
-            /* 选中状态样式 */
-            mdui-card[selected] {
-                outline: 3px solid var(--mdui-color-primary);
-                box-shadow: var(--mdui-elevation-level4);
-            }
+        mdui-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--mdui-elevation-level3);
+        }
+
+        mdui-card[selected] {
+            outline: 3px solid var(--mdui-color-primary);
+            box-shadow: var(--mdui-elevation-level4);
+        }
 
         .card-checkbox {
             position: absolute;
             top: 12px;
             right: 12px;
             z-index: 2;
-            pointer-events: none;
         }
 
         .card-header-row {
@@ -76,7 +74,16 @@
             align-items: flex-start;
             gap: 12px;
             margin-bottom: 12px;
-            padding-right: 32px;
+            padding-right: 44px; /* 避开复选框 */
+        }
+
+        /* 标题容器与编辑逻辑 */
+        .title-container {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-grow: 1;
+            min-width: 0;
         }
 
         .card-title {
@@ -85,6 +92,24 @@
             line-height: 1.4;
             word-break: break-word;
             flex-grow: 1;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .card-title[contenteditable="true"] {
+            background-color: var(--mdui-color-surface-container-highest);
+            outline: 2px solid var(--mdui-color-primary);
+            cursor: text;
+        }
+
+        .edit-icon-btn {
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .edit-icon-btn:hover {
+            opacity: 1;
         }
 
         .card-meta {
@@ -111,24 +136,29 @@
             font-weight: bold;
         }
 
-        /* 优化后的标签滚动容器 */
+        /* Agent 2 滚动容器修正 */
         .tags-scroll-container {
             display: flex;
             overflow-x: auto;
+            overflow-y: hidden;
             white-space: nowrap;
             gap: 8px;
-            padding-bottom: 4px;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none; /* Firefox 隐藏滚动条 */
+            padding-bottom: 8px; /* 留出滚动条空间 */
+            scrollbar-width: thin;
+            scrollbar-color: var(--mdui-color-outline) transparent;
         }
 
         .tags-scroll-container::-webkit-scrollbar {
-            display: none; /* Chrome/Safari 隐藏滚动条 */
+            height: 4px;
+        }
+
+        .tags-scroll-container::-webkit-scrollbar-thumb {
+            background: var(--mdui-color-outline);
+            border-radius: 10px;
         }
 
         .tag-chip {
-            flex-shrink: 0; /* 防止标签被压缩 */
-            margin-top: 4px;
+            flex-shrink: 0; /* 必须禁止缩放才能滚动 */
         }
 
         .section-label {
@@ -147,9 +177,9 @@
             word-break: break-word;
         }
 
-            .markdown-body p {
-                margin: 4px 0 12px;
-            }
+        .markdown-body p {
+            margin: 4px 0 12px;
+        }
 
         .growth-box {
             background-color: var(--mdui-color-secondary-container);
@@ -167,7 +197,6 @@
             margin-top: auto;
         }
 
-        /* 浮动整合按钮 */
         .fab-combine {
             position: fixed;
             bottom: 30px;
@@ -210,16 +239,10 @@
         }
 
         @keyframes mdui-rotate {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(360deg);
-            }
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
-        /* 调试面板项样式 */
         .debug-item {
             display: flex;
             justify-content: space-between;
@@ -339,10 +362,9 @@
         function renderContent(text) { return text ? `<div class="markdown-body">${marked.parse(text)}</div>` : ''; }
         function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#39;" }[m])); }
         
-        // 优化后的标签渲染逻辑，增加了滑动容器
         function formatTags(tagsString) {
             if (!tagsString) return '';
-            const tags = String(tagsString).split(/[，,、\n]+/).map(t => t.trim()).filter(Boolean).slice(0, 8); // 增加可见标签上限
+            const tags = String(tagsString).split(/[，,、\n]+/).map(t => t.trim()).filter(Boolean).slice(0, 10);
             const chips = tags.map(tag => `<mdui-chip class="tag-chip" variant="filled">${escapeHtml(tag)}</mdui-chip>`).join('');
             return `<div class="tags-scroll-container">${chips}</div>`;
         }
@@ -373,16 +395,16 @@
                 const id = String(item.id);
                 if (selectedIds.has(id)) card.setAttribute('selected', '');
 
-                card.onclick = (e) => {
-                    if (e.target.closest('mdui-button-icon')) return;
-                    toggleSelect(id, card);
-                };
-
                 card.innerHTML = `
-                        <mdui-checkbox class="card-checkbox" ${selectedIds.has(id) ? 'checked' : ''}></mdui-checkbox>
+                        <mdui-checkbox class="card-checkbox" ${selectedIds.has(id) ? 'checked' : ''} onchange="manualToggleSelect('${id}', this)"></mdui-checkbox>
                         <div style="padding: 20px;">
                             <div class="card-header-row">
-                                <div class="card-title">🌱 ${escapeHtml(item.title || t('gardenUntitled'))}</div>
+                                <div class="title-container">
+                                    <div id="title-${id}" class="card-title" contenteditable="false" 
+                                         onblur="saveTitle('${id}')" 
+                                         onkeydown="handleTitleKey(event, '${id}')">🌱 ${escapeHtml(item.title || t('gardenUntitled'))}</div>
+                                    <mdui-button-icon icon="edit" class="edit-icon-btn" onclick="enableEdit('${id}')"></mdui-button-icon>
+                                </div>
                                 <div class="card-meta">
                                     <div class="model-tag">${escapeHtml(item.model_used || 'AI')}</div>
                                     <div class="card-date">${escapeHtml(item.created_at || '')}</div>
@@ -410,44 +432,53 @@
             if (window.renderMathInElement) renderMathInElement(container, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });
         }
 
-        // --- Debug Info Logic ---
-        function showDebugInfo(id) {
-            const item = readGardenData().find(i => String(i.id) === String(id));
-            if (!item) return;
+        // --- 标题修改逻辑 ---
+        function enableEdit(id) {
+            const el = document.getElementById(`title-${id}`);
+            el.contentEditable = "true";
+            el.focus();
+            // 光标移至末尾
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
 
-            const content = document.getElementById('debug-content');
-            const latency = item.latency ? `${item.latency}ms` : 'N/A';
-            const evalMatrix = item.evaluation ? JSON.stringify(item.evaluation, null, 2) : 'No evaluation data';
-            const tokens = item.usage ? (item.usage.total_tokens || 'N/A') : 'N/A';
+        function handleTitleKey(e, id) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.target.blur();
+            }
+        }
 
-            content.innerHTML = `
-                <div class="debug-item">
-                    <span class="debug-label">Response Latency</span>
-                    <span>${latency}</span>
-                </div>
-                <div class="debug-item">
-                    <span class="debug-label">Token Usage</span>
-                    <span>${tokens}</span>
-                </div>
-                <div style="margin-top: 16px;">
-                    <span class="debug-label">Evaluation Matrix</span>
-                    <pre style="background: var(--mdui-color-surface-container-high); padding: 12px; border-radius: 8px; font-size: 12px; overflow-x: auto; margin-top: 8px;">${evalMatrix}</pre>
-                </div>
-            `;
-            document.getElementById('debug-dialog').open = true;
+        function saveTitle(id) {
+            const el = document.getElementById(`title-${id}`);
+            el.contentEditable = "false";
+            // 去除Emoji前缀进行保存
+            let newTitle = el.innerText.replace(/^🌱\s*/, '').trim();
+            if (!newTitle) newTitle = t('gardenUntitled');
+            
+            el.innerText = `🌱 ${newTitle}`; // 格式化显示
+
+            const history = readGardenData();
+            const index = history.findIndex(i => String(i.id) === String(id));
+            if (index !== -1 && history[index].title !== newTitle) {
+                history[index].title = newTitle;
+                localStorage.setItem('garden_history', JSON.stringify(history));
+                showMessage("Title updated");
+            }
         }
 
         // --- Interaction Logic ---
-        function toggleSelect(id, cardElement) {
-            const checkbox = cardElement.querySelector('.card-checkbox');
-            if (selectedIds.has(id)) {
-                selectedIds.delete(id);
-                cardElement.removeAttribute('selected');
-                checkbox.checked = false;
-            } else {
+        function manualToggleSelect(id, checkbox) {
+            const card = checkbox.closest('mdui-card');
+            if (checkbox.checked) {
                 selectedIds.add(id);
-                cardElement.setAttribute('selected', '');
-                checkbox.checked = true;
+                card.setAttribute('selected', '');
+            } else {
+                selectedIds.delete(id);
+                card.removeAttribute('selected');
             }
             updateFab();
         }
@@ -463,6 +494,7 @@
 
         function clearSelection() { selectedIds.clear(); loadGarden(); }
 
+        // --- 全量保留的原始业务逻辑 ---
         combineBtn.onclick = async () => {
             const history = readGardenData();
             const selected = history.filter(h => selectedIds.has(String(h.id)));
@@ -500,6 +532,21 @@
                     document.getElementById('ppt-dialog').open = true;
                 }
             } catch (e) { showMessage("PPT generation failed"); }
+        }
+
+        function showDebugInfo(id) {
+            const item = readGardenData().find(i => String(i.id) === String(id));
+            if (!item) return;
+            const content = document.getElementById('debug-content');
+            const latency = item.latency ? `${item.latency}ms` : 'N/A';
+            const evalMatrix = item.evaluation ? JSON.stringify(item.evaluation, null, 2) : 'No evaluation data';
+            const tokens = item.usage ? (item.usage.total_tokens || 'N/A') : 'N/A';
+            content.innerHTML = `
+                <div class="debug-item"><span class="debug-label">Response Latency</span><span>${latency}</span></div>
+                <div class="debug-item"><span class="debug-label">Token Usage</span><span>${tokens}</span></div>
+                <div style="margin-top: 16px;"><span class="debug-label">Evaluation Matrix</span><pre style="background: var(--mdui-color-surface-container-high); padding: 12px; border-radius: 8px; font-size: 12px; overflow-x: auto; margin-top: 8px;">${evalMatrix}</pre></div>
+            `;
+            document.getElementById('debug-dialog').open = true;
         }
 
         function deleteCard(id) {
