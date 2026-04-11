@@ -42,7 +42,7 @@ def run_synthesis(client, content: str, model_name: str) -> str:
 1. Analyze the input data above for synthesis.
 2. Generate the 4-section response as defined in your system instructions.
 3. Ensure Section 1 is a professional paragraph and Section 4 follows the 4-character limit.
-4. **STRICT LANGUAGE**: Output the entire response in {target_lang_name}.
+4. **STRICT LANGUAGE**: Output the entire response in {target_lang}.
 
 ### FINAL CHECK
 - No "Agent 1" titles in keywords.
