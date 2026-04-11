@@ -58,18 +58,18 @@ Begin Synthesis:
 """
 
     response = client.chat.completions.create(
-        model=model_name,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
-        ],
-        # Keeping temperature high for "insight," but reduced slightly to 0.7 
-        # to ensure the model doesn't "hallucinate" the Mermaid syntax.
-        temperature=0.4,
-        max_tokens=1500,
+      model=model_name,
+      messages=[
+         {"role": "system", "content": SYSTEM_PROMPT},
+         {"role": "user", "content": user_prompt},
+      ],
+      # Keeping temperature high for "insight," but reduced slightly to 0.7 
+      # to ensure the model doesn't "hallucinate" the Mermaid syntax.
+      temperature=0.4,
+      max_tokens=1500,
     )
 
-   # Time calculation for specific agent
+    # Time calculation for specific agent
     duration = (time.time() - start_time) * 1000 # milliseconds
     # Tokens count
     tokens = response.usage.total_tokens
