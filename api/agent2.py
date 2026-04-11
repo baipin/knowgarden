@@ -28,9 +28,6 @@ Guidelines:
 4. **INTERNAL VERIFICATION**: Before finalizing your "Core Connection", simulate a logical execution or keyword similarity check to verify the link. 
 5. **KNOWLEDGE VISUALIZATION**: Always generate a Mermaid.js syntax mindmap inside Section 2 to represent the structural relationships.
 6. Keep the output readable and structured
-7. **UI TAG OPTIMIZATION**: Keywords must be extremely concise for chip display. 
-   - Each tag: Max 8 characters (Chinese) or 1-2 words (English).
-   - Use only core nouns/concepts. No descriptive phrases or sentences.
 
 Your response must contain exactly these 4 sections.
 The section titles themselves must be written in the requested language:
@@ -77,25 +74,17 @@ def run_synthesis(client, content: str, model_name: str) -> str:
 {content}
 
 ### TASK:
-Analyze the material above and provide a structured synthesis report. 
+Generate a 4-section synthesis. 
 
-### OUTPUT STRUCTURE (DO NOT DEVIATE):
+### FORMATTING RULES:
+- SECTION 1: Write a FULL PARAGRAPH. No bullets, no chips, no short fragments.
+- SECTION 2: Bullets followed by a Mermaid code block.
+- SECTION 4 (THE ONLY CHIP SECTION): 
+    - Provide 4-8 comma-separated nouns.
+    - MAX 4 CHARACTERS PER NOUN (Chinese).
+    - DO NOT include titles or "Agent 1".
 
-1. **Core Connection**
-   - Write exactly ONE cohesive paragraph of analytical prose. 
-   - (Do NOT split this into short chips or bullets).
-
-2. **Related Angles & Mindmap**
-   - Provide 2-4 bullet points.
-   - Provide the Mermaid diagram.
-
-3. **Tensions or Questions**
-   - Provide 2-3 concise bullets.
-
-4. **Keywords (UI TAGS)**
-   - Provide 4-8 comma-separated nouns.
-   - STRICT LIMIT: Max 4 characters per tag (Chinese).
-   - CLEANUP: No titles or "Agent 1" mentions.
+Language: {target_lang_name}
 
 Follow the requested language for all sections.
 
