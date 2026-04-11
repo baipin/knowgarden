@@ -52,9 +52,13 @@ The section titles themselves must be written in the requested language:
    - 2 to 3 concise bullets about ambiguities, unresolved tensions, or
      questions worth exploring
 
-4. Keywords
-   - 4 to 8 short keyword-like phrases, separated by commas.
-   - **CRITICAL**: Max 8 characters per tag for Chinese. No phrases.
+4. Keywords (UI TAGS)
+   - Provide 4-8 keywords separated by commas.
+   - STRICT LIMIT: Max 8 characters per tag for Chinese, 1-2 words for English.
+   - CONTENT RULE: Do NOT include the title of the input material or the names of the agents. Focus only on abstract concepts found within the synthesis.
+   - FORMAT: Only nouns. No punctuation except commas.
+     Example Keywords (English): Logic, Neural Links, Synthesis, Entropy
+     Example Keywords (Chinese): 逻辑, 神经链路, 综合, 熵
 
 Output style:
 - analytical and structured
@@ -71,14 +75,29 @@ def run_synthesis(client, content: str, model_name: str) -> str:
     user_prompt = f"""
 Based on the material below, discover meaningful knowledge connections.
 
-Material:
+### SOURCE MATERIAL:
 {content}
 
-Requirements:
-- Conduct an internal logical analysis to find hidden semantic links.
-- Provide a Mermaid.js mindmap to visualize the relationships in the second section.
-- End with a short keyword section containing 4-8 concise nouns (Max 4 chars for Chinese).
-- Follow the requested language strictly, including section headings.
+### TASK:
+Analyze the material to discover hidden synthesis points and semantic links. 
+
+### OUTPUT REQUIREMENTS:
+1. **Section 1**: One paragraph of deep synthesis.
+2. **Section 2 (Mindmap)**: Provide 2-4 bullets AND a valid Mermaid.js diagram. 
+   - Use this syntax: 
+     ```mermaid
+     mindmap
+       root((Core Concept))
+         Node1
+         Node2
+     ```
+3. **Section 3**: 2-3 tensions/questions.
+4. **Section 4 (UI Tags)**: 
+   - **STRICT LIMIT**: Max 4 characters per tag (Chinese) or 1-2 words (English).
+   - **CLEANUP**: Do NOT include the title of the input or "Agent 1".
+   - **COUNT**: Exactly 4-8 concise nouns.
+
+Follow the requested language strictly for all headings and content.
 """
 
     response = client.chat.completions.create(
