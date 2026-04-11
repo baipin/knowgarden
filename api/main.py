@@ -192,8 +192,10 @@ async def get_metrics(raw_input: str, summary: str, connections: str, model: str
         response = await asyncio.to_thread(
             client.chat.completions.create,
             model=model,
-            messages=[{"role": "system", "content": "You are a precise evaluator."},
-                      {"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": "You are a precise evaluator."},
+                {"role": "user", "content": prompt}
+            ],
             temperature=0
         )
         content = response.choices[0].message.content.lower()
@@ -202,8 +204,12 @@ async def get_metrics(raw_input: str, summary: str, connections: str, model: str
         for line in content.strip().split('\n'):
             if ':' in line:
                 key, val = line.split(':')
+                # Remove extra formatting characters like '*'
                 clean_key = key.replace("*", "").strip()
-                eval_stats[clean_key] = float(val.strip())
+                try:
+                    eval_stats[clean_key] = float(val.strip())
+                except ValueError:
+                    continue
         return eval_stats
     except Exception as e:
         print(f"Evaluation Error: {e}")
