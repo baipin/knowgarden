@@ -77,3 +77,4 @@ def run_synthesis(client, content: str, model_name: str) -> str:
 
     return response.choices[0].message.content.strip()
 
+
