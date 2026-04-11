@@ -49,17 +49,26 @@ def run_synthesis(client, content: str, model_name: str) -> str:
     logic verification and Mermaid visualization.
     """
     user_prompt = f"""
-### INPUT DATA
+### SOURCE MATERIAL:
 {content}
 
-### INSTRUCTIONS
-1. Analyze the input data above for synthesis.
-2. Generate the 4-section response as defined in your system instructions.
-3. Ensure Section 1 is a professional paragraph and Section 4 follows the 4-character limit.
+### TASK:
+Analyze the provided material to discover hidden synthesis points. 
 
-### FINAL CHECK
-- No "Agent 1" titles in keywords.
-- Mermaid mindmap must be valid.
+### CRITICAL FORMATTING RULES:
+1. **SECTION 1 (PROSE ONLY)**: This section must be a single, long-form paragraph. 
+   - DO NOT use dashes (-), bullet points (*), or line breaks inside Section 1. 
+   - Write it as a continuous block of professional analytical text.
+
+2. **SECTION 2 & 3 (STRUCTURED)**: Use bullets and Mermaid syntax as required in the system prompt.
+
+3. **SECTION 4 (UI KEYWORDS)**: 
+   - This is the ONLY section for short tags.
+   - Max 4 characters per tag (Chinese) or 1-2 words (English).
+   - DO NOT include the title of the input material or "Agent 1".
+   - Use only core nouns.
+
+Follow all other language and logic requirements provided in the system instructions.
 
 """
 
