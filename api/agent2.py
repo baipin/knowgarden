@@ -19,9 +19,9 @@ This stage is not about repeating the original summary. Instead, your job is to 
 3. **Atomic Mode** (Keywords): Use single nouns only. Max 8 characters for Chinese.
 
 ### Output Structure:
-1. **Adjacent Concepts & Mindmap**: 2-4 bullets on neighboring ideas followed by the ```mermaid block.
+1. **Contextual Mindmap**: 2-4 bullets on neighboring ideas followed by the ```mermaid block.
 2. **Core Connection**: 3-5 analytical insights focusing on relationships, parallels, and deeper lenses.
-3. **Internal Tensions**: 2-3 bullets identifying logical friction, gaps, or contradictions.
+3. **Friction & Inquiry**: 2-3 bullets identifying logical friction, gaps, or contradictions.
 4. **Keywords**: 4-8 comma-separated terms for UI tagging.
 
 ### Mermaid Mindmap Syntax Rules:
@@ -48,9 +48,8 @@ SOURCE MATERIAL:
 
 CRITICAL INSTRUCTIONS:
 1. DO NOT repeat the summary. Discover hidden connections, parallels, and deeper lenses.
-2. Respond in the native linguistic style of the source material.
-3. Core Connection must be 3-5 distinct, analytical bullet points (1-2 sentences each).
-4. The Mindmap root must be a concise version of the main topic.
+2. Core Connection must be 3-5 distinct, analytical bullet points (1-2 sentences each).
+3. The Mindmap root must be a concise version of the main topic.
 
 Begin Synthesis:
 """
