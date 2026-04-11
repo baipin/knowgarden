@@ -84,8 +84,6 @@ Generate a 4-section synthesis.
     - MAX 4 CHARACTERS PER NOUN (Chinese).
     - DO NOT include titles or "Agent 1".
 
-Language: {target_lang_name}
-
 Follow the requested language for all sections.
 
 """
