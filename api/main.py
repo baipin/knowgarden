@@ -143,7 +143,7 @@ def build_title_from_summary(summary: str, fallback_lang: str) -> str:
 # =========================================================
 # 8.5) Evaluation Logic
 # =========================================================
-async def get_metrics(raw_input, summary, connections, growth, model, lang):
+async def get_metrics(raw_input, summary, connections, growth, eval_model, lang):
     """Evaluates the 4 core pillars using the user's interface language."""
     lang_map = {
         "zh-cn": "Simplified Chinese",
@@ -183,9 +183,9 @@ async def get_metrics(raw_input, summary, connections, growth, model, lang):
         """
         response = await asyncio.to_thread(
             client.chat.completions.create,
-            model=model,
+            model=eval_model, 
             messages=[
-                {"role": "system", "content": f"You are a precise evaluator. You must respond in {target_lang}."},
+                {"role": "system", "content": f"You are a precise evaluator. Respond in {target_lang}."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0
@@ -261,13 +261,14 @@ async def grow_knowledge(request: KnowledgeRequest) -> Dict[str, Any]:
         latency = int((time.time() - start_time) * 1000)
 
         # Evaluation Metrics
+        eval_model = "deepseek-r1" 
         eval_stats = await get_metrics(
-            user_content, 
-            summary, 
-            connections, 
-            growth_plan, 
-            chosen_model, 
-            target_lang
+        user_content, 
+        summary, 
+        connections, 
+        growth_plan, 
+        eval_model, 
+        target_lang
         )
         evaluation = {
             "relevance": eval_stats.get("relevance", 0.0),
