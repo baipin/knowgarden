@@ -252,32 +252,37 @@ async def grow_knowledge(request: KnowledgeRequest) -> Dict[str, Any]:
     language_instruction = build_language_instruction(target_lang)
 
     try:
-        # Step 1: Ingestion
+        # Step 1: Ingestion Agent
+        ingestion_input = f"User Input:\n{user_content}\n\n{language_instruction}"
         res1 = await asyncio.to_thread(agent1.run_ingestion, client, ingestion_input, chosen_model)
-        summary = res1["content"]
-        total_tokens += res1["tokens"]
+        summary = res1["content"]      # <--- Get the text
+        total_tokens += res1["tokens"] # <--- Add the real tokens
 
-        # Step 2: Synthesis
+        # Step 2: Synthesis Agent
+        synthesis_input = f"Knowledge Summary:\n{summary}\n\n{language_instruction}"
         res2 = await asyncio.to_thread(agent2.run_synthesis, client, synthesis_input, chosen_model)
-        connections = res2["content"]
+        connections = res2["content"]  
         total_tokens += res2["tokens"]
 
-        # Step 3: Growth
+        # Step 3: Growth Agent
+        growth_input = f"Knowledge Summary:\n{summary}\n\nDiscovered Connections:\n{connections}\n\n{language_instruction}"
         res3 = await asyncio.to_thread(agent3.run_growth, client, growth_input, chosen_model)
-        growth_plan = res3["content"]
-        total_tokens += res3["tokens"]
-
-        # Step 4: Evaluation
+        growth_plan = res3["content"]  
+        total_tokens += res3["tokens"] 
+        
+        # Step 4: Evaluation 
+        eval_model = "deepseek-r1" 
         res_eval = await get_metrics(user_content, summary, connections, growth_plan, eval_model, target_lang)
         evaluation = res_eval["stats"]
         total_tokens += res_eval["tokens"]
 
-        # Total Latency (Real time from start to finish)
-        final_latency = int((time.time() - start_all) * 1000)
+        # Final Time calculation
+        final_latency = int((time.time() - start_time) * 1000)
 
         return {
             "success": True,
             "data": {
+                "title": build_title_from_summary(summary, target_lang),
                 "summary": summary,
                 "connections": connections,
                 "growth_plan": growth_plan,
