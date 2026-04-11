@@ -15,17 +15,37 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
     <script type="module">
-      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-      mermaid.initialize({ 
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  
+    mermaid.initialize({ 
       startOnLoad: false, 
       theme: 'base',
       themeVariables: {
-      primaryColor: '#6750A4',
-      lineColor: '#6750A4'
-      }
-     });
-     window.mermaid = mermaid;
-    </script>
+        // Background and Canvas
+        background: 'transparent',
+        primaryColor: '#6750A4', // MD3 Primary Purple
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#6750A4',
+      
+        // Lines and arrows
+        lineColor: '#6750A4',
+        secondaryColor: '#EADDFF', // MD3 Light Purple container
+        tertiaryColor: '#f3edf7',
+      
+        // Node specific styling
+        nodeBorder: '#6750A4',
+        nodeTextColor: '#21005d',
+      
+        // Mindmap specific 
+        mainBkg: '#6750A4',
+        nodeBkg: '#6750A4',
+        titleColor: '#21005d',
+      },
+      // Adding specific font for cleaner look
+      fontFamily: 'Roboto, system-ui, sans-serif',
+    });
+    window.mermaid = mermaid;
+  </script>
 
     <script src="/js/lang.js"></script>
 
