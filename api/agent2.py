@@ -53,22 +53,21 @@ def run_synthesis(client, content: str, model_name: str) -> str:
 {content}
 
 ### TASK:
-Analyze the provided material to discover hidden synthesis points. 
+1. Provide a deep synthesis paragraph.
+2. Provide a Mermaid mindmap.
+3. Provide 4-8 KEYWORDS.
 
-### CRITICAL FORMATTING RULES:
-1. **SECTION 1 (PROSE ONLY)**: This section must be a single, long-form paragraph. 
-   - DO NOT use dashes (-), bullet points (*), or line breaks inside Section 1. 
-   - Write it as a continuous block of professional analytical text.
+### SECTION 4 RULES (CRITICAL):
+- STOP: Do NOT write sentences in Section 4.
+- STOP: Do NOT write "The keywords are..." or "Focus on...".
+- ACTION: Output ONLY a comma-separated list of 4-8 individual nouns.
+- LIMIT: Each Chinese word must be 1-4 characters.
+- NO-FLY ZONE: Do NOT use the title of the input or "Agent 1".
 
-2. **SECTION 2 & 3 (STRUCTURED)**: Use bullets and Mermaid syntax as required in the system prompt.
-
-3. **SECTION 4 (UI KEYWORDS)**: 
-   - This is the ONLY section for short tags.
-   - Max 4 characters per tag (Chinese) or 1-2 words (English).
-   - DO NOT include the title of the input material or "Agent 1".
-   - Use only core nouns.
-
-Follow all other language and logic requirements provided in the system instructions.
+### OUTPUT TEMPLATE:
+Section 1: [Your analytical paragraph here]
+...
+Section 4: Keyword1, Keyword2, Keyword3, Keyword4
 
 """
 
