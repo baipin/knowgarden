@@ -38,7 +38,7 @@ Your response must contain these 5 sections, but the section titles themselves m
 def run_growth(client, content: str, model_name: str) -> str:
   start_time = time.time()
   
-    user_prompt = f"""
+  user_prompt = f"""
 Based on the material below, help this knowledge seed grow.
 
 Material:
