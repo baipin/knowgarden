@@ -261,13 +261,13 @@ async def grow_knowledge(request: KnowledgeRequest) -> Dict[str, Any]:
         latency = int((time.time() - start_time) * 1000)
 
         # Evaluation Metrics
-        val_stats = await get_metrics(
+        eval_stats = await get_metrics(
             user_content, 
             summary, 
             connections, 
             growth_plan, 
             chosen_model, 
-            lang
+            target_lang
         )
         evaluation = {
             "relevance": eval_stats.get("relevance", 0.0),
