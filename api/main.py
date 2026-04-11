@@ -143,8 +143,8 @@ def build_title_from_summary(summary: str, fallback_lang: str) -> str:
 # =========================================================
 # 8.5) Evaluation Logic
 # =========================================================
-async def get_metrics(raw_input: str, summary: str, connections: str, model: str) -> Dict[str, float]:
-    """Uses a judge model to provide real quality scores and check hallucinations."""
+async def get_metrics(raw_input, summary, connections, growth, model):
+    """Evaluates the 4 core pillars: Relevance, Faithfulness, Synthesis, Actionability."""
     try:
         prompt = f"""
         Role: Knowledge Audit Judge
@@ -187,17 +187,22 @@ async def get_metrics(raw_input: str, summary: str, connections: str, model: str
         eval_stats = {}
         for line in content.strip().split('\n'):
             if ':' in line:
-                key, val = line.split(':')
-                # Remove extra formatting characters like '*'
+                key, val = line.split(':', 1) # Split on first colon only
                 clean_key = key.replace("*", "").strip()
-                try:
-                    eval_stats[clean_key] = float(val.strip())
-                except ValueError:
-                    continue
+                val_text = val.strip()
+                
+                if clean_key == "justification":
+                    eval_stats[clean_key] = val_text
+                else:
+                    try:
+                        eval_stats[clean_key] = float(val_text)
+                    except ValueError:
+                        continue
         return eval_stats
     except Exception as e:
         print(f"Evaluation Error: {e}")
-        return {"faithfulness": 0.0, "relevance": 0.0, "logical_depth": 0.0}
+        # Return fallback with the 4 keys we actually use now
+        return {"relevance": 0.0, "faithfulness": 0.0, "synthesis": 0.0, "actionability": 0.0, "justification": "Error"}
 
 # =========================================================
 # 9) 主路由：/api/grow (同步 Agent2 升级)
@@ -247,16 +252,15 @@ async def grow_knowledge(request: KnowledgeRequest) -> Dict[str, Any]:
 
         # 计算执行耗时（毫秒）
         latency = int((time.time() - start_time) * 1000)
-       
-        # Evaluation metrics
-        eval_stats = await get_metrics(user_content, summary, connections, growth_plan, chosen_model)
 
-        # 调整评估矩阵以反映 Agent2 的关联分析能力
+        # Evaluation Metrics
+        eval_stats = await get_metrics(user_content, summary, connections, growth_plan, chosen_model)
         evaluation = {
             "relevance": eval_stats.get("relevance", 0.0),
             "faithfulness": eval_stats.get("faithfulness", 0.0),
             "synthesis": eval_stats.get("synthesis", 0.0),
-            "actionability": eval_stats.get("actionability", 0.0)
+            "actionability": eval_stats.get("actionability", 0.0),
+            "justification": eval_stats.get("justification", "N/A")
         }
 
         return {
