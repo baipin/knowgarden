@@ -65,9 +65,9 @@ Requirements:
     max_tokens=900,
   )
 
-    # Calculate metrics
-    duration = (time.time() - start_time) * 1000 
-    tokens = response.usage.total_tokens
+  # Calculate metrics
+  duration = (time.time() - start_time) * 1000 
+  tokens = response.usage.total_tokens
 
 return {
   "content": response.choices[0].message.content.strip(),
