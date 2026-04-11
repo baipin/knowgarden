@@ -55,20 +55,20 @@ Requirements:
 - Follow the requested language strictly, including section headings
 """
 
-  response = client.chat.completions.create(
-      model=model_name,
-      messages=[
-           {"role": "system", "content": SYSTEM_PROMPT},
-          {"role": "user", "content": user_prompt},
-      ],
-       temperature=0.9,
-       max_tokens=900,
-   )
+response = client.chat.completions.create(
+  model=model_name,
+  messages=[
+    {"role": "system", "content": SYSTEM_PROMPT},
+    {"role": "user", "content": user_prompt},
+  ],
+  temperature=0.9,
+  max_tokens=900,
+)
 
-  # Time calculation for specific agent
-  duration = (time.time() - start_time) * 1000 # milliseconds
-  # Tokens count
-  tokens = response.usage.total_tokens
+# Time calculation for specific agent
+duration = (time.time() - start_time) * 1000 # milliseconds
+# Tokens count
+tokens = response.usage.total_tokens
 
 return {
   "content": response.choices[0].message.content.strip(),
