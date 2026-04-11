@@ -17,7 +17,9 @@
     <script src="/js/lang.js"></script>
 
     <style>
-        :root { --max-width: 1200px; }
+        :root {
+            --max-width: 1200px;
+        }
 
         body {
             background-color: var(--mdui-color-surface-container-lowest);
@@ -26,7 +28,11 @@
             margin: 0;
         }
 
-        .garden-header { text-align: center; margin: 60px 0 40px; padding: 0 20px; }
+        .garden-header {
+            text-align: center;
+            margin: 60px 0 40px;
+            padding: 0 20px;
+        }
 
         .knowledge-grid {
             display: grid;
@@ -46,10 +52,23 @@
             position: relative;
         }
 
-        mdui-card:hover { transform: translateY(-5px); box-shadow: var(--mdui-elevation-level3); }
-        mdui-card[selected] { outline: 3px solid var(--mdui-color-primary); box-shadow: var(--mdui-elevation-level4); }
+            mdui-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--mdui-elevation-level3);
+            }
+            /* 选中状态样式 */
+            mdui-card[selected] {
+                outline: 3px solid var(--mdui-color-primary);
+                box-shadow: var(--mdui-elevation-level4);
+            }
 
-        .card-checkbox { position: absolute; top: 12px; right: 12px; z-index: 2; pointer-events: none; }
+        .card-checkbox {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 2;
+            pointer-events: none;
+        }
 
         .card-header-row {
             display: flex;
@@ -60,30 +79,27 @@
             padding-right: 32px;
         }
 
-        .title-container { display: flex; align-items: center; gap: 4px; flex-grow: 1; min-width: 0; }
-
         .card-title {
             font-size: 20px;
             font-weight: bold;
             line-height: 1.4;
             word-break: break-word;
             flex-grow: 1;
-            padding: 2px 4px;
-            border-radius: 4px;
-            transition: background-color 0.2s;
         }
 
-        .card-title[contenteditable="true"] {
-            background-color: var(--mdui-color-surface-container-highest);
-            outline: 2px solid var(--mdui-color-primary);
-            cursor: text;
+        .card-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            flex-shrink: 0;
         }
 
-        .edit-icon-btn { opacity: 0.5; transition: opacity 0.2s; }
-        .edit-icon-btn:hover { opacity: 1; }
-
-        .card-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
-        .card-date { font-size: 11px; opacity: 0.6; white-space: nowrap; }
+        .card-date {
+            font-size: 11px;
+            opacity: 0.6;
+            white-space: nowrap;
+        }
 
         .model-tag {
             font-size: 10px;
@@ -95,46 +111,25 @@
             font-weight: bold;
         }
 
-        /* --- 修正后的 Agent2 滚动条区域 --- */
-        .tags-scroll-wrapper {
-            margin-bottom: 16px;
-            width: 100%;
-            overflow: hidden; /* 确保不撑开卡片 */
-        }
-        
+        /* 优化后的标签滚动容器 */
         .tags-scroll-container {
             display: flex;
-            overflow-x: auto; /* 开启横向滚动 */
-            overflow-y: hidden;
+            overflow-x: auto;
             white-space: nowrap;
             gap: 8px;
-            padding-bottom: 12px; /* 给滚动条留出充足空间，避免遮挡内容 */
-            width: 100%;
-            scrollbar-width: thin; /* Firefox 纤细滚动条 */
-            scrollbar-color: var(--mdui-color-outline) transparent;
+            padding-bottom: 4px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* Firefox 隐藏滚动条 */
         }
 
-        /* 针对 Webkit 浏览器（Chrome/Edge/Safari）的美化，但保留其原生行为 */
         .tags-scroll-container::-webkit-scrollbar {
-            height: 6px; /* 适当的厚度方便鼠标操作 */
-            display: block; /* 确保在桌面端可见 */
+            display: none; /* Chrome/Safari 隐藏滚动条 */
         }
 
-        .tags-scroll-container::-webkit-scrollbar-track {
-            background: var(--mdui-color-surface-container-low);
-            border-radius: 10px;
+        .tag-chip {
+            flex-shrink: 0; /* 防止标签被压缩 */
+            margin-top: 4px;
         }
-
-        .tags-scroll-container::-webkit-scrollbar-thumb {
-            background: var(--mdui-color-outline);
-            border-radius: 10px;
-        }
-
-        .tags-scroll-container::-webkit-scrollbar-thumb:hover {
-            background: var(--mdui-color-primary);
-        }
-
-        .tag-chip { flex-shrink: 0; } /* 防止标签被压缩，这是能滑动的关键 */
 
         .section-label {
             font-size: 12px;
@@ -146,8 +141,15 @@
             letter-spacing: 0.4px;
         }
 
-        .markdown-body { font-size: 14px; line-height: 1.6; word-break: break-word; }
-        .markdown-body p { margin: 4px 0 12px; }
+        .markdown-body {
+            font-size: 14px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+            .markdown-body p {
+                margin: 4px 0 12px;
+            }
 
         .growth-box {
             background-color: var(--mdui-color-secondary-container);
@@ -157,8 +159,15 @@
             margin-top: 8px;
         }
 
-        .card-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 8px 16px 16px; margin-top: auto; }
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 8px 16px 16px;
+            margin-top: auto;
+        }
 
+        /* 浮动整合按钮 */
         .fab-combine {
             position: fixed;
             bottom: 30px;
@@ -169,15 +178,58 @@
             gap: 10px;
         }
 
-        footer { padding: 40px 24px; text-align: center; background-color: var(--mdui-color-surface-container-low); margin-top: 80px; }
-        .admin-tools { margin-bottom: 24px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
-        .empty-state { text-align: center; margin-top: 100px; display: none; padding: 0 20px; }
+        footer {
+            padding: 40px 24px;
+            text-align: center;
+            background-color: var(--mdui-color-surface-container-low);
+            margin-top: 80px;
+        }
 
-        .rotating { animation: mdui-rotate 0.8s linear; }
-        @keyframes mdui-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .admin-tools {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
 
-        .debug-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--mdui-color-outline-variant); }
-        .debug-label { font-weight: bold; color: var(--mdui-color-primary); }
+        .empty-state {
+            text-align: center;
+            margin-top: 100px;
+            display: none;
+            padding: 0 20px;
+        }
+
+        .katex-display {
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .rotating {
+            animation: mdui-rotate 0.8s linear;
+        }
+
+        @keyframes mdui-rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 调试面板项样式 */
+        .debug-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--mdui-color-outline-variant);
+        }
+        .debug-label {
+            font-weight: bold;
+            color: var(--mdui-color-primary);
+        }
     </style>
 </head>
 <body>
@@ -236,8 +288,10 @@
                     <mdui-button variant="outlined" icon="delete_sweep" color="error" id="clear-btn"><span data-i18n="gardenClear">清空花园</span></mdui-button>
                     <input type="file" id="file-input" style="display: none;" accept=".json">
                 </div>
+                <script async defer src="https://buttons.github.io/buttons.js"></script>
                 <div class="mdui-typo-body-medium" style="opacity: 0.6;">
                     <p data-i18n="footerCopy"> © 2026 Knowledge Garden </p>
+                    <a class="github-button" href="https://github.com/baipin/knowgarden" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Star baipin/knowgarden on GitHub">Star</a>
                 </div>
             </footer>
         </mdui-layout-main>
@@ -257,7 +311,6 @@
     </mdui-dialog>
 
     <script>
-        // 全量保留所有原始逻辑
         const container = document.querySelector('#garden-container');
         const emptyState = document.querySelector('#empty-state');
         const refreshBtn = document.querySelector('#refresh-btn');
@@ -286,11 +339,12 @@
         function renderContent(text) { return text ? `<div class="markdown-body">${marked.parse(text)}</div>` : ''; }
         function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#39;" }[m])); }
         
+        // 优化后的标签渲染逻辑，增加了滑动容器
         function formatTags(tagsString) {
             if (!tagsString) return '';
-            const chips = String(tagsString).split(/[，,、\n]+/).map(t => t.trim()).filter(Boolean)
-                .map(tag => `<mdui-chip class="tag-chip" variant="filled">${escapeHtml(tag)}</mdui-chip>`).join('');
-            return `<div class="tags-scroll-wrapper"><div class="tags-scroll-container">${chips}</div></div>`;
+            const tags = String(tagsString).split(/[，,、\n]+/).map(t => t.trim()).filter(Boolean).slice(0, 8); // 增加可见标签上限
+            const chips = tags.map(tag => `<mdui-chip class="tag-chip" variant="filled">${escapeHtml(tag)}</mdui-chip>`).join('');
+            return `<div class="tags-scroll-container">${chips}</div>`;
         }
 
         function readGardenData() {
@@ -303,16 +357,7 @@
             if (localData.length === 0) { emptyState.style.display = 'block'; }
             else { emptyState.style.display = 'none'; renderCards(localData); }
             updateFab();
-            updateUIStrings();
             return localData;
-        }
-
-        function updateUIStrings() {
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                el.innerText = t(key);
-            });
-            langMenu.value = getCurrentLang();
         }
 
         function renderCards(dataList) {
@@ -329,183 +374,187 @@
                 if (selectedIds.has(id)) card.setAttribute('selected', '');
 
                 card.onclick = (e) => {
-                    // 点击这些元素时不触发卡片选中逻辑
-                    if (e.target.closest('mdui-button-icon') || e.target.closest('.card-title') || e.target.closest('.tags-scroll-container')) return;
+                    if (e.target.closest('mdui-button-icon')) return;
                     toggleSelect(id, card);
                 };
 
                 card.innerHTML = `
-                    <mdui-checkbox class="card-checkbox" ${selectedIds.has(id) ? 'checked' : ''}></mdui-checkbox>
-                    <div style="padding: 20px;">
-                        <div class="card-header-row">
-                            <div class="title-container">
-                                <div id="title-${id}" class="card-title" contenteditable="false" 
-                                     onblur="saveTitle('${id}')" 
-                                     onkeydown="handleTitleKey(event, '${id}')">🌱 ${escapeHtml(item.title || t('gardenUntitled'))}</div>
-                                <mdui-button-icon icon="edit" class="edit-icon-btn" onclick="enableEdit('${id}')"></mdui-button-icon>
+                        <mdui-checkbox class="card-checkbox" ${selectedIds.has(id) ? 'checked' : ''}></mdui-checkbox>
+                        <div style="padding: 20px;">
+                            <div class="card-header-row">
+                                <div class="card-title">🌱 ${escapeHtml(item.title || t('gardenUntitled'))}</div>
+                                <div class="card-meta">
+                                    <div class="model-tag">${escapeHtml(item.model_used || 'AI')}</div>
+                                    <div class="card-date">${escapeHtml(item.created_at || '')}</div>
+                                </div>
                             </div>
-                            <div class="card-meta">
-                                <div class="model-tag">${escapeHtml(item.model_used || 'AI')}</div>
-                                <div class="card-date">${escapeHtml(item.created_at || '')}</div>
+                            <span class="section-label">${escapeHtml(a1T)}</span>
+                            <div class="content-text">${renderContent(item.summary)}</div>
+                            <mdui-divider style="margin: 16px 0;"></mdui-divider>
+                            <span class="section-label">${escapeHtml(a2T)}</span>
+                            <div style="margin-bottom: 16px;">${formatTags(item.connections)}</div>
+                            <div class="growth-box">
+                                <span class="section-label" style="color: inherit;">${escapeHtml(a3T)}</span>
+                                <div class="content-text" style="margin: 0;">${renderContent(item.growth_plan)}</div>
                             </div>
                         </div>
-                        <span class="section-label">${escapeHtml(a1T)}</span>
-                        <div class="content-text">${renderContent(item.summary)}</div>
-                        <mdui-divider style="margin: 16px 0;"></mdui-divider>
-                        <span class="section-label">${escapeHtml(a2T)}</span>
-                        ${formatTags(item.connections)}
-                        <div class="growth-box">
-                            <span class="section-label" style="color: inherit;">${escapeHtml(a3T)}</span>
-                            <div class="content-text" style="margin: 0;">${renderContent(item.growth_plan)}</div>
+                        <div class="card-actions">
+                            <mdui-button-icon icon="bug_report" onclick="showDebugInfo('${id}')" title="Debug Info"></mdui-button-icon>
+                            <mdui-button-icon icon="present_to_all" onclick="generatePPT('${id}')" title="${t('btnGeneratePPT')}"></mdui-button-icon>
+                            <mdui-button-icon icon="content_copy" onclick="copyCard('${id}')" title="${t('btnCopy')}"></mdui-button-icon>
+                            <mdui-button-icon icon="delete_outline" color="error" onclick="deleteCard('${id}')" title="${t('btnDelete')}"></mdui-button-icon>
                         </div>
-                    </div>
-                    <div class="card-actions">
-                        <mdui-button-icon icon="bug_report" onclick="showDebugInfo('${id}')" title="Debug Info"></mdui-button-icon>
-                        <mdui-button-icon icon="present_to_all" onclick="generatePPT('${id}')" title="${t('btnGeneratePPT')}"></mdui-button-icon>
-                        <mdui-button-icon icon="content_copy" onclick="copyCard('${id}')" title="${t('btnCopy')}"></mdui-button-icon>
-                        <mdui-button-icon icon="delete_outline" color="error" onclick="deleteCard('${id}')" title="${t('btnDelete')}"></mdui-button-icon>
-                    </div>
-                `;
+                    `;
                 container.appendChild(card);
             });
             if (window.renderMathInElement) renderMathInElement(container, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });
         }
 
-        // --- 功能函数保持不变 ---
-        function enableEdit(id) {
-            const el = document.getElementById(`title-${id}`);
-            el.contentEditable = "true"; el.focus();
-            const range = document.createRange(); range.selectNodeContents(el);
-            const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
-        }
-        function handleTitleKey(e, id) { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } }
-        function saveTitle(id) {
-            const el = document.getElementById(`title-${id}`);
-            el.contentEditable = "false";
-            let newTitle = el.innerText.replace(/^🌱\s*/, '').trim();
-            if (!newTitle) newTitle = t('gardenUntitled');
-            el.innerText = `🌱 ${newTitle}`;
-            const history = readGardenData();
-            const index = history.findIndex(i => String(i.id) === String(id));
-            if (index !== -1 && history[index].title !== newTitle) {
-                history[index].title = newTitle;
-                localStorage.setItem('garden_history', JSON.stringify(history));
-                showMessage("Title updated");
-            }
-        }
-
+        // --- Debug Info Logic ---
         function showDebugInfo(id) {
             const item = readGardenData().find(i => String(i.id) === String(id));
             if (!item) return;
+
             const content = document.getElementById('debug-content');
+            const latency = item.latency ? `${item.latency}ms` : 'N/A';
+            const evalMatrix = item.evaluation ? JSON.stringify(item.evaluation, null, 2) : 'No evaluation data';
+            const tokens = item.usage ? (item.usage.total_tokens || 'N/A') : 'N/A';
+
             content.innerHTML = `
-                <div class="debug-item"><span class="debug-label">ID</span><span>${item.id}</span></div>
-                <div class="debug-item"><span class="debug-label">Model</span><span>${item.model_used}</span></div>
-                <div class="debug-item"><span class="debug-label">Latency</span><span>${item.latency || 'N/A'}ms</span></div>
-                <div class="debug-item"><span class="debug-label">Usage</span><span>Tokens: ${item.usage?.total_tokens || 'N/A'}</span></div>
+                <div class="debug-item">
+                    <span class="debug-label">Response Latency</span>
+                    <span>${latency}</span>
+                </div>
+                <div class="debug-item">
+                    <span class="debug-label">Token Usage</span>
+                    <span>${tokens}</span>
+                </div>
+                <div style="margin-top: 16px;">
+                    <span class="debug-label">Evaluation Matrix</span>
+                    <pre style="background: var(--mdui-color-surface-container-high); padding: 12px; border-radius: 8px; font-size: 12px; overflow-x: auto; margin-top: 8px;">${evalMatrix}</pre>
+                </div>
             `;
             document.getElementById('debug-dialog').open = true;
         }
 
-        function generatePPT(id) {
-            const item = readGardenData().find(i => String(i.id) === String(id));
-            if (!item) return;
-            const marpText = `---
-marp: true
-theme: default
-paginate: true
----
-# ${item.title}
----
-## ${t('agent1')}
-${item.summary}
----
-## ${t('agent2')}
-${item.connections}
----
-## ${t('agent3')}
-${item.growth_plan}`;
-            document.getElementById('ppt-content').innerText = marpText;
-            document.getElementById('ppt-dialog').open = true;
-        }
-
-        document.getElementById('copy-marp-btn').onclick = async () => {
-            await navigator.clipboard.writeText(document.getElementById('ppt-content').innerText);
-            showMessage(t('copySuccess'));
-        };
-
+        // --- Interaction Logic ---
         function toggleSelect(id, cardElement) {
             const checkbox = cardElement.querySelector('.card-checkbox');
             if (selectedIds.has(id)) {
-                selectedIds.delete(id); cardElement.removeAttribute('selected'); checkbox.checked = false;
+                selectedIds.delete(id);
+                cardElement.removeAttribute('selected');
+                checkbox.checked = false;
             } else {
-                selectedIds.add(id); cardElement.setAttribute('selected', ''); checkbox.checked = true;
+                selectedIds.add(id);
+                cardElement.setAttribute('selected', '');
+                checkbox.checked = true;
             }
             updateFab();
         }
 
         function updateFab() {
             const count = selectedIds.size;
-            combineFab.style.display = (count >= 2) ? 'flex' : 'none';
-            document.getElementById('combine-btn-text').innerText = `${t('btnCombine')} (${count})`;
+            if (count >= 2) {
+                const label = (t('btnCombine') || "Combine {count} Seeds").replace("{count}", count);
+                document.getElementById('combine-btn-text').textContent = label;
+                combineFab.style.display = 'flex';
+            } else { combineFab.style.display = 'none'; }
         }
 
         function clearSelection() { selectedIds.clear(); loadGarden(); }
 
-        combineBtn.onclick = () => {
-            const ids = Array.from(selectedIds).join(',');
-            window.location.href = `index.html?combine_ids=${ids}`;
+        combineBtn.onclick = async () => {
+            const history = readGardenData();
+            const selected = history.filter(h => selectedIds.has(String(h.id)));
+            const combinedContent = selected.map(s => `### ${s.title}\n${s.summary}\n${s.growth_plan}`).join('\n\n---\n\n');
+            showMessage(t('combineLoading'));
+            try {
+                const response = await fetch('/api/grow', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: `Synthesis request:\n\n${combinedContent}`, lang: getCurrentLang(), model: selected[0].model_used || "deepseek-chat" })
+                });
+                const res = await response.json();
+                if (res.success) {
+                    const newSeed = { ...res.data, id: Date.now(), created_at: new Date().toLocaleString() };
+                    localStorage.setItem('garden_history', JSON.stringify([newSeed, ...history]));
+                    clearSelection();
+                    showMessage(t('combineSuccess'));
+                }
+            } catch (err) { showMessage("Error during combination"); }
         };
+
+        async function generatePPT(id) {
+            const item = readGardenData().find(i => String(i.id) === String(id));
+            if (!item) return;
+            showMessage(t('combineLoading'));
+            try {
+                const response = await fetch('/api/generate_ppt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...item, lang: getCurrentLang(), model: item.model_used || "deepseek-chat" })
+                });
+                const res = await response.json();
+                if (res.success) {
+                    document.getElementById('ppt-content').textContent = res.data.ppt_markdown;
+                    document.getElementById('ppt-dialog').open = true;
+                }
+            } catch (e) { showMessage("PPT generation failed"); }
+        }
+
+        function deleteCard(id) {
+            if (!confirm(t('confirmDelete'))) return;
+            localStorage.setItem('garden_history', JSON.stringify(readGardenData().filter(i => String(i.id) !== String(id))));
+            loadGarden();
+        }
 
         async function copyCard(id) {
             const item = readGardenData().find(i => String(i.id) === String(id));
-            const text = `# ${item.title}\n\n## Summary\n${item.summary}\n\n## Connections\n${item.connections}\n\n## Growth\n${item.growth_plan}`;
+            const text = `【${item.title}】\n\n${item.summary}\n\nPlan: ${item.growth_plan}`;
             await navigator.clipboard.writeText(text);
             showMessage(t('copySuccess'));
         }
 
-        function deleteCard(id) {
-            if (confirm(t('confirmDelete'))) {
-                localStorage.setItem('garden_history', JSON.stringify(readGardenData().filter(i => String(i.id) !== String(id))));
-                loadGarden();
-            }
+        document.getElementById('copy-marp-btn').onclick = () => {
+            navigator.clipboard.writeText(document.getElementById('ppt-content').textContent);
+            showMessage(t('copySuccess'));
+        };
+
+        function showMessage(m) { if (window.mdui) mdui.snackbar({ message: m }); }
+
+        function applyLanguage(lang) {
+            if (typeof i18n === 'undefined') return;
+            const data = i18n[lang] || i18n['zh-cn'];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (data[key]) el.textContent = data[key];
+            });
+            localStorage.setItem('user_lang', lang);
+            langMenu.value = lang;
+            loadGarden();
         }
 
-        refreshBtn.onclick = () => {
-            refreshBtn.classList.add('rotating');
-            setTimeout(() => { loadGarden(); refreshBtn.classList.remove('rotating'); showMessage("Refreshed"); }, 600);
-        };
-
+        drawerTrigger.onclick = () => drawer.open = !drawer.open;
+        langMenu.onchange = () => applyLanguage(langMenu.value);
+        refreshBtn.onclick = () => { refreshBtn.classList.add('rotating'); loadGarden(); setTimeout(() => refreshBtn.classList.remove('rotating'), 800); };
         exportBtn.onclick = () => {
-            const blob = new Blob([localStorage.getItem('garden_history') || '[]'], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = `garden_backup_${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
+            const blob = new Blob([localStorage.getItem('garden_history')], { type: 'application/json' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = `garden_backup_${Date.now()}.json`; a.click();
         };
-
         importBtn.onclick = () => fileInput.click();
         fileInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
             const reader = new FileReader();
-            reader.onload = (re) => {
-                try {
-                    const data = JSON.parse(re.target.result);
-                    localStorage.setItem('garden_history', JSON.stringify(data));
-                    loadGarden(); showMessage("Imported");
-                } catch (err) { alert("Invalid File"); }
+            reader.onload = (ev) => {
+                const imported = JSON.parse(ev.target.result);
+                const unique = Array.from(new Map([...imported, ...readGardenData()].map(i => [i.id || i.created_at, i])).values());
+                localStorage.setItem('garden_history', JSON.stringify(unique));
+                loadGarden();
             };
-            reader.readAsText(file);
+            reader.readAsText(e.target.files[0]);
         };
+        clearBtn.onclick = () => { if (confirm(t('gardenClearConfirm'))) { localStorage.removeItem('garden_history'); loadGarden(); } };
 
-        clearBtn.onclick = () => { if (confirm(t('confirmClear'))) { localStorage.removeItem('garden_history'); loadGarden(); } };
-
-        langMenu.onchange = (e) => applyLanguage(e.target.value);
-        function applyLanguage(lang) { localStorage.setItem('user_lang', lang); loadGarden(); }
-        function showMessage(m) { mdui.snackbar({ message: m }); }
-
-        drawerTrigger.onclick = () => drawer.open = !drawer.open;
         window.onload = () => applyLanguage(getCurrentLang());
     </script>
 </body>
