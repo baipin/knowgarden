@@ -382,11 +382,15 @@
        }
         function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#39;" }[m])); }
         
-        function formatTags(tagsString) {
-            if (!tagsString) return '';
-            const tags = String(tagsString).split(/[，,、\n]+/).map(t => t.trim()).filter(Boolean).slice(0, 10);
-            const chips = tags.map(tag => `<mdui-chip class="tag-chip" variant="filled">${escapeHtml(tag)}</mdui-chip>`).join('');
-            return `<div class="tags-scroll-container">${chips}</div>`;
+        function formatTags(tags) {
+          if (!tags) return '';
+          // If the "tags" content starts with a mermaid block, render it as a diagram
+          if (tags.trim().startsWith('```mermaid')) {
+          return renderContent(tags);
+          }
+        return tags.split(/,|，/).map(t => t.trim()).filter(t => t).map(t =>
+        <div class="tag-chip">${escapeHtml(t)}</div>
+        ).join('');
         }
 
         function readGardenData() {
