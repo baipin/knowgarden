@@ -77,25 +77,27 @@ def run_synthesis(client, content: str, model_name: str) -> str:
 {content}
 
 ### TASK:
-Analyze the material to discover hidden synthesis points.
+Analyze the material above and provide a structured synthesis report. 
 
-### OUTPUT REQUIREMENTS:
-1. **Section 1**: One paragraph of deep synthesis.
-2. **Section 2 (Mindmap)**: 2-4 bullets AND a Mermaid diagram.
-   - Use this exact syntax:
-     ```mermaid
-     mindmap
-       root((Core Concept))
-         Node1
-         Node2
-     ```
-3. **Section 3**: 2-3 tensions or questions.
-4. **Section 4 (Keywords)**: 
-   - **STRICT LIMIT**: Max 4 characters per tag (Chinese) or 1-2 words (English).
-   - **NO LEAKAGE**: Do NOT use the title of the material or "Agent 1" as a tag.
-   - **FORMAT**: 4-8 nouns, comma-separated.
+### OUTPUT STRUCTURE (DO NOT DEVIATE):
 
-Strictly follow the requested language for all sections.
+1. **Core Connection**
+   - Write exactly ONE cohesive paragraph of analytical prose. 
+   - (Do NOT split this into short chips or bullets).
+
+2. **Related Angles & Mindmap**
+   - Provide 2-4 bullet points.
+   - Provide the Mermaid diagram.
+
+3. **Tensions or Questions**
+   - Provide 2-3 concise bullets.
+
+4. **Keywords (UI TAGS)**
+   - Provide 4-8 comma-separated nouns.
+   - STRICT LIMIT: Max 4 characters per tag (Chinese).
+   - CLEANUP: No titles or "Agent 1" mentions.
+
+Follow the requested language for all sections.
 
 """
 
