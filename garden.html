@@ -85,6 +85,20 @@
             line-height: 1.4;
             word-break: break-word;
             flex-grow: 1;
+            /* 新增：可编辑状态样式 */
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        /* 新增：悬停显示可编辑提示 */
+        .card-title:hover {
+            background-color: var(--mdui-color-surface-container-high);
+        }
+        
+        .card-title:focus {
+            background-color: var(--mdui-color-surface-container-highest);
+            outline: 2px solid var(--mdui-color-primary);
         }
 
         .card-meta {
@@ -374,7 +388,7 @@
                 if (selectedIds.has(id)) card.setAttribute('selected', '');
 
                 card.onclick = (e) => {
-                    if (e.target.closest('mdui-button-icon')) return;
+                    if (e.target.closest('mdui-button-icon') || e.target.closest('.card-title')) return; // 修改：如果点击的是标题，不触发选中
                     toggleSelect(id, card);
                 };
 
@@ -382,7 +396,7 @@
                         <mdui-checkbox class="card-checkbox" ${selectedIds.has(id) ? 'checked' : ''}></mdui-checkbox>
                         <div style="padding: 20px;">
                             <div class="card-header-row">
-                                <div class="card-title">🌱 ${escapeHtml(item.title || t('gardenUntitled'))}</div>
+                                <div class="card-title" contenteditable="true" onblur="saveNewTitle('${id}', this)">🌱 ${escapeHtml(item.title || t('gardenUntitled'))}</div>
                                 <div class="card-meta">
                                     <div class="model-tag">${escapeHtml(item.model_used || 'AI')}</div>
                                     <div class="card-date">${escapeHtml(item.created_at || '')}</div>
@@ -408,6 +422,23 @@
                 container.appendChild(card);
             });
             if (window.renderMathInElement) renderMathInElement(container, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });
+        }
+
+        // 新增：保存新标题逻辑
+        function saveNewTitle(id, element) {
+            let newTitle = element.innerText.replace(/^🌱\s*/, '').trim();
+            if (!newTitle) {
+                newTitle = t('gardenUntitled');
+                element.innerText = `🌱 ${newTitle}`;
+            }
+            
+            const history = readGardenData();
+            const index = history.findIndex(i => String(i.id) === String(id));
+            if (index !== -1 && history[index].title !== newTitle) {
+                history[index].title = newTitle;
+                localStorage.setItem('garden_history', JSON.stringify(history));
+                showMessage("Title updated");
+            }
         }
 
         // --- Debug Info Logic ---
