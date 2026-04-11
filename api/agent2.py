@@ -1,4 +1,5 @@
 # api/agent2.py
+import time
 
 SYSTEM_PROMPT = """
 You are the Synthesis Agent for a Personal Knowledge Garden. 
@@ -42,6 +43,8 @@ This stage is not about repeating the original summary. Instead, your job is to 
 """
 
 def run_synthesis(client, content: str, model_name: str) -> str:
+   start_time = time.time()
+   
     user_prompt = f"""
 SOURCE MATERIAL:
 {content}
@@ -66,6 +69,13 @@ Begin Synthesis:
         max_tokens=1500,
     )
 
-    return response.choices[0].message.content.strip()
+   # Time calculation for specific agent
+    duration = (time.time() - start_time) * 1000 # milliseconds
+    # Tokens count
+    tokens = response.usage.total_tokens
 
-
+    return {
+        "content": response.choices[0].message.content.strip(),
+        "tokens": tokens,
+        "latency": int(duration)
+    }
