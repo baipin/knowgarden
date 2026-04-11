@@ -58,7 +58,6 @@ def run_synthesis(client, content: str, model_name: str) -> str:
 - Mermaid mindmap must be valid.
 """
 
-"""
 
     response = client.chat.completions.create(
         model=model_name,
