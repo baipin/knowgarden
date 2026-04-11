@@ -600,16 +600,32 @@
             if (!item) return;
             const content = document.getElementById('debug-content');
             const latency = item.latency ? `${item.latency}ms` : 'N/A';
-            const evalMatrix = item.evaluation ? JSON.stringify(item.evaluation, null, 2) : 'No evaluation data';
             const tokens = item.usage ? (item.usage.total_tokens || 'N/A') : 'N/A';
+            const justification = item.evaluation?.justification || "No reasoning provided.";
+            
+            const metricsList = ['relevance', 'faithfulness', 'synthesis', 'actionability']
+                .map(key => {
+                    const val = item.evaluation?.[key];
+                    return val !== undefined ? `<div class="debug-item"><span class="debug-label">${key.toUpperCase()}</span><span>${val}</span></div>` : '';
+                }).join('');
+
             content.innerHTML = `
                 <div class="debug-item"><span class="debug-label">Response Latency</span><span>${latency}</span></div>
                 <div class="debug-item"><span class="debug-label">Token Usage</span><span>${tokens}</span></div>
-                <div style="margin-top: 16px;"><span class="debug-label">Evaluation Matrix</span><pre style="background: var(--mdui-color-surface-container-high); padding: 12px; border-radius: 8px; font-size: 12px; overflow-x: auto; margin-top: 8px;">${evalMatrix}</pre></div>
+                <div style="margin-top: 16px;">
+                    <span class="debug-label">Audit Justification</span>
+                    <p style="font-size: 13px; opacity: 0.8; margin: 8px 0;">${justification}</p>
+                </div>
+                <div style="margin-top: 16px;">
+                    <span class="debug-label">Quality Scores</span>
+                    <div style="background: var(--mdui-color-surface-container-high); padding: 8px 12px; border-radius: 8px; margin-top: 8px;">
+                        ${metricsList}
+                    </div>
+                </div>
             `;
             document.getElementById('debug-dialog').open = true;
         }
-
+        
         function deleteCard(id) {
             if (!confirm(t('confirmDelete'))) return;
             localStorage.setItem('garden_history', JSON.stringify(readGardenData().filter(i => String(i.id) !== String(id))));
