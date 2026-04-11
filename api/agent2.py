@@ -66,7 +66,7 @@ Identify the core conceptual architecture of this material and provide new synth
             {"role": "user", "content": user_prompt},
         ],
         # 增加 temperature 到 0.8 以增强“隐藏关联”的发现能力
-        temperature=0.8,
+        temperature=0.3,
         # 增加 max_tokens 以容纳 Mermaid 代码块
         max_tokens=1200,
     )
