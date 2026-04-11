@@ -45,7 +45,7 @@ This stage is not about repeating the original summary. Instead, your job is to 
 def run_synthesis(client, content: str, model_name: str) -> str:
    start_time = time.time()
    
-    user_prompt = f"""
+   user_prompt = f"""
 SOURCE MATERIAL:
 {content}
 
