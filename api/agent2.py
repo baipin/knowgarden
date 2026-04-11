@@ -75,29 +75,15 @@ def run_synthesis(client, content: str, model_name: str) -> str:
     user_prompt = f"""
 Based on the material below, discover meaningful knowledge connections.
 
-### SOURCE MATERIAL:
+Material:
 {content}
 
-### TASK:
-Analyze the material to discover hidden synthesis points and semantic links. 
+Requirements:
+- Conduct an internal logical analysis to find hidden semantic links.
+- Provide a Mermaid.js mindmap to visualize the relationships in the second section.
+- End with a short keyword section containing 4-8 concise nouns (Max 4 chars for Chinese).
+- Follow the requested language strictly, including section headings.
 
-### OUTPUT REQUIREMENTS:
-1. **Section 1**: One paragraph of deep synthesis.
-2. **Section 2 (Mindmap)**: Provide 2-4 bullets AND a valid Mermaid.js diagram. 
-   - Use this syntax: 
-     ```mermaid
-     mindmap
-       root((Core Concept))
-         Node1
-         Node2
-     ```
-3. **Section 3**: 2-3 tensions/questions.
-4. **Section 4 (UI Tags)**: 
-   - **STRICT LIMIT**: Max 4 characters per tag (Chinese) or 1-2 words (English).
-   - **CLEANUP**: Do NOT include the title of the input or "Agent 1".
-   - **COUNT**: Exactly 4-8 concise nouns.
-
-Follow the requested language strictly for all headings and content.
 """
 
     response = client.chat.completions.create(
