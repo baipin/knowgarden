@@ -1,18 +1,36 @@
 # api/agent2.py
 
 SYSTEM_PROMPT = """
-You are a Data Architect specialized in Knowledge Graphs. 
+You are the Synthesis Agent for a Personal Knowledge Garden. Your goal is to find non-obvious connections and structural patterns.
 
-### OBJECTIVE
-Your task is to transform a summary into a high-level conceptual map. 
-- DO NOT summarize. 
-- DO NOT use conversational filler.
-- DO NOT repeat the input verbatim.
+### STRICT OPERATIONAL RULES:
+1. **NO REPETITION**: Do not summarize. Identify hidden links, parallels, or deeper lenses.
+2. **KNOWLEDGE VISUALIZATION**: You MUST generate a Mermaid.js mindmap. 
+   - Use the specific syntax: ```mermaid [newline] mindmap [newline] root((Title)) ... ```
+3. **UI TAG OPTIMIZATION (SECTION 4)**: 
+   - This section must contain ONLY individual nouns or very short concepts.
+   - NO sentences. NO phrases. NO descriptions.
+   - LIMIT: Max 4 characters per tag (Chinese) or 1-2 words (English).
+   - FORMAT: A single line of comma-separated terms.
 
-### LOGICAL CONSTRAINTS
-- Section 1 must be a SINGLE analytical paragraph. No line breaks.
-- Section 2 must contain a valid Mermaid mindmap.
-- Section 4 must be a raw list of nouns.
+### OUTPUT STRUCTURE:
+Your response must contain exactly these 4 sections:
+
+1. **Core Connection**
+   - One cohesive paragraph of deep analytical prose (no bullets here).
+
+2. **Related Angles & Mindmap**
+   - 2-4 concise bullets of adjacent ideas.
+   - The Mermaid.js mindmap block.
+
+3. **Tensions or Questions**
+   - 2-3 bullets regarding unresolved contradictions or areas for further study.
+
+4. **Keywords (UI TAGS)**
+   - 4-8 keywords. 
+   - STRICT: Nouns only. No punctuation except commas.
+   - Example (EN): Logic, Synthesis, Entropy, Neuralism
+   - Example (ZH): 逻辑, 综合, 熵, 神经元
 
 ###Very important language rule:
 - You MUST answer in the language explicitly requested in the input.
@@ -30,34 +48,23 @@ Output style:
 """
 
 def run_synthesis(client, content: str, model_name: str) -> str:
-    """
-    Generate knowledge connections and synthesis.
-    This implementation uses Chat Completions API with prompted 'internal' 
-    logic verification and Mermaid visualization.
-    """
     user_prompt = f"""
-### INPUT DATA:
+### SOURCE MATERIAL:
 {content}
 
 ### TASK:
-Analyze the input and generate a 4-section synthesis.
+Analyze the material above and provide a structured synthesis report. 
 
-### STRICT STRUCTURAL REQUIREMENTS:
+### CRITICAL FORMATTING REQUIREMENTS:
+- **Section 2**: You must include a `mermaid` mindmap code block. Ensure the syntax `mindmap` is used.
+- **Section 4**: Provide ONLY a comma-separated list of nouns. Do NOT write sentences. Do NOT exceed 4 characters per keyword for Chinese.
+- **Language**: Respond in the same language as the source material unless otherwise specified.
 
-1. **Analytical Synthesis**
-   [Instruction: Write ONE continuous paragraph. NO bullets. NO fragments.]
-
-2. **Concept Mindmap**
-   - [Idea 1]
-   - [Idea 2]
-   ```mermaid
-   mindmap
-     root((Core Discovery))
-       Branch1
-         NodeA
-       Branch2
-         NodeB
-
+### SECTION HEADINGS:
+1. Core Connection
+2. Related Angles & Mindmap
+3. Tensions or Questions
+4. Keywords (UI TAGS)
 """
 
     response = client.chat.completions.create(
@@ -66,10 +73,10 @@ Analyze the input and generate a 4-section synthesis.
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_prompt},
         ],
-        # 增加 temperature 到 0.8 以增强“隐藏关联”的发现能力
-        temperature=0.3,
-        # 增加 max_tokens 以容纳 Mermaid 代码块
-        max_tokens=1200,
+        # Keeping temperature high for "insight," but reduced slightly to 0.7 
+        # to ensure the model doesn't "hallucinate" the Mermaid syntax.
+        temperature=0.7,
+        max_tokens=1500,
     )
 
     return response.choices[0].message.content.strip()
