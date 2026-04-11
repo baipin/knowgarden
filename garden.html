@@ -16,7 +16,7 @@
 
     <script type="module">
       import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-     mermaid.initialize({ 
+      mermaid.initialize({ 
       startOnLoad: false, 
       theme: 'base',
       themeVariables: {
@@ -372,7 +372,14 @@
             return pack[key] || fallback || key;
         }
 
-        function renderContent(text) { return text ? `<div class="markdown-body">${marked.parse(text)}</div>` : ''; }
+        function renderContent(text) { 
+         if (!text) return '';
+         const html = marked.parse(text);
+         // This finds code blocks labeled as mermaid and wraps them in a div for the library to find
+         return `<div class="markdown-body">${html.replace(/<pre><code class="language-mermaid">([\s\S]*?)<\/code><\/pre>/g, (match, code) => {
+         return `<div class="mermaid">${code}</div>`;
+         })}</div>`;
+       }
         function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#39;" }[m])); }
         
         function formatTags(tagsString) {
@@ -443,6 +450,7 @@
                 container.appendChild(card);
             });
             if (window.renderMathInElement) renderMathInElement(container, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });
+            if (window.mermaid) mermaid.run({ nodes: container.querySelectorAll('.mermaid') });
         }
 
         // --- 标题修改逻辑 ---
