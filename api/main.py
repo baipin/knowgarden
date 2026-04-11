@@ -191,7 +191,9 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
             temperature=0
         )
         content = response.choices[0].message.content.lower()
-        
+        if "</think>" in content:
+            content = content.split("</think>")[-1]
+            
         eval_stats = {}
         for line in content.strip().split('\n'):
             if ':' in line:
