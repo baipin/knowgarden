@@ -184,12 +184,12 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
         response = await asyncio.to_thread(
             client.chat.completions.create,
             model=eval_model, 
-            messages=[
-                {"role": "system", "content": f"You are a precise evaluator. Respond in {target_lang}."},
-                {"role": "user", "content": prompt}
-            ],
+            messages=[...],
             temperature=0
         )
+
+        tokens = response.usage.total_tokens
+        
         content = response.choices[0].message.content.lower()
         if "</think>" in content:
             content = content.split("</think>")[-1]
@@ -204,14 +204,18 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
                 if clean_key == "justification":
                     eval_stats[clean_key] = val_text
                 else:
-                    try:
+                    try: 
                         eval_stats[clean_key] = float(val_text)
                     except ValueError:
                         continue
-        return eval_stats
+        return {"stats": eval_stats, "tokens": tokens}
+
     except Exception as e:
         print(f"Evaluation Error: {e}")
-        return {"relevance": 0.0, "faithfulness": 0.0, "synthesis": 0.0, "actionability": 0.0, "justification": "Error"}
+        return {
+            "stats": {"relevance": 0.0, "faithfulness": 0.0, "synthesis": 0.0, "actionability": 0.0, "justification": "Error"},
+            "tokens": 0
+        }
 
 # =========================================================
 # 9) 主路由：/api/grow (同步 Agent2 升级)
@@ -219,6 +223,7 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
 @app.post("/api/grow")
 async def grow_knowledge(request: KnowledgeRequest) -> Dict[str, Any]:
     start_time = time.time() # 记录开始时间
+    total_tokens = 0
     
     target_lang = request.lang or "zh-cn"
     chosen_model = request.model
@@ -247,56 +252,39 @@ async def grow_knowledge(request: KnowledgeRequest) -> Dict[str, Any]:
     language_instruction = build_language_instruction(target_lang)
 
     try:
-        # Step 1: Ingestion Agent
-        ingestion_input = f"User Input:\n{user_content}\n\n{language_instruction}"
-        summary = await asyncio.to_thread(agent1.run_ingestion, client, ingestion_input, chosen_model)
+        # Step 1: Ingestion
+        res1 = await asyncio.to_thread(agent1.run_ingestion, client, ingestion_input, chosen_model)
+        summary = res1["content"]
+        total_tokens += res1["tokens"]
 
-        # Step 2: Connection & Synthesis Agent (现在包含隐藏关联分析与 Mermaid 渲染)
-        synthesis_input = f"Knowledge Summary:\n{summary}\n\n{language_instruction}"
-        connections = await asyncio.to_thread(agent2.run_synthesis, client, synthesis_input, chosen_model)
+        # Step 2: Synthesis
+        res2 = await asyncio.to_thread(agent2.run_synthesis, client, synthesis_input, chosen_model)
+        connections = res2["content"]
+        total_tokens += res2["tokens"]
 
-        # Step 3: Growth Agent
-        growth_input = f"Knowledge Summary:\n{summary}\n\nDiscovered Connections:\n{connections}\n\n{language_instruction}"
-        growth_plan = await asyncio.to_thread(agent3.run_growth, client, growth_input, chosen_model)
+        # Step 3: Growth
+        res3 = await asyncio.to_thread(agent3.run_growth, client, growth_input, chosen_model)
+        growth_plan = res3["content"]
+        total_tokens += res3["tokens"]
 
-        # 计算执行耗时（毫秒）
-        latency = int((time.time() - start_time) * 1000)
+        # Step 4: Evaluation
+        res_eval = await get_metrics(user_content, summary, connections, growth_plan, eval_model, target_lang)
+        evaluation = res_eval["stats"]
+        total_tokens += res_eval["tokens"]
 
-        # Evaluation Metrics
-        eval_model = "deepseek-r1" 
-        eval_stats = await get_metrics(
-        user_content, 
-        summary, 
-        connections, 
-        growth_plan, 
-        eval_model, 
-        target_lang
-        )
-        evaluation = {
-            "relevance": eval_stats.get("relevance", 0.0),
-            "faithfulness": eval_stats.get("faithfulness", 0.0),
-            "synthesis": eval_stats.get("synthesis", 0.0),
-            "actionability": eval_stats.get("actionability", 0.0),
-            "justification": eval_stats.get("justification", "N/A")
-        }
+        # Total Latency (Real time from start to finish)
+        final_latency = int((time.time() - start_all) * 1000)
 
         return {
             "success": True,
-            "error": None,
-            "debug_info": None,
             "data": {
-                "title": build_title_from_summary(summary, target_lang),
                 "summary": summary,
                 "connections": connections,
                 "growth_plan": growth_plan,
-                "lang": target_lang,
-                "model_used": chosen_model,
-                # 调试字段
-                "latency": latency,
+                "latency": final_latency,
                 "evaluation": evaluation,
                 "usage": {
-                    # 由于引入了 Mermaid 和思维链推理，Token 范围上限提升
-                    "total_tokens": random.randint(1200, 3500) 
+                    "total_tokens": total_tokens
                 }
             }
         }
