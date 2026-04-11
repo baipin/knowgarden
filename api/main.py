@@ -200,25 +200,21 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
             "justification": "Parsing failed"
         }
 
-        # Look for keywords even if the AI adds extra text
-        for line in content.strip().split('\n'):
-            line = line.lower().strip()
-            if 'justification:' in line:
-                eval_stats["justification"] = line.split('justification:', 1)[1].strip()
-            elif 'relevance:' in line:
-                try: eval_stats["relevance"] = float(line.split('relevance:', 1)[1].strip())
-                except: pass
-            elif 'faithfulness:' in line:
-                try: eval_stats["faithfulness"] = float(line.split('faithfulness:', 1)[1].strip())
-                except: pass
-            elif 'synthesis:' in line:
-                try: eval_stats["synthesis"] = float(line.split('synthesis:', 1)[1].strip())
-                except: pass
-            elif 'actionability:' in line:
-                try: eval_stats["actionability"] = float(line.split('actionability:', 1)[1].strip())
-                except: pass
+        for line in full_text.lower().split('\n'):
+        if ':' in line:
+            key, val = line.split(':', 1)
+            key = key.strip()
+            if key in eval_stats:
+                try:
+                    # Remove any non-numeric characters like * or -
+                    import re
+                    num_match = re.search(r"(\d+\.\d+|\d+)", val)
+                    if num_match:
+                        eval_stats[key] = float(num_match.group(1))
+                except:
+                    pass
 
-        return {"stats": eval_stats, "tokens": tokens}
+    return {"stats": eval_stats, "tokens": tokens}
 
     except Exception as e:
         print(f"Evaluation Error: {e}")
@@ -281,7 +277,7 @@ async def grow_knowledge(request: KnowledgeRequest) -> Dict[str, Any]:
         total_tokens += res3["tokens"] 
         
         # Step 4: Evaluation 
-        eval_model = "deepseek-r1" 
+        eval_model = "deepseek-v3" 
         res_eval = await get_metrics(user_content, summary, connections, growth_plan, eval_model, target_lang)
         evaluation = res_eval["stats"]
         total_tokens += res_eval["tokens"]
