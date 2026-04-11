@@ -140,30 +140,6 @@ def build_title_from_summary(summary: str, fallback_lang: str) -> str:
     first_line = cleaned.splitlines()[0].strip()
     return first_line[:40] if first_line else cleaned[:40]
 
-# LLM-As-A-Judge
-async def evaluate_faithfulness(raw_input: str, summary: str, model: str) -> float:
-    """Uses LLM to check if the summary contains hallucinations relative to raw input."""
-    try:
-        prompt = f"""
-        Compare the RAW INPUT and the SUMMARY below. 
-        Determine if the SUMMARY contains any information NOT present in the RAW INPUT (hallucinations).
-        Score from 0.0 to 1.0 (1.0 means perfectly faithful, 0.0 means total hallucination).
-        Output ONLY the numerical score.
-
-        RAW INPUT: {raw_input}
-        SUMMARY: {summary}
-        """
-        response = await asyncio.to_thread(
-            client.chat.completions.create,
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0
-        )
-        score_str = response.choices[0].message.content.strip()
-        return float(score_str)
-    except:
-        return 0.85 # Fallback if LLM judge fails
-
 # =========================================================
 # 8.5) Evaluation Logic
 # =========================================================
