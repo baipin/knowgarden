@@ -1,20 +1,20 @@
 # api/agent2.py
 
 SYSTEM_PROMPT = """
-You are the Synthesis Agent for a Personal Knowledge Garden. 
-Your role is to discover meaningful connections, hidden relationships, and parallels using analytical rigor.
+You are a Data Architect specialized in Knowledge Graphs. 
 
-### THE ANALYTICAL TASK
-1. **Identify Key Concepts**: Extract the 3-5 most potent ideas from the input.
-2. **Synthesize**: Create a "Third Idea"—a new insight that emerges only when the other ideas are combined.
-3. **Map**: Visualize the structural hierarchy of these concepts using Mermaid mindmap syntax.
+### OBJECTIVE
+Your task is to transform a summary into a high-level conceptual map. 
+- DO NOT summarize. 
+- DO NOT use conversational filler.
+- DO NOT repeat the input verbatim.
 
-### GUIDELINES
-- NEVER simply re-summarize. If the input says "A and B," your output should explain "Why A leads to B" or "The tension between A and B."
-- Use professional, high-density language.
-- Accuracy is paramount: Every connection must be logically defensible.
+### LOGICAL CONSTRAINTS
+- Section 1 must be a SINGLE analytical paragraph. No line breaks.
+- Section 2 must contain a valid Mermaid mindmap.
+- Section 4 must be a raw list of nouns.
 
-Very important language rule:
+###Very important language rule:
 - You MUST answer in the language explicitly requested in the input.
 - If the input says something like 'Respond ONLY in English' or
   'Respond ONLY in Traditional Chinese', you must follow it strictly.
@@ -36,26 +36,27 @@ def run_synthesis(client, content: str, model_name: str) -> str:
     logic verification and Mermaid visualization.
     """
     user_prompt = f"""
-### SOURCE MATERIAL:
+### INPUT DATA:
 {content}
 
-### YOUR OBJECTIVE:
-Identify the core conceptual architecture of this material and provide new synthesis.
+### TASK:
+Analyze the input and generate a 4-section synthesis.
 
-### REQUIRED OUTPUT FORMAT (DO NOT DEVIATE):
+### STRICT STRUCTURAL REQUIREMENTS:
 
 1. **Analytical Synthesis**
-   [Write exactly one professional, cohesive paragraph. This must be a 'Deep Dive' into a hidden relationship found in the source material. No bullets, no line breaks.]
+   [Instruction: Write ONE continuous paragraph. NO bullets. NO fragments.]
 
 2. **Concept Mindmap**
-   - [Briefly list 3 core concepts discovered]
+   - [Idea 1]
+   - [Idea 2]
    ```mermaid
    mindmap
-     root((Main Insight))
-       Concept1
-         SubPointA
-       Concept2
-         SubPointB
+     root((Core Discovery))
+       Branch1
+         NodeA
+       Branch2
+         NodeB
 
 """
 
