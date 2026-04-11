@@ -194,20 +194,30 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
         if "</think>" in content:
             content = content.split("</think>")[-1]
             
-        eval_stats = {}
+        eval_stats = {
+            "relevance": 0.0, "faithfulness": 0.0, 
+            "synthesis": 0.0, "actionability": 0.0, 
+            "justification": "Parsing failed"
+        }
+
+        # Look for keywords even if the AI adds extra text
         for line in content.strip().split('\n'):
-            if ':' in line:
-                key, val = line.split(':', 1)
-                clean_key = key.replace("*", "").strip()
-                val_text = val.strip()
-                
-                if clean_key == "justification":
-                    eval_stats[clean_key] = val_text
-                else:
-                    try: 
-                        eval_stats[clean_key] = float(val_text)
-                    except ValueError:
-                        continue
+            line = line.lower().strip()
+            if 'justification:' in line:
+                eval_stats["justification"] = line.split('justification:', 1)[1].strip()
+            elif 'relevance:' in line:
+                try: eval_stats["relevance"] = float(line.split('relevance:', 1)[1].strip())
+                except: pass
+            elif 'faithfulness:' in line:
+                try: eval_stats["faithfulness"] = float(line.split('faithfulness:', 1)[1].strip())
+                except: pass
+            elif 'synthesis:' in line:
+                try: eval_stats["synthesis"] = float(line.split('synthesis:', 1)[1].strip())
+                except: pass
+            elif 'actionability:' in line:
+                try: eval_stats["actionability"] = float(line.split('actionability:', 1)[1].strip())
+                except: pass
+
         return {"stats": eval_stats, "tokens": tokens}
 
     except Exception as e:
