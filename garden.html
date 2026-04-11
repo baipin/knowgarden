@@ -374,24 +374,24 @@
 
         function renderContent(text) { 
          if (!text) return '';
-         const html = marked.parse(text);
-         // This finds code blocks labeled as mermaid and wraps them in a div for the library to find
+         let html = marked.parse(text);
          return `<div class="markdown-body">${html.replace(/<pre><code class="language-mermaid">([\s\S]*?)<\/code><\/pre>/g, (match, code) => {
-         return `<div class="mermaid">${code}</div>`;
+            const decodedCode = code.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+            return `<div class="mermaid">${decodedCode}</div>`;
          })}</div>`;
-       }
+        }
         function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#39;" }[m])); }
         
         function formatTags(tags) {
           if (!tags) return '';
-          // If the "tags" content starts with a mermaid block, render it as a diagram
-          if (tags.trim().startsWith('```mermaid')) {
+          const trimmed = tags.trim();
+          if (trimmed.startsWith('```mermaid') || trimmed.includes('mindmap') || trimmed.includes('graph TD')) {
           return renderContent(tags);
           }
-        return tags.split(/,|，/).map(t => t.trim()).filter(t => t).map(t =>
-        <div class="tag-chip">${escapeHtml(t)}</div>
-        ).join('');
-        }
+         return tags.split(/,|，/).map(t => t.trim()).filter(t => t).map(t => 
+         `<div class="tag-chip">${escapeHtml(t)}</div>`
+         ).join('');
+       }
 
         function readGardenData() {
             try { return JSON.parse(localStorage.getItem('garden_history') || '[]').sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)); } catch (e) { return []; }
@@ -454,7 +454,11 @@
                 container.appendChild(card);
             });
             if (window.renderMathInElement) renderMathInElement(container, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });
-            if (window.mermaid) mermaid.run({ nodes: container.querySelectorAll('.mermaid') });
+            if (window.mermaid) {
+             mermaid.run({
+             nodes: container.querySelectorAll('.mermaid')
+             }).catch(err => console.error('Mermaid Error:', err));
+            }
         }
 
         // --- 标题修改逻辑 ---
