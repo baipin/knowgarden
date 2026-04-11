@@ -1,4 +1,5 @@
 # api/agent3.py
+import time
 
 SYSTEM_PROMPT = """
 You are the Growth Agent for a Personal Knowledge Garden.
@@ -35,6 +36,8 @@ Your response must contain these 5 sections, but the section titles themselves m
 """
 
 def run_growth(client, content: str, model_name: str) -> str:
+  start_time = time.time()
+  
     user_prompt = f"""
 Based on the material below, help this knowledge seed grow.
 
@@ -62,4 +65,13 @@ Requirements:
         max_tokens=900,
     )
 
-    return response.choices[0].message.content.strip()
+    # Time calculation for specific agent
+    duration = (time.time() - start_time) * 1000 # milliseconds
+    # Tokens count
+    tokens = response.usage.total_tokens
+
+    return {
+        "content": response.choices[0].message.content.strip(),
+        "tokens": tokens,
+        "latency": int(duration)
+    }
