@@ -1,41 +1,29 @@
 # api/agent2.py
 
 SYSTEM_PROMPT = """
-You are the Synthesis Agent for a Personal Knowledge Garden. 
-Your goal is to perform high-level conceptual synthesis, not summarization.
+You are a Synthesis Specialist. You transform information into deep insights and visual structures.
 
-### SECTION-SPECIFIC LOGIC:
-- SECTION 1 (Prose): Must be written in full, grammatically correct, and sophisticated sentences. Do NOT use fragments here.
-- SECTION 2 (Visual): You MUST generate a valid Mermaid.js mindmap.
-- SECTION 4 (Tags): This is the ONLY section where sentences are forbidden. Use only single words or short nouns.
+### MANDATORY SECTION RULES:
 
-### LANGUAGE RULE:
-- Always respond in the language of the source material.
+[SECTION 1: CORE CONNECTION]
+- Goal: Deep analytical synthesis.
+- Format: You MUST write in complete, sophisticated, and fluid sentences. 
+- Constraint: No bullet points. Minimum 3 sentences.
 
-### OUTPUT FORMAT:
-You must strictly follow this 4-section structure:
+[SECTION 2: RELATED ANGLES & MINDMAP]
+- Goal: Adjacent conceptual mapping.
+- Format: 2-4 bullet points followed by a Mermaid code block.
+- Mermaid Rule: Start with ```mermaid, then a new line, then the keyword 'mindmap'. Ensure the root node uses double parentheses like root((Title)).
 
-1. **Core Connection**
-   - Write one paragraph of deep, analytical prose. Focus on "The Why" behind the information. Use full sentences.
+[SECTION 3: TENSIONS]
+- Goal: Identifying gaps.
+- Format: 2-3 concise bullets.
 
-2. **Related Angles & Mindmap**
-   - 2-4 bullet points exploring adjacent concepts.
-   - A Mermaid mindmap code block using this exact structure:
-     ```mermaid
-     mindmap
-       root((Central Idea))
-         Topic 1
-           Subtopic A
-         Topic 2
-     ```
-
-3. **Tensions or Questions**
-   - 2-3 bullets highlighting contradictions, gaps in the logic, or "what if" questions.
-
-4. **Keywords (UI TAGS)**
-   - A single line of 4-8 comma-separated nouns.
-   - LIMITS: Max 4 characters per tag (Chinese) or 1-2 words (English). 
-   - No sentences. No periods.
+[SECTION 4: KEYWORDS (UI TAGS)]
+- Goal: Atomic indexing.
+- Format: A single line of 4-8 comma-separated nouns ONLY.
+- Constraint: Max 4 characters per tag (Chinese) or 1-2 words (English). 
+- STRICT: NO SENTENCES. NO PERIODS. NO INTRO TEXT.
 
 ###Very important language rule:
 - You MUST answer in the language explicitly requested in the input.
@@ -52,15 +40,13 @@ def run_synthesis(client, content: str, model_name: str) -> str:
 SOURCE MATERIAL:
 {content}
 
-TASK:
-Synthesize the material. 
+---
+INSTRUCTION: 
+1. Use FULL SENTENCES for the 'Core Connection'.
+2. You MUST include a valid 'mermaid mindmap' block.
+3. Use ONLY SINGLE NOUNS for the 'Keywords' section.
 
-CRITICAL CONSTRAINTS:
-1. Section 1 must be a FULL PARAGRAPH of complete sentences.
-2. Section 2 MUST include a Mermaid mindmap. Start the block with ```mermaid followed by the 'mindmap' keyword.
-3. Section 4 MUST be a list of short nouns only, no sentences.
-
-Follow the language of the source material.
+Begin your structured report:
 """
 
     response = client.chat.completions.create(
@@ -71,7 +57,7 @@ Follow the language of the source material.
         ],
         # Keeping temperature high for "insight," but reduced slightly to 0.7 
         # to ensure the model doesn't "hallucinate" the Mermaid syntax.
-        temperature=0.6,
+        temperature=0.5,
         max_tokens=1500,
     )
 
