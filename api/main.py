@@ -140,7 +140,7 @@ def build_title_from_summary(summary: str, fallback_lang: str) -> str:
     first_line = cleaned.splitlines()[0].strip()
     return first_line[:40] if first_line else cleaned[:40]
 
-# Hallucination checking
+# LLM-As-A-Judge
 async def evaluate_faithfulness(raw_input: str, summary: str, model: str) -> float:
     """Uses LLM to check if the summary contains hallucinations relative to raw input."""
     try:
@@ -171,23 +171,31 @@ async def get_metrics(raw_input: str, summary: str, connections: str, model: str
     """Uses a judge model to provide real quality scores and check hallucinations."""
     try:
         prompt = f"""
-        Role: AI Quality Auditor
-        Task: Evaluate the following agent outputs based on the original user input.
+        Role: Knowledge Audit Judge
+        Task: Evaluate the AI's performance based on the user's RAW INPUT.
         
         RAW INPUT: {raw_input}
         SUMMARY: {summary}
         CONNECTIONS: {connections}
+        GROWTH_PLAN: {growth}
 
-        Provide three scores between 0.0 and 1.0:
-        1. Faithfulness: 1.0 if every fact in the summary/connections exists in the raw input. 
-           Lower the score if the agent "hallucinates" or invents information.
-        2. Relevance: How well does the summary capture the core intent of the raw input?
-        3. Logical Depth: How sophisticated are the connections found?
+        Evaluation Criteria (Score 0.0 to 1.0):
+        1. Relevance: Does the output address the user's specific input?
+        2. Faithfulness: Is the output grounded in facts from the input (No hallucinations)?
+        3. Synthesis: How well does the mindmap link separate concepts together?
+        4. Actionability: Is the "next action" in the growth plan practical and specific?
+
+        Instructions:
+        - First, provide a 'justification' (STRICTLY MAX 30 WORDS).
+        - Then, provide the numerical scores.
+        - Do not include any other conversational text or preamble.
 
         Format your response EXACTLY as:
-        faithfulness: 0.XX
+        justification: [Brief reasoning]
         relevance: 0.XX
-        logical_depth: 0.XX
+        faithfulness: 0.XX
+        synthesis: 0.XX
+        actionability: 0.XX
         """
         response = await asyncio.to_thread(
             client.chat.completions.create,
@@ -265,18 +273,14 @@ async def grow_knowledge(request: KnowledgeRequest) -> Dict[str, Any]:
         latency = int((time.time() - start_time) * 1000)
        
         # Evaluation metrics
-        eval_stats = await get_metrics(user_content, summary, connections, chosen_model)
-        # Check for Mermaid syntax start and at least one relationship arrow
-        has_graph_start = any(x in connections for x in ["graph ", "flowchart ", "mindmap"])
-        has_relationships = any(x in connections for x in ["-->", "---", "=="])
-        is_graph_valid = has_graph_start and has_relationships
+        eval_stats = await get_metrics(user_content, summary, connections, growth_plan, chosen_model)
 
         # 调整评估矩阵以反映 Agent2 的关联分析能力
         evaluation = {
             "relevance": eval_stats.get("relevance", 0.0),
-            "logical_depth": eval_stats.get("logical_depth", 0.0),
             "faithfulness": eval_stats.get("faithfulness", 0.0),
-            "graph_integrity": "Passed" if is_graph_valid else "Failed"
+            "synthesis": eval_stats.get("synthesis", 0.0),
+            "actionability": eval_stats.get("actionability", 0.0)
         }
 
         return {
