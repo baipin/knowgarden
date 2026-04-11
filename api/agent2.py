@@ -35,19 +35,31 @@ def run_synthesis(client, content: str, model_name: str) -> str:
     logic verification and Mermaid visualization.
     """
     user_prompt = f"""
-### INPUT DATA
+### SOURCE MATERIAL:
 {content}
 
-### INSTRUCTIONS
-1. Analyze the input data above for synthesis.
-2. Generate the 4-section response as defined in your system instructions.
-3. Ensure Section 1 is a professional paragraph and Section 4 follows the 4-character limit.
+### TASK:
+Analyze the material above and provide a structured synthesis report. 
+
+### OUTPUT STRUCTURE (DO NOT DEVIATE):
+
+1. **Core Connection**
+   - Write exactly ONE cohesive paragraph of analytical prose. 
+   - (Do NOT split this into short chips or bullets).
+
+2. **Related Angles & Mindmap**
+   - Provide 2-4 bullet points.
+   - Provide the Mermaid diagram.
+
+3. **Tensions or Questions**
+   - Provide 2-3 concise bullets.
+
+4. **Keywords (UI TAGS)**
+   - Provide 4-8 comma-separated nouns.
+   - STRICT LIMIT: Max 4 characters per tag (Chinese).
+   - CLEANUP: No titles or "Agent 1" mentions.
 
 Follow the requested language for all sections.
-
-### FINAL CHECK
-- No titles in keywords.
-- Mermaid mindmap must be valid.
 
 """
 
