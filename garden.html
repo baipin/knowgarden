@@ -56,6 +56,7 @@
                 transform: translateY(-5px);
                 box-shadow: var(--mdui-elevation-level3);
             }
+            /* 选中状态样式 */
             mdui-card[selected] {
                 outline: 3px solid var(--mdui-color-primary);
                 box-shadow: var(--mdui-elevation-level4);
@@ -78,45 +79,12 @@
             padding-right: 32px;
         }
 
-        .title-container {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex-grow: 1;
-            min-width: 0;
-        }
-
         .card-title {
             font-size: 20px;
             font-weight: bold;
             line-height: 1.4;
             word-break: break-word;
             flex-grow: 1;
-            padding: 2px 4px;
-            border-radius: 4px;
-            transition: background-color 0.2s;
-            cursor: text;
-        }
-        
-        /* 标题在不可编辑状态下模拟普通文本 */
-        .card-title[contenteditable="false"] {
-            cursor: pointer;
-        }
-
-        .edit-btn {
-            --mdui-color-primary: var(--mdui-color-primary);
-            opacity: 0.5;
-            transition: opacity 0.2s;
-            cursor: pointer;
-        }
-
-        .edit-btn:hover {
-            opacity: 1;
-        }
-
-        .card-title:focus {
-            background-color: var(--mdui-color-surface-container-highest);
-            outline: 2px solid var(--mdui-color-primary);
         }
 
         .card-meta {
@@ -143,41 +111,9 @@
             font-weight: bold;
         }
 
-        /* Agent2 视觉提示：增加右侧渐变遮罩暗示可滑动 */
-        .tags-outer-container {
-            position: relative;
-            margin-bottom: 16px;
-        }
-
-        .tags-outer-container::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 40px;
-            height: 100%;
-            background: linear-gradient(to left, var(--mdui-color-surface-container-low), transparent);
-            pointer-events: none;
-            border-radius: 0 8px 8px 0;
-        }
-
-        .tags-scroll-container {
-            display: flex;
-            overflow-x: auto;
-            white-space: nowrap;
-            gap: 8px;
-            padding-bottom: 4px;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-
-        .tags-scroll-container::-webkit-scrollbar {
-            display: none;
-        }
-
         .tag-chip {
-            flex-shrink: 0;
-            margin-top: 4px;
+            margin-right: 8px;
+            margin-top: 8px;
         }
 
         .section-label {
@@ -196,9 +132,9 @@
             word-break: break-word;
         }
 
-        .markdown-body p {
-            margin: 4px 0 12px;
-        }
+            .markdown-body p {
+                margin: 4px 0 12px;
+            }
 
         .growth-box {
             background-color: var(--mdui-color-secondary-container);
@@ -216,6 +152,7 @@
             margin-top: auto;
         }
 
+        /* 浮动整合按钮 */
         .fab-combine {
             position: fixed;
             bottom: 30px;
@@ -258,10 +195,16 @@
         }
 
         @keyframes mdui-rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
+        /* 调试面板项样式 */
         .debug-item {
             display: flex;
             justify-content: space-between;
@@ -330,8 +273,10 @@
                     <mdui-button variant="outlined" icon="delete_sweep" color="error" id="clear-btn"><span data-i18n="gardenClear">清空花园</span></mdui-button>
                     <input type="file" id="file-input" style="display: none;" accept=".json">
                 </div>
+                <script async defer src="https://buttons.github.io/buttons.js"></script>
                 <div class="mdui-typo-body-medium" style="opacity: 0.6;">
                     <p data-i18n="footerCopy"> © 2026 Knowledge Garden </p>
+                    <a class="github-button" href="https://github.com/baipin/knowgarden" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Star baipin/knowgarden on GitHub">Star</a>
                 </div>
             </footer>
         </mdui-layout-main>
@@ -378,13 +323,10 @@
 
         function renderContent(text) { return text ? `<div class="markdown-body">${marked.parse(text)}</div>` : ''; }
         function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#39;" }[m])); }
-        
-        // Agent2 视觉提示逻辑：使用外层容器包裹滚动区域
         function formatTags(tagsString) {
             if (!tagsString) return '';
-            const tags = String(tagsString).split(/[，,、\n]+/).map(t => t.trim()).filter(Boolean).slice(0, 10);
-            const chips = tags.map(tag => `<mdui-chip class="tag-chip" variant="filled">${escapeHtml(tag)}</mdui-chip>`).join('');
-            return `<div class="tags-outer-container"><div class="tags-scroll-container">${chips}</div></div>`;
+            return String(tagsString).split(/[，,、\n]+/).map(t => t.trim()).filter(Boolean).slice(0, 6)
+                .map(tag => `<mdui-chip class="tag-chip" variant="filled">${escapeHtml(tag)}</mdui-chip>`).join('');
         }
 
         function readGardenData() {
@@ -414,8 +356,7 @@
                 if (selectedIds.has(id)) card.setAttribute('selected', '');
 
                 card.onclick = (e) => {
-                    // 如果点击的是标题区域或按钮区域，不要触发卡片选择
-                    if (e.target.closest('mdui-button-icon') || e.target.closest('.title-container')) return;
+                    if (e.target.closest('mdui-button-icon')) return;
                     toggleSelect(id, card);
                 };
 
@@ -423,10 +364,7 @@
                         <mdui-checkbox class="card-checkbox" ${selectedIds.has(id) ? 'checked' : ''}></mdui-checkbox>
                         <div style="padding: 20px;">
                             <div class="card-header-row">
-                                <div class="title-container">
-                                    <div id="title-${id}" class="card-title" contenteditable="false" onblur="finalizeTitle('${id}')" onkeydown="handleTitleKey(event, '${id}')">🌱 ${escapeHtml(item.title || t('gardenUntitled'))}</div>
-                                    <mdui-button-icon icon="edit" class="edit-btn" onclick="enableEdit('${id}')"></mdui-button-icon>
-                                </div>
+                                <div class="card-title">🌱 ${escapeHtml(item.title || t('gardenUntitled'))}</div>
                                 <div class="card-meta">
                                     <div class="model-tag">${escapeHtml(item.model_used || 'AI')}</div>
                                     <div class="card-date">${escapeHtml(item.created_at || '')}</div>
@@ -436,7 +374,7 @@
                             <div class="content-text">${renderContent(item.summary)}</div>
                             <mdui-divider style="margin: 16px 0;"></mdui-divider>
                             <span class="section-label">${escapeHtml(a2T)}</span>
-                            <div>${formatTags(item.connections)}</div>
+                            <div style="margin-bottom: 16px;">${formatTags(item.connections)}</div>
                             <div class="growth-box">
                                 <span class="section-label" style="color: inherit;">${escapeHtml(a3T)}</span>
                                 <div class="content-text" style="margin: 0;">${renderContent(item.growth_plan)}</div>
@@ -454,59 +392,34 @@
             if (window.renderMathInElement) renderMathInElement(container, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });
         }
 
-        // --- 标题编辑功能逻辑 ---
-
-        function enableEdit(id) {
-            const el = document.getElementById(`title-${id}`);
-            el.contentEditable = "true";
-            el.focus();
-            // 将光标移动到文本末尾
-            const range = document.createRange();
-            const sel = window.getSelection();
-            range.selectNodeContents(el);
-            range.collapse(false);
-            sel.removeAllRanges();
-            sel.addRange(range);
-        }
-
-        function handleTitleKey(e, id) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById(`title-${id}`).blur();
-            }
-        }
-
-        function finalizeTitle(id) {
-            const el = document.getElementById(`title-${id}`);
-            el.contentEditable = "false";
-            
-            let newTitle = el.innerText.replace(/^🌱\s*/, '').trim();
-            if (!newTitle) {
-                newTitle = t('gardenUntitled');
-            }
-            // 重新规范显示
-            el.innerText = `🌱 ${newTitle}`;
-            
-            // 保存到本地
-            const history = readGardenData();
-            const index = history.findIndex(i => String(i.id) === String(id));
-            if (index !== -1 && history[index].title !== newTitle) {
-                history[index].title = newTitle;
-                localStorage.setItem('garden_history', JSON.stringify(history));
-                showMessage("Title updated");
-            }
-        }
-
-        // --- 其他逻辑保持不变 ---
-
+        // --- Debug Info Logic ---
         function showDebugInfo(id) {
             const item = readGardenData().find(i => String(i.id) === String(id));
             if (!item) return;
+
             const content = document.getElementById('debug-content');
-            content.innerHTML = `<div class="debug-item"><span class="debug-label">Latency</span><span>${item.latency || 'N/A'}ms</span></div>`;
+            const latency = item.latency ? `${item.latency}ms` : 'N/A';
+            const evalMatrix = item.evaluation ? JSON.stringify(item.evaluation, null, 2) : 'No evaluation data';
+            const tokens = item.usage ? (item.usage.total_tokens || 'N/A') : 'N/A';
+
+            content.innerHTML = `
+                <div class="debug-item">
+                    <span class="debug-label">Response Latency</span>
+                    <span>${latency}</span>
+                </div>
+                <div class="debug-item">
+                    <span class="debug-label">Token Usage</span>
+                    <span>${tokens}</span>
+                </div>
+                <div style="margin-top: 16px;">
+                    <span class="debug-label">Evaluation Matrix</span>
+                    <pre style="background: var(--mdui-color-surface-container-high); padding: 12px; border-radius: 8px; font-size: 12px; overflow-x: auto; margin-top: 8px;">${evalMatrix}</pre>
+                </div>
+            `;
             document.getElementById('debug-dialog').open = true;
         }
 
+        // --- Interaction Logic ---
         function toggleSelect(id, cardElement) {
             const checkbox = cardElement.querySelector('.card-checkbox');
             if (selectedIds.has(id)) {
@@ -523,10 +436,53 @@
 
         function updateFab() {
             const count = selectedIds.size;
-            combineFab.style.display = (count >= 2) ? 'flex' : 'none';
+            if (count >= 2) {
+                const label = (t('btnCombine') || "Combine {count} Seeds").replace("{count}", count);
+                document.getElementById('combine-btn-text').textContent = label;
+                combineFab.style.display = 'flex';
+            } else { combineFab.style.display = 'none'; }
         }
 
         function clearSelection() { selectedIds.clear(); loadGarden(); }
+
+        combineBtn.onclick = async () => {
+            const history = readGardenData();
+            const selected = history.filter(h => selectedIds.has(String(h.id)));
+            const combinedContent = selected.map(s => `### ${s.title}\n${s.summary}\n${s.growth_plan}`).join('\n\n---\n\n');
+            showMessage(t('combineLoading'));
+            try {
+                const response = await fetch('/api/grow', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: `Synthesis request:\n\n${combinedContent}`, lang: getCurrentLang(), model: selected[0].model_used || "deepseek-chat" })
+                });
+                const res = await response.json();
+                if (res.success) {
+                    const newSeed = { ...res.data, id: Date.now(), created_at: new Date().toLocaleString() };
+                    localStorage.setItem('garden_history', JSON.stringify([newSeed, ...history]));
+                    clearSelection();
+                    showMessage(t('combineSuccess'));
+                }
+            } catch (err) { showMessage("Error during combination"); }
+        };
+
+        async function generatePPT(id) {
+            const item = readGardenData().find(i => String(i.id) === String(id));
+            if (!item) return;
+            showMessage(t('combineLoading'));
+            try {
+                const response = await fetch('/api/generate_ppt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...item, lang: getCurrentLang(), model: item.model_used || "deepseek-chat" })
+                });
+                const res = await response.json();
+                if (res.success) {
+                    document.getElementById('ppt-content').textContent = res.data.ppt_markdown;
+                    document.getElementById('ppt-dialog').open = true;
+                }
+            } catch (e) { showMessage("PPT generation failed"); }
+        }
 
         function deleteCard(id) {
             if (!confirm(t('confirmDelete'))) return;
@@ -534,14 +490,53 @@
             loadGarden();
         }
 
+        async function copyCard(id) {
+            const item = readGardenData().find(i => String(i.id) === String(id));
+            const text = `【${item.title}】\n\n${item.summary}\n\nPlan: ${item.growth_plan}`;
+            await navigator.clipboard.writeText(text);
+            showMessage(t('copySuccess'));
+        }
+
+        document.getElementById('copy-marp-btn').onclick = () => {
+            navigator.clipboard.writeText(document.getElementById('ppt-content').textContent);
+            showMessage(t('copySuccess'));
+        };
+
         function showMessage(m) { if (window.mdui) mdui.snackbar({ message: m }); }
 
         function applyLanguage(lang) {
+            if (typeof i18n === 'undefined') return;
+            const data = i18n[lang] || i18n['zh-cn'];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (data[key]) el.textContent = data[key];
+            });
             localStorage.setItem('user_lang', lang);
+            langMenu.value = lang;
             loadGarden();
         }
 
         drawerTrigger.onclick = () => drawer.open = !drawer.open;
+        langMenu.onchange = () => applyLanguage(langMenu.value);
+        refreshBtn.onclick = () => { refreshBtn.classList.add('rotating'); loadGarden(); setTimeout(() => refreshBtn.classList.remove('rotating'), 800); };
+        exportBtn.onclick = () => {
+            const blob = new Blob([localStorage.getItem('garden_history')], { type: 'application/json' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = `garden_backup_${Date.now()}.json`; a.click();
+        };
+        importBtn.onclick = () => fileInput.click();
+        fileInput.onchange = (e) => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const imported = JSON.parse(ev.target.result);
+                const unique = Array.from(new Map([...imported, ...readGardenData()].map(i => [i.id || i.created_at, i])).values());
+                localStorage.setItem('garden_history', JSON.stringify(unique));
+                loadGarden();
+            };
+            reader.readAsText(e.target.files[0]);
+        };
+        clearBtn.onclick = () => { if (confirm(t('gardenClearConfirm'))) { localStorage.removeItem('garden_history'); loadGarden(); } };
+
         window.onload = () => applyLanguage(getCurrentLang());
     </script>
 </body>
