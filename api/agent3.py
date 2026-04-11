@@ -55,22 +55,22 @@ Requirements:
 - Follow the requested language strictly, including section headings
 """
 
-  response = client.chat.completions.create(
-    model=model_name,
-    messages=[
-      {"role": "system", "content": SYSTEM_PROMPT},
-      {"role": "user", "content": user_prompt},
-    ],
-    temperature=0.9,
-    max_tokens=900,
-  )
+    response = client.chat.completions.create(
+      model=model_name,
+      messages=[
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user_prompt},
+      ],
+      temperature=0.9,
+      max_tokens=900,
+    )
 
-   # Calculate metrics
-   duration = (time.time() - start_time) * 1000 
-   tokens = response.usage.total_tokens
+     # Calculate metrics
+     duration = (time.time() - start_time) * 1000 
+     tokens = response.usage.total_tokens
 
-   return {
-     "content": response.choices[0].message.content.strip(),
-     "tokens": tokens,
-     "latency": int(duration)
-   }
+     return {
+       "content": response.choices[0].message.content.strip(),
+       "tokens": tokens,
+       "latency": int(duration)
+     }
