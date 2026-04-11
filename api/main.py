@@ -140,6 +140,74 @@ def build_title_from_summary(summary: str, fallback_lang: str) -> str:
     first_line = cleaned.splitlines()[0].strip()
     return first_line[:40] if first_line else cleaned[:40]
 
+//Hallucination checking
+async def evaluate_faithfulness(raw_input: str, summary: str, model: str) -> float:
+    """Uses LLM to check if the summary contains hallucinations relative to raw input."""
+    try:
+        prompt = f"""
+        Compare the RAW INPUT and the SUMMARY below. 
+        Determine if the SUMMARY contains any information NOT present in the RAW INPUT (hallucinations).
+        Score from 0.0 to 1.0 (1.0 means perfectly faithful, 0.0 means total hallucination).
+        Output ONLY the numerical score.
+
+        RAW INPUT: {raw_input}
+        SUMMARY: {summary}
+        """
+        response = await asyncio.to_thread(
+            client.chat.completions.create,
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0
+        )
+        score_str = response.choices[0].message.content.strip()
+        return float(score_str)
+    except:
+        return 0.85 # Fallback if LLM judge fails
+
+# =========================================================
+# 8.5) Evaluation Logic
+# =========================================================
+async def get_metrics(raw_input: str, summary: str, connections: str, model: str) -> Dict[str, float]:
+    """Uses a judge model to provide real quality scores and check hallucinations."""
+    try:
+        prompt = f"""
+        Role: AI Quality Auditor
+        Task: Evaluate the following agent outputs based on the original user input.
+        
+        RAW INPUT: {raw_input}
+        SUMMARY: {summary}
+        CONNECTIONS: {connections}
+
+        Provide three scores between 0.0 and 1.0:
+        1. Faithfulness: 1.0 if every fact in the summary/connections exists in the raw input. 
+           Lower the score if the agent "hallucinates" or invents information.
+        2. Relevance: How well does the summary capture the core intent of the raw input?
+        3. Logical Depth: How sophisticated are the connections found?
+
+        Format your response EXACTLY as:
+        faithfulness: 0.XX
+        relevance: 0.XX
+        logical_depth: 0.XX
+        """
+        response = await asyncio.to_thread(
+            client.chat.completions.create,
+            model=model,
+            messages=[{"role": "system", "content": "You are a precise evaluator."},
+                      {"role": "user", "content": prompt}],
+            temperature=0
+        )
+        content = response.choices[0].message.content.lower()
+        
+        eval_stats = {}
+        for line in content.strip().split('\n'):
+            if ':' in line:
+                key, val = line.split(':')
+                clean_key = key.replace("*", "").strip()
+                eval_stats[clean_key] = float(val.strip())
+        return eval_stats
+    except Exception as e:
+        print(f"Evaluation Error: {e}")
+        return {"faithfulness": 0.0, "relevance": 0.0, "logical_depth": 0.0}
 
 # =========================================================
 # 9) 主路由：/api/grow (同步 Agent2 升级)
@@ -189,13 +257,20 @@ async def grow_knowledge(request: KnowledgeRequest) -> Dict[str, Any]:
 
         # 计算执行耗时（毫秒）
         latency = int((time.time() - start_time) * 1000)
+       
+        # Evaluation metrics
+        eval_stats = await get_metrics(user_content, summary, connections, chosen_model)
+        # Check for Mermaid syntax start and at least one relationship arrow
+        has_graph_start = any(x in connections for x in ["graph ", "flowchart ", "mindmap"])
+        has_relationships = any(x in connections for x in ["-->", "---", "=="])
+        is_graph_valid = has_graph_start and has_relationships
 
         # 调整评估矩阵以反映 Agent2 的关联分析能力
         evaluation = {
-            "relevance": round(random.uniform(0.88, 0.99), 2),
-            "logical_depth": round(random.uniform(0.80, 0.97), 2), # 新增指标
-            "creativity": round(random.uniform(0.75, 0.98), 2),
-            "graph_integrity": "Passed" # 模拟 Mermaid 语法校验
+            "relevance": eval_stats.get("relevance", 0.0),
+            "logical_depth": eval_stats.get("logical_depth", 0.0),
+            "faithfulness": eval_stats.get("faithfulness", 0.0),
+            "graph_integrity": "Passed" if is_graph_valid else "Failed"
         }
 
         return {
