@@ -1,4 +1,5 @@
 # api/agent1.py
+import time
 
 SYSTEM_PROMPT = """
 You are the Ingestion Agent for a Personal Knowledge Garden.
@@ -73,6 +74,8 @@ def run_ingestion(client, content: str, model_name: str) -> str:
     Returns:
         str: A structured summary in markdown/text format
     """
+  start_time = time.time()
+
     user_prompt = f"""
 Please read the material below and turn it into a clean knowledge summary.
 
@@ -98,5 +101,14 @@ Requirements:
         temperature=0.55,
         max_tokens=900,
     )
+  
+    # Time calculation for specific agent
+    duration = (time.time() - start_time) * 1000 # milliseconds
+    # Tokens count
+    tokens = response.usage.total_tokens
 
-    return response.choices[0].message.content.strip()
+    return {
+        "content": response.choices[0].message.content.strip(),
+        "tokens": tokens,
+        "latency": int(duration)
+    }
