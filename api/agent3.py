@@ -74,5 +74,5 @@ Requirements:
    "content": response.choices[0].message.content.strip(),
    "tokens": tokens,
    "latency": int(duration)
- }ncy": int(duration)
+ }
  }
