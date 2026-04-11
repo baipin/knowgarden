@@ -140,7 +140,7 @@ def build_title_from_summary(summary: str, fallback_lang: str) -> str:
     first_line = cleaned.splitlines()[0].strip()
     return first_line[:40] if first_line else cleaned[:40]
 
-//Hallucination checking
+# Hallucination checking
 async def evaluate_faithfulness(raw_input: str, summary: str, model: str) -> float:
     """Uses LLM to check if the summary contains hallucinations relative to raw input."""
     try:
