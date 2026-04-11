@@ -74,7 +74,7 @@ def run_ingestion(client, content: str, model_name: str) -> str:
     Returns:
         str: A structured summary in markdown/text format
     """
-  start_time = time.time()
+    start_time = time.time()
 
     user_prompt = f"""
 Please read the material below and turn it into a clean knowledge summary.
