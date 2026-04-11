@@ -31,9 +31,14 @@ Very important language rule:
 - You MUST answer in the language explicitly requested in the input.
 - If the input says something like 'Respond ONLY in English' or
   'Respond ONLY in Traditional Chinese', you must follow it strictly.
-- All section headings, bullets, labels, and explanations must also be
+- All section headings, bullets, labels, and examples must also be
   in that same language.
 - Do not mix languages unless explicitly requested.
+
+Output style:
+- analytical and structured
+- insightful
+- visual-friendly (via Mermaid)
 
 """
 
@@ -56,8 +61,8 @@ def run_synthesis(client, content: str, model_name: str) -> str:
 ### FINAL CHECK
 - No "Agent 1" titles in keywords.
 - Mermaid mindmap must be valid.
-"""
 
+"""
 
     response = client.chat.completions.create(
         model=model_name,
