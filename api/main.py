@@ -143,8 +143,15 @@ def build_title_from_summary(summary: str, fallback_lang: str) -> str:
 # =========================================================
 # 8.5) Evaluation Logic
 # =========================================================
-async def get_metrics(raw_input, summary, connections, growth, model):
-    """Evaluates the 4 core pillars: Relevance, Faithfulness, Synthesis, Actionability."""
+async def get_metrics(raw_input, summary, connections, growth, model, lang):
+    """Evaluates the 4 core pillars using the user's interface language."""
+    lang_map = {
+        "zh-cn": "Simplified Chinese",
+        "zh-tw": "Traditional Chinese",
+        "en": "English"
+    }
+    target_lang = lang_map.get(lang, "English")
+
     try:
         prompt = f"""
         Role: Knowledge Audit Judge
@@ -163,11 +170,12 @@ async def get_metrics(raw_input, summary, connections, growth, model):
 
         Instructions:
         - First, provide a 'justification' (STRICTLY MAX 30 WORDS).
+        - IMPORTANT: Write the 'justification' text in {target_lang}.
         - Then, provide the numerical scores.
         - Do not include any other conversational text or preamble.
 
         Format your response EXACTLY as:
-        justification: [Brief reasoning]
+        justification: [Brief reasoning in {target_lang}]
         relevance: 0.XX
         faithfulness: 0.XX
         synthesis: 0.XX
@@ -177,7 +185,7 @@ async def get_metrics(raw_input, summary, connections, growth, model):
             client.chat.completions.create,
             model=model,
             messages=[
-                {"role": "system", "content": "You are a precise evaluator."},
+                {"role": "system", "content": f"You are a precise evaluator. You must respond in {target_lang}."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0
@@ -187,7 +195,7 @@ async def get_metrics(raw_input, summary, connections, growth, model):
         eval_stats = {}
         for line in content.strip().split('\n'):
             if ':' in line:
-                key, val = line.split(':', 1) # Split on first colon only
+                key, val = line.split(':', 1)
                 clean_key = key.replace("*", "").strip()
                 val_text = val.strip()
                 
@@ -201,7 +209,6 @@ async def get_metrics(raw_input, summary, connections, growth, model):
         return eval_stats
     except Exception as e:
         print(f"Evaluation Error: {e}")
-        # Return fallback with the 4 keys we actually use now
         return {"relevance": 0.0, "faithfulness": 0.0, "synthesis": 0.0, "actionability": 0.0, "justification": "Error"}
 
 # =========================================================
@@ -254,7 +261,14 @@ async def grow_knowledge(request: KnowledgeRequest) -> Dict[str, Any]:
         latency = int((time.time() - start_time) * 1000)
 
         # Evaluation Metrics
-        eval_stats = await get_metrics(user_content, summary, connections, growth_plan, chosen_model)
+        val_stats = await get_metrics(
+            user_content, 
+            summary, 
+            connections, 
+            growth_plan, 
+            chosen_model, 
+            lang
+        )
         evaluation = {
             "relevance": eval_stats.get("relevance", 0.0),
             "faithfulness": eval_stats.get("faithfulness", 0.0),
