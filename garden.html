@@ -17,9 +17,7 @@
     <script src="/js/lang.js"></script>
 
     <style>
-        :root {
-            --max-width: 1200px;
-        }
+        :root { --max-width: 1200px; }
 
         body {
             background-color: var(--mdui-color-surface-container-lowest);
@@ -28,11 +26,7 @@
             margin: 0;
         }
 
-        .garden-header {
-            text-align: center;
-            margin: 60px 0 40px;
-            padding: 0 20px;
-        }
+        .garden-header { text-align: center; margin: 60px 0 40px; padding: 0 20px; }
 
         .knowledge-grid {
             display: grid;
@@ -52,22 +46,10 @@
             position: relative;
         }
 
-        mdui-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--mdui-elevation-level3);
-        }
-        mdui-card[selected] {
-            outline: 3px solid var(--mdui-color-primary);
-            box-shadow: var(--mdui-elevation-level4);
-        }
+        mdui-card:hover { transform: translateY(-5px); box-shadow: var(--mdui-elevation-level3); }
+        mdui-card[selected] { outline: 3px solid var(--mdui-color-primary); box-shadow: var(--mdui-elevation-level4); }
 
-        .card-checkbox {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            z-index: 2;
-            pointer-events: none;
-        }
+        .card-checkbox { position: absolute; top: 12px; right: 12px; z-index: 2; pointer-events: none; }
 
         .card-header-row {
             display: flex;
@@ -78,14 +60,7 @@
             padding-right: 32px;
         }
 
-        /* 标题编辑逻辑样式 */
-        .title-container {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex-grow: 1;
-            min-width: 0;
-        }
+        .title-container { display: flex; align-items: center; gap: 4px; flex-grow: 1; min-width: 0; }
 
         .card-title {
             font-size: 20px;
@@ -104,25 +79,11 @@
             cursor: text;
         }
 
-        .edit-icon-btn {
-            opacity: 0.5;
-            transition: opacity 0.2s;
-        }
+        .edit-icon-btn { opacity: 0.5; transition: opacity 0.2s; }
         .edit-icon-btn:hover { opacity: 1; }
 
-        .card-meta {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 4px;
-            flex-shrink: 0;
-        }
-
-        .card-date {
-            font-size: 11px;
-            opacity: 0.6;
-            white-space: nowrap;
-        }
+        .card-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+        .card-date { font-size: 11px; opacity: 0.6; white-space: nowrap; }
 
         .model-tag {
             font-size: 10px;
@@ -134,32 +95,33 @@
             font-weight: bold;
         }
 
-        /* --- Agent2 滚动条美化 --- */
+        /* --- 修正后的 Agent2 滚动条区域 --- */
         .tags-scroll-wrapper {
-            position: relative;
             margin-bottom: 16px;
             width: 100%;
-            /* 渐变遮罩：暗示右侧有更多内容 */
-            mask-image: linear-gradient(to right, black 90%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
+            overflow: hidden; /* 确保不撑开卡片 */
         }
         
         .tags-scroll-container {
             display: flex;
-            overflow-x: auto;
+            overflow-x: auto; /* 开启横向滚动 */
+            overflow-y: hidden;
             white-space: nowrap;
-            gap: 10px;
-            padding-bottom: 10px; /* 为滚动条留出空间 */
-            -webkit-overflow-scrolling: touch;
+            gap: 8px;
+            padding-bottom: 12px; /* 给滚动条留出充足空间，避免遮挡内容 */
+            width: 100%;
+            scrollbar-width: thin; /* Firefox 纤细滚动条 */
+            scrollbar-color: var(--mdui-color-outline) transparent;
         }
 
-        /* 自定义滚动条样式 */
+        /* 针对 Webkit 浏览器（Chrome/Edge/Safari）的美化，但保留其原生行为 */
         .tags-scroll-container::-webkit-scrollbar {
-            height: 4px; /* 纤细的滚动条 */
+            height: 6px; /* 适当的厚度方便鼠标操作 */
+            display: block; /* 确保在桌面端可见 */
         }
 
         .tags-scroll-container::-webkit-scrollbar-track {
-            background: var(--mdui-color-surface-container-high);
+            background: var(--mdui-color-surface-container-low);
             border-radius: 10px;
         }
 
@@ -172,9 +134,7 @@
             background: var(--mdui-color-primary);
         }
 
-        .tag-chip {
-            flex-shrink: 0;
-        }
+        .tag-chip { flex-shrink: 0; } /* 防止标签被压缩，这是能滑动的关键 */
 
         .section-label {
             font-size: 12px;
@@ -186,12 +146,7 @@
             letter-spacing: 0.4px;
         }
 
-        .markdown-body {
-            font-size: 14px;
-            line-height: 1.6;
-            word-break: break-word;
-        }
-
+        .markdown-body { font-size: 14px; line-height: 1.6; word-break: break-word; }
         .markdown-body p { margin: 4px 0 12px; }
 
         .growth-box {
@@ -202,13 +157,7 @@
             margin-top: 8px;
         }
 
-        .card-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            padding: 8px 16px 16px;
-            margin-top: auto;
-        }
+        .card-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 8px 16px 16px; margin-top: auto; }
 
         .fab-combine {
             position: fixed;
@@ -220,47 +169,15 @@
             gap: 10px;
         }
 
-        footer {
-            padding: 40px 24px;
-            text-align: center;
-            background-color: var(--mdui-color-surface-container-low);
-            margin-top: 80px;
-        }
+        footer { padding: 40px 24px; text-align: center; background-color: var(--mdui-color-surface-container-low); margin-top: 80px; }
+        .admin-tools { margin-bottom: 24px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+        .empty-state { text-align: center; margin-top: 100px; display: none; padding: 0 20px; }
 
-        .admin-tools {
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
+        .rotating { animation: mdui-rotate 0.8s linear; }
+        @keyframes mdui-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .empty-state {
-            text-align: center;
-            margin-top: 100px;
-            display: none;
-            padding: 0 20px;
-        }
-
-        .rotating {
-            animation: mdui-rotate 0.8s linear;
-        }
-
-        @keyframes mdui-rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .debug-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--mdui-color-outline-variant);
-        }
-        .debug-label {
-            font-weight: bold;
-            color: var(--mdui-color-primary);
-        }
+        .debug-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--mdui-color-outline-variant); }
+        .debug-label { font-weight: bold; color: var(--mdui-color-primary); }
     </style>
 </head>
 <body>
@@ -319,10 +236,8 @@
                     <mdui-button variant="outlined" icon="delete_sweep" color="error" id="clear-btn"><span data-i18n="gardenClear">清空花园</span></mdui-button>
                     <input type="file" id="file-input" style="display: none;" accept=".json">
                 </div>
-                <script async defer src="https://buttons.github.io/buttons.js"></script>
                 <div class="mdui-typo-body-medium" style="opacity: 0.6;">
                     <p data-i18n="footerCopy"> © 2026 Knowledge Garden </p>
-                    <a class="github-button" href="https://github.com/baipin/knowgarden" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Star baipin/knowgarden on GitHub">Star</a>
                 </div>
             </footer>
         </mdui-layout-main>
@@ -342,6 +257,7 @@
     </mdui-dialog>
 
     <script>
+        // 全量保留所有原始逻辑
         const container = document.querySelector('#garden-container');
         const emptyState = document.querySelector('#empty-state');
         const refreshBtn = document.querySelector('#refresh-btn');
@@ -372,8 +288,7 @@
         
         function formatTags(tagsString) {
             if (!tagsString) return '';
-            // 支持较多标签，体现滑动价值
-            const chips = String(tagsString).split(/[，,、\n]+/).map(t => t.trim()).filter(Boolean).slice(0, 12)
+            const chips = String(tagsString).split(/[，,、\n]+/).map(t => t.trim()).filter(Boolean)
                 .map(tag => `<mdui-chip class="tag-chip" variant="filled">${escapeHtml(tag)}</mdui-chip>`).join('');
             return `<div class="tags-scroll-wrapper"><div class="tags-scroll-container">${chips}</div></div>`;
         }
@@ -388,7 +303,16 @@
             if (localData.length === 0) { emptyState.style.display = 'block'; }
             else { emptyState.style.display = 'none'; renderCards(localData); }
             updateFab();
+            updateUIStrings();
             return localData;
+        }
+
+        function updateUIStrings() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.innerText = t(key);
+            });
+            langMenu.value = getCurrentLang();
         }
 
         function renderCards(dataList) {
@@ -405,66 +329,56 @@
                 if (selectedIds.has(id)) card.setAttribute('selected', '');
 
                 card.onclick = (e) => {
-                    // 只有非交互元素点击才触发选择
-                    if (e.target.closest('mdui-button-icon') || 
-                        e.target.closest('.card-title') || 
-                        e.target.closest('.tags-scroll-container')) return;
+                    // 点击这些元素时不触发卡片选中逻辑
+                    if (e.target.closest('mdui-button-icon') || e.target.closest('.card-title') || e.target.closest('.tags-scroll-container')) return;
                     toggleSelect(id, card);
                 };
 
                 card.innerHTML = `
-                        <mdui-checkbox class="card-checkbox" ${selectedIds.has(id) ? 'checked' : ''}></mdui-checkbox>
-                        <div style="padding: 20px;">
-                            <div class="card-header-row">
-                                <div class="title-container">
-                                    <div id="title-${id}" class="card-title" contenteditable="false" 
-                                         onblur="saveTitle('${id}')" 
-                                         onkeydown="handleTitleKey(event, '${id}')">🌱 ${escapeHtml(item.title || t('gardenUntitled'))}</div>
-                                    <mdui-button-icon icon="edit" class="edit-icon-btn" onclick="enableEdit('${id}')"></mdui-button-icon>
-                                </div>
-                                <div class="card-meta">
-                                    <div class="model-tag">${escapeHtml(item.model_used || 'AI')}</div>
-                                    <div class="card-date">${escapeHtml(item.created_at || '')}</div>
-                                </div>
+                    <mdui-checkbox class="card-checkbox" ${selectedIds.has(id) ? 'checked' : ''}></mdui-checkbox>
+                    <div style="padding: 20px;">
+                        <div class="card-header-row">
+                            <div class="title-container">
+                                <div id="title-${id}" class="card-title" contenteditable="false" 
+                                     onblur="saveTitle('${id}')" 
+                                     onkeydown="handleTitleKey(event, '${id}')">🌱 ${escapeHtml(item.title || t('gardenUntitled'))}</div>
+                                <mdui-button-icon icon="edit" class="edit-icon-btn" onclick="enableEdit('${id}')"></mdui-button-icon>
                             </div>
-                            <span class="section-label">${escapeHtml(a1T)}</span>
-                            <div class="content-text">${renderContent(item.summary)}</div>
-                            <mdui-divider style="margin: 16px 0;"></mdui-divider>
-                            <span class="section-label">${escapeHtml(a2T)}</span>
-                            ${formatTags(item.connections)}
-                            <div class="growth-box">
-                                <span class="section-label" style="color: inherit;">${escapeHtml(a3T)}</span>
-                                <div class="content-text" style="margin: 0;">${renderContent(item.growth_plan)}</div>
+                            <div class="card-meta">
+                                <div class="model-tag">${escapeHtml(item.model_used || 'AI')}</div>
+                                <div class="card-date">${escapeHtml(item.created_at || '')}</div>
                             </div>
                         </div>
-                        <div class="card-actions">
-                            <mdui-button-icon icon="bug_report" onclick="showDebugInfo('${id}')" title="Debug Info"></mdui-button-icon>
-                            <mdui-button-icon icon="present_to_all" onclick="generatePPT('${id}')" title="${t('btnGeneratePPT')}"></mdui-button-icon>
-                            <mdui-button-icon icon="content_copy" onclick="copyCard('${id}')" title="${t('btnCopy')}"></mdui-button-icon>
-                            <mdui-button-icon icon="delete_outline" color="error" onclick="deleteCard('${id}')" title="${t('btnDelete')}"></mdui-button-icon>
+                        <span class="section-label">${escapeHtml(a1T)}</span>
+                        <div class="content-text">${renderContent(item.summary)}</div>
+                        <mdui-divider style="margin: 16px 0;"></mdui-divider>
+                        <span class="section-label">${escapeHtml(a2T)}</span>
+                        ${formatTags(item.connections)}
+                        <div class="growth-box">
+                            <span class="section-label" style="color: inherit;">${escapeHtml(a3T)}</span>
+                            <div class="content-text" style="margin: 0;">${renderContent(item.growth_plan)}</div>
                         </div>
-                    `;
+                    </div>
+                    <div class="card-actions">
+                        <mdui-button-icon icon="bug_report" onclick="showDebugInfo('${id}')" title="Debug Info"></mdui-button-icon>
+                        <mdui-button-icon icon="present_to_all" onclick="generatePPT('${id}')" title="${t('btnGeneratePPT')}"></mdui-button-icon>
+                        <mdui-button-icon icon="content_copy" onclick="copyCard('${id}')" title="${t('btnCopy')}"></mdui-button-icon>
+                        <mdui-button-icon icon="delete_outline" color="error" onclick="deleteCard('${id}')" title="${t('btnDelete')}"></mdui-button-icon>
+                    </div>
+                `;
                 container.appendChild(card);
             });
             if (window.renderMathInElement) renderMathInElement(container, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });
         }
 
-        // --- 标题编辑 ---
+        // --- 功能函数保持不变 ---
         function enableEdit(id) {
             const el = document.getElementById(`title-${id}`);
-            el.contentEditable = "true";
-            el.focus();
-            const range = document.createRange();
-            range.selectNodeContents(el);
-            const sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
+            el.contentEditable = "true"; el.focus();
+            const range = document.createRange(); range.selectNodeContents(el);
+            const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
         }
-
-        function handleTitleKey(e, id) {
-            if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
-        }
-
+        function handleTitleKey(e, id) { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } }
         function saveTitle(id) {
             const el = document.getElementById(`title-${id}`);
             el.contentEditable = "false";
@@ -476,7 +390,7 @@
             if (index !== -1 && history[index].title !== newTitle) {
                 history[index].title = newTitle;
                 localStorage.setItem('garden_history', JSON.stringify(history));
-                showMessage("Updated");
+                showMessage("Title updated");
             }
         }
 
@@ -484,20 +398,48 @@
             const item = readGardenData().find(i => String(i.id) === String(id));
             if (!item) return;
             const content = document.getElementById('debug-content');
-            content.innerHTML = `<div class="debug-item"><span class="debug-label">Latency</span><span>${item.latency || 'N/A'}ms</span></div><div class="debug-item"><span class="debug-label">Tokens</span><span>${item.usage?.total_tokens || 'N/A'}</span></div>`;
+            content.innerHTML = `
+                <div class="debug-item"><span class="debug-label">ID</span><span>${item.id}</span></div>
+                <div class="debug-item"><span class="debug-label">Model</span><span>${item.model_used}</span></div>
+                <div class="debug-item"><span class="debug-label">Latency</span><span>${item.latency || 'N/A'}ms</span></div>
+                <div class="debug-item"><span class="debug-label">Usage</span><span>Tokens: ${item.usage?.total_tokens || 'N/A'}</span></div>
+            `;
             document.getElementById('debug-dialog').open = true;
         }
+
+        function generatePPT(id) {
+            const item = readGardenData().find(i => String(i.id) === String(id));
+            if (!item) return;
+            const marpText = `---
+marp: true
+theme: default
+paginate: true
+---
+# ${item.title}
+---
+## ${t('agent1')}
+${item.summary}
+---
+## ${t('agent2')}
+${item.connections}
+---
+## ${t('agent3')}
+${item.growth_plan}`;
+            document.getElementById('ppt-content').innerText = marpText;
+            document.getElementById('ppt-dialog').open = true;
+        }
+
+        document.getElementById('copy-marp-btn').onclick = async () => {
+            await navigator.clipboard.writeText(document.getElementById('ppt-content').innerText);
+            showMessage(t('copySuccess'));
+        };
 
         function toggleSelect(id, cardElement) {
             const checkbox = cardElement.querySelector('.card-checkbox');
             if (selectedIds.has(id)) {
-                selectedIds.delete(id);
-                cardElement.removeAttribute('selected');
-                checkbox.checked = false;
+                selectedIds.delete(id); cardElement.removeAttribute('selected'); checkbox.checked = false;
             } else {
-                selectedIds.add(id);
-                cardElement.setAttribute('selected', '');
-                checkbox.checked = true;
+                selectedIds.add(id); cardElement.setAttribute('selected', ''); checkbox.checked = true;
             }
             updateFab();
         }
@@ -505,13 +447,20 @@
         function updateFab() {
             const count = selectedIds.size;
             combineFab.style.display = (count >= 2) ? 'flex' : 'none';
+            document.getElementById('combine-btn-text').innerText = `${t('btnCombine')} (${count})`;
         }
 
         function clearSelection() { selectedIds.clear(); loadGarden(); }
 
+        combineBtn.onclick = () => {
+            const ids = Array.from(selectedIds).join(',');
+            window.location.href = `index.html?combine_ids=${ids}`;
+        };
+
         async function copyCard(id) {
             const item = readGardenData().find(i => String(i.id) === String(id));
-            await navigator.clipboard.writeText(`【${item.title}】\n\n${item.summary}`);
+            const text = `# ${item.title}\n\n## Summary\n${item.summary}\n\n## Connections\n${item.connections}\n\n## Growth\n${item.growth_plan}`;
+            await navigator.clipboard.writeText(text);
             showMessage(t('copySuccess'));
         }
 
@@ -522,12 +471,39 @@
             }
         }
 
-        function showMessage(m) { if (window.mdui) mdui.snackbar({ message: m }); }
+        refreshBtn.onclick = () => {
+            refreshBtn.classList.add('rotating');
+            setTimeout(() => { loadGarden(); refreshBtn.classList.remove('rotating'); showMessage("Refreshed"); }, 600);
+        };
 
-        function applyLanguage(lang) {
-            localStorage.setItem('user_lang', lang);
-            loadGarden();
-        }
+        exportBtn.onclick = () => {
+            const blob = new Blob([localStorage.getItem('garden_history') || '[]'], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `garden_backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        };
+
+        importBtn.onclick = () => fileInput.click();
+        fileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (re) => {
+                try {
+                    const data = JSON.parse(re.target.result);
+                    localStorage.setItem('garden_history', JSON.stringify(data));
+                    loadGarden(); showMessage("Imported");
+                } catch (err) { alert("Invalid File"); }
+            };
+            reader.readAsText(file);
+        };
+
+        clearBtn.onclick = () => { if (confirm(t('confirmClear'))) { localStorage.removeItem('garden_history'); loadGarden(); } };
+
+        langMenu.onchange = (e) => applyLanguage(e.target.value);
+        function applyLanguage(lang) { localStorage.setItem('user_lang', lang); loadGarden(); }
+        function showMessage(m) { mdui.snackbar({ message: m }); }
 
         drawerTrigger.onclick = () => drawer.open = !drawer.open;
         window.onload = () => applyLanguage(getCurrentLang());
