@@ -73,16 +73,29 @@ def run_synthesis(client, content: str, model_name: str) -> str:
     logic verification and Mermaid visualization.
     """
     user_prompt = f"""
-Based on the material below, discover meaningful knowledge connections.
-
-Material:
+### SOURCE MATERIAL:
 {content}
 
-Requirements:
-- Conduct an internal logical analysis to find hidden semantic links.
-- Provide a Mermaid.js mindmap to visualize the relationships in the second section.
-- End with a short keyword section containing 4-8 concise nouns (Max 4 chars for Chinese).
-- Follow the requested language strictly, including section headings.
+### TASK:
+Analyze the material to discover hidden synthesis points.
+
+### OUTPUT REQUIREMENTS:
+1. **Section 1**: One paragraph of deep synthesis.
+2. **Section 2 (Mindmap)**: 2-4 bullets AND a Mermaid diagram.
+   - Use this exact syntax:
+     ```mermaid
+     mindmap
+       root((Core Concept))
+         Node1
+         Node2
+     ```
+3. **Section 3**: 2-3 tensions or questions.
+4. **Section 4 (Keywords)**: 
+   - **STRICT LIMIT**: Max 4 characters per tag (Chinese) or 1-2 words (English).
+   - **NO LEAKAGE**: Do NOT use the title of the material or "Agent 1" as a tag.
+   - **FORMAT**: 4-8 nouns, comma-separated.
+
+Strictly follow the requested language for all sections.
 
 """
 
