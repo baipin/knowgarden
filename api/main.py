@@ -157,34 +157,32 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
 
     try:
         prompt = f"""
-        Role: Knowledge Audit Judge
-        Task: Evaluate the AI's performance based on the user's RAW INPUT. 
-        Output RAW JSON ONLY.
-        
-        RAW INPUT: {raw_input}
-        SUMMARY: {s_summary}
-        CONNECTIONS: {s_map}
-        GROWTH_PLAN: {s_plan}
+  Role: Knowledge Audit Judge
+  Task: Evaluate the AI's performance based on the user's RAW INPUT. 
 
-        Evaluation Criteria (Score 0.0 to 1.0):
-        1. Relevance: Does the output address the user's specific input?
-        2. Faithfulness: Is the output grounded in facts from the input (No hallucinations)?
-        3. Synthesis: How well does the mindmap link separate concepts together?
-        4. Actionability: Is the "next action" in the growth plan practical and specific?
+  RAW INPUT: {raw_input}
+  SUMMARY: {s_summary}
+  CONNECTIONS: {s_map}
+  GROWTH_PLAN: {s_plan}
 
-        Instructions:
-        - First, provide a 'justification' (STRICTLY MAX 30 WORDS).
-        - IMPORTANT: Write the 'justification' text in {target_lang}.
-        - Then, provide the numerical scores.
-        - Do not include any other conversational text or preamble.
+  Evaluation Criteria (Score 0.0 to 1.0):
+  1. Relevance: Address the specific input?
+  2. Faithfulness: No hallucinations?
+  3. Synthesis: Mindmap quality?
+  4. Actionability: Practical next step?
 
-        Format your response EXACTLY as:
-        justification: [Brief reasoning in {target_lang}]
-        relevance: 0.XX
-        faithfulness: 0.XX
-        synthesis: 0.XX
-        actionability: 0.XX
-        """
+  Instructions:
+  - Write the 'justification' text in {target_lang} (MAX 30 WORDS).
+  - Then provide numerical scores.
+  - NO JSON. NO Markdown code blocks. No preamble.
+
+  Format your response EXACTLY like this example:
+  justification: [Brief reasoning]
+  relevance: 0.85
+  faithfulness: 0.90
+  synthesis: 0.70
+  actionability: 0.80
+  """
         response = await asyncio.to_thread(
             client.chat.completions.create,
             model=eval_model, 
