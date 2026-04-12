@@ -62,8 +62,8 @@ app.add_middleware(
 # 6) 初始化 LLM Client
 # =========================================================
 client = OpenAI(
-    api_key="sk-rVez6ZKC08cwL3LNNSXZwiy9yndv60MB32H0e0eqxfbZgzb2",
-    base_url="https://api.chatanywhere.tech/v1"
+    api_key=os.getenv("DEEPSEEK_API_KEY"),
+    base_url=os.getenv("DEEPSEEK_BASE_URL")
 )
 
 
