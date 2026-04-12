@@ -299,7 +299,13 @@ async def grow_knowledge(request: KnowledgeRequest) -> Dict[str, Any]:
                 "latency": final_latency,
                 "evaluation": evaluation,
                 "usage": {
-                    "total_tokens": total_tokens
+                    "total_tokens": total_tokens,
+                    "breakdown": {
+                        "ingestion": res1["tokens"],
+                        "synthesis": res2["tokens"],
+                        "growth": res3["tokens"],
+                        "audit": res_eval["tokens"]
+                    }
                 }
             }
         }
