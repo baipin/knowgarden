@@ -673,45 +673,86 @@
         langMenu.onchange = () => applyLanguage(langMenu.value);
         refreshBtn.onclick = () => { refreshBtn.classList.add('rotating'); loadGarden(); setTimeout(() => refreshBtn.classList.remove('rotating'), 800); };
         exportBtn.onclick = () => {
-            // 1. 从 localStorage 获取原始字符串数据
-            const rawData = localStorage.getItem('garden_history');
-            
-            if (!rawData) {
-                showMessage("Garden is empty, nothing to export.");
-                return;
-            }
-
+            // 获取原始数据字符串
+            const rawData = localStorage.getItem('garden_history') || '[]';
             try {
-                // 2. 先解析为 JS 对象
-                const jsonObject = JSON.parse(rawData);
-                
-                // 3. 核心修改：使用 JSON.stringify 的第三个参数进行格式化
-                // null 是替代函数（不需要），2 代表每个层级缩进 2 个空格
-                const formattedJson = JSON.stringify(jsonObject, null, 2);
-                
-                // 4. 生成 Blob 并下载
+                // 将字符串解析为对象，再重新序列化，添加 2 个空格的缩进
+                const formattedJson = JSON.stringify(JSON.parse(rawData), null, 2);
                 const blob = new Blob([formattedJson], { type: 'application/json' });
                 const a = document.createElement('a'); 
                 a.href = URL.createObjectURL(blob);
                 a.download = `garden_backup_${Date.now()}.json`; 
                 a.click();
-                
-                showMessage("Backup exported with formatting");
             } catch (e) {
-                console.error("Export Error:", e);
-                showMessage("Export failed: Data error");
+                showMessage("Export failed: Data format error");
             }
         };
+                // ==================== 导入备份功能（带完整错误提示） ====================
         importBtn.onclick = () => fileInput.click();
+
         fileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
             const reader = new FileReader();
+
             reader.onload = (ev) => {
-                const imported = JSON.parse(ev.target.result);
-                const unique = Array.from(new Map([...imported, ...readGardenData()].map(i => [i.id || i.created_at, i])).values());
-                localStorage.setItem('garden_history', JSON.stringify(unique));
-                loadGarden();
+                try {
+                    const text = ev.target.result.trim();
+                    let imported;
+
+                    // 1. 尝试解析 JSON
+                    try {
+                        imported = JSON.parse(text);
+                    } catch (parseErr) {
+                        showMessage(t('importFormatError') || 'Invalid JSON format');
+                        console.error('JSON Parse Error:', parseErr);
+                        return;
+                    }
+
+                    // 2. 检查是否为数组（你要求的格式）
+                    if (!Array.isArray(imported)) {
+                        showMessage(t('importFormatError') || 'Invalid format: Backup should be an array');
+                        return;
+                    }
+
+                    // 3. 检查数组是否为空（可选，但推荐）
+                    if (imported.length === 0) {
+                        showMessage("Imported file is empty.");
+                        return;
+                    }
+
+                    // 4. 合并数据（去重逻辑保持不变）
+                    const currentData = readGardenData();
+                    const combined = [...imported, ...currentData];
+                    
+                    // 使用 id 或 created_at 去重
+                    const unique = Array.from(
+                        new Map(combined.map(item => [
+                            item.id || item.created_at || Math.random(), 
+                            item
+                        ])).values()
+                    );
+
+                    // 5. 保存并刷新
+                    localStorage.setItem('garden_history', JSON.stringify(unique));
+                    loadGarden();
+
+                    // 成功提示
+                    showMessage(t('importSuccess') || 'Imported successfully, refreshing...');
+
+                } catch (err) {
+                    console.error('Import Error:', err);
+                    showMessage(t('importSysError') || 'System error reading file');
+                }
             };
-            reader.readAsText(e.target.files[0]);
+
+            // 文件读取错误处理
+            reader.onerror = () => {
+                showMessage(t('importSysError') || 'System error reading file');
+            };
+
+            reader.readAsText(file);
         };
         clearBtn.onclick = () => { if (confirm(t('gardenClearConfirm'))) { localStorage.removeItem('garden_history'); loadGarden(); } };
 
