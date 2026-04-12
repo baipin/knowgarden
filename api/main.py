@@ -144,9 +144,9 @@ def build_title_from_summary(summary: str, fallback_lang: str) -> str:
 # 8.5) Evaluation Logic
 # =========================================================
 async def get_metrics(raw_input, summary, connections, growth, eval_model, lang):
-    s_summary = str(summary)[:500]
-    s_map = str(connections)[:800]
-    s_plan = str(growth)[:800]
+    s_summary = str(summary)[:600]
+    s_map = str(connections)[:1000]
+    s_plan = str(growth)[:1000]
     """Evaluates the 4 core pillars using the user's interface language."""
     lang_map = {
         "zh-cn": "Simplified Chinese",
@@ -167,9 +167,9 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
 
   Evaluation Criteria (Score 0.0 to 1.0):
   1. Relevance (Thematic Alignment): Does the output stay true to the user's intent, or does it drift into generic AI filler?
-2. Faithfulness (Fact-Checking): Are there any hallucinations? Every claim in the Summary and Connections must be strictly logically derived from the RAW INPUT. Penalize "invented" facts.
-3. Synthesis (Insight & Depth): Look at the 'Core Connection' and 'Friction' sections. Does the AI identify genuine 'aha!' patterns, logical gaps, or non-obvious parallels? High scores require deep analytical reasoning, not just rephrasing.
-4. Actionability (Pragmatic Conversion): Is the 'next small action' a specific, high-leverage step that actually bridges the theory into practice?
+  2. Faithfulness (Fact-Checking): Are there any hallucinations? Every claim in the Summary and Connections must be strictly logically derived from the RAW INPUT. Penalize "invented" facts.
+  3. Synthesis (Insight & Depth): Look at the 'Core Connection' and 'Friction' sections. Does the AI identify genuine 'aha!' patterns, logical gaps, or non-obvious parallels? High scores require deep analytical reasoning, not just rephrasing.
+  4. Actionability (Pragmatic Conversion): Is the 'next small action' a specific, high-leverage step that actually bridges the theory into practice?
 
   Instructions:
   - Write the 'justification' text in {target_lang} (MAX 30 WORDS).
@@ -187,17 +187,17 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
             client.chat.completions.create,
             model=eval_model, 
             messages=[
-                {"role": "system", "content": "You are a concise auditor."},
+                {"role": "system", "content": "You are a concise auditor. Respond ONLY with the requested format."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0,
         )
 
         tokens = response.usage.total_tokens
-        content = response.choices[0].message.content.lower()
+        raw_content = response.choices[0].message.content.strip()
 
-        # Handling Chain-Of-Thoughts
-        clean_content = content.split("</think>")[-1] if "</think>" in content else content
+        # Handling Chain-of-Thought in DeepSeek R1/V3
+        clean_content = raw_content.split("</think>")[-1].strip()
             
         eval_stats = {
             "relevance": 0.0, "faithfulness": 0.0, 
@@ -205,16 +205,21 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
             "justification": "Parsing failed"
         }
 
-        for line in clean_content.strip().split('\n'):
-            line = line.replace('*', '').strip()
+        # Line-by-Line Parsing
+        for line in clean_content.split('\n'):
+            line = line.replace('*', '').strip() # Remove bolding if AI adds it
             if ':' in line:
-                key, val = line.split(':', 1)
-                key = key.strip()
+                # Split only on the FIRST colon to protect colons in the justification text
+                parts = line.split(':', 1)
+                key = parts[0].strip().lower() # Lowercase only the key
+                val = parts[1].strip()
+                
                 if key == "justification":
-                    eval_stats["justification"] = val.strip()
+                    eval_stats["justification"] = val
                 elif key in eval_stats:
                     try:
                         import re
+                        # Search for the first number (float or int) in the value
                         num_match = re.search(r"(\d+\.\d+|\d+)", val)
                         if num_match:
                             eval_stats[key] = float(num_match.group(1))
@@ -226,7 +231,7 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
     except Exception as e:
         print(f"Evaluation Error: {e}")
         return {
-            "stats": {"relevance": 0.0, "faithfulness": 0.0, "synthesis": 0.0, "actionability": 0.0, "justification": "Error"},
+            "stats": {"relevance": 0.0, "faithfulness": 0.0, "synthesis": 0.0, "actionability": 0.0, "justification": f"Error: {str(e)[:50]}"},
             "tokens": 0
         }
 # =========================================================
