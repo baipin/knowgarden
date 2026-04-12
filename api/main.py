@@ -184,15 +184,18 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
         response = await asyncio.to_thread(
             client.chat.completions.create,
             model=eval_model, 
-            messages=[...],
+            messages=[
+                {"role": "system", "content": "You are a concise auditor."},
+                {"role": "user", "content": prompt}
+            ],
             temperature=0
         )
 
         tokens = response.usage.total_tokens
+        raw_content = response.choices[0].message.content.lower()
         
-        content = response.choices[0].message.content.lower()
-        if "</think>" in content:
-            content = content.split("</think>")[-1]
+        # Handle reasoning models (r1) if they are ever used
+        clean_content = raw_content.split("</think>")[-1] if "</think>" in raw_content else raw_content
             
         eval_stats = {
             "relevance": 0.0, "faithfulness": 0.0, 
@@ -200,21 +203,24 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
             "justification": "Parsing failed"
         }
 
-        for line in full_text.lower().split('\n'):
-        if ':' in line:
-            key, val = line.split(':', 1)
-            key = key.strip()
-            if key in eval_stats:
-                try:
-                    # Remove any non-numeric characters like * or -
-                    import re
-                    num_match = re.search(r"(\d+\.\d+|\d+)", val)
-                    if num_match:
-                        eval_stats[key] = float(num_match.group(1))
-                except:
-                    pass
+        # Fixed Indentation and Variable Name
+        for line in clean_content.strip().split('\n'):
+            line = line.replace('*', '').strip()
+            if ':' in line:
+                key, val = line.split(':', 1)
+                key = key.strip()
+                if key == "justification":
+                    eval_stats["justification"] = val.strip()
+                elif key in eval_stats:
+                    try:
+                        import re
+                        num_match = re.search(r"(\d+\.\d+|\d+)", val)
+                        if num_match:
+                            eval_stats[key] = float(num_match.group(1))
+                    except:
+                        pass
 
-    return {"stats": eval_stats, "tokens": tokens}
+        return {"stats": eval_stats, "tokens": tokens}
 
     except Exception as e:
         print(f"Evaluation Error: {e}")
