@@ -312,7 +312,7 @@ async def grow_knowledge(request: KnowledgeRequest) -> Dict[str, Any]:
                 "growth_plan": growth_plan,
                 "latency": final_latency,
                 "evaluation": evaluation,
-                "model": chosen_model,
+                "model_used": chosen_model,
                 "usage": {
                     "total_tokens": total_tokens,
                     "breakdown": {
