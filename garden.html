@@ -602,13 +602,14 @@
             const latency = item.latency ? `${item.latency}ms` : 'N/A';
             let tokenDisplay = 'N/A';
             if (item.usage) {
-                tokenDisplay = item.usage.total_tokens || 'N/A';
-                // If the detailed breakdown exists, add it in parentheses
-                if (item.usage.details) {
-                    const d = item.usage.details;
-                    tokenDisplay += ` <br><small style="opacity:0.7">(A1:${d.agent1} | A2:${d.agent2} | A3:${d.agent3} | Audit:${d.judge})</small>`;
-                }
-            }
+               tokenDisplay = item.usage.total_tokens || 'N/A';
+               if (item.usage.breakdown) {
+               const b = item.usage.breakdown;
+               tokenDisplay += ` <br><small style="opacity:0.7">
+                    (In:${b.ingestion} | Syn:${b.synthesis} | Grw:${b.growth} | Aud:${b.audit})
+               </small>`;
+               }
+              }
             const justification = item.evaluation?.justification || "No reasoning provided.";
             
             const metricsList = ['relevance', 'faithfulness', 'synthesis', 'actionability']
