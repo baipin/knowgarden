@@ -154,7 +154,7 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
 
     try:
         prompt = f"""
-  Role: Knowledge Audit Judge
+  Role: Professional Knowledge Audit Judge
   Task: Evaluate the AI's performance based on the user's RAW INPUT. 
 
   RAW INPUT: {raw_input}
@@ -167,6 +167,9 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
   2. Faithfulness (Fact-Checking): Are there any hallucinations? Every claim in the Summary and Connections must be strictly logically derived from the RAW INPUT. Penalize "invented" facts.
   3. Synthesis (Insight & Depth): Look at the 'Core Connection' and 'Friction' sections. Does the AI identify genuine 'aha!' patterns, logical gaps, or non-obvious parallels? High scores require deep analytical reasoning, not just rephrasing.
   4. Actionability (Pragmatic Conversion): Is the 'next small action' a specific, high-leverage step that actually bridges the theory into practice?
+
+CRITICAL JUDGEMENT RULE: 
+ You are an independent auditor, not a collaborator. Do not assume the provided SUMMARY or CONNECTIONS are accurate. Disagreement with the agent's output is expected if the output is flawed, you must provide a low score in this case.
 
   Instructions:
   - Write the 'justification' text in {target_lang} (MAX 30 WORDS).
