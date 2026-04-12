@@ -555,7 +555,6 @@
 
         function clearSelection() { selectedIds.clear(); loadGarden(); }
 
-        // --- 全量保留的原始业务逻辑 ---
         combineBtn.onclick = async () => {
             const history = readGardenData();
             const selected = history.filter(h => selectedIds.has(String(h.id)));
@@ -674,9 +673,19 @@
         langMenu.onchange = () => applyLanguage(langMenu.value);
         refreshBtn.onclick = () => { refreshBtn.classList.add('rotating'); loadGarden(); setTimeout(() => refreshBtn.classList.remove('rotating'), 800); };
         exportBtn.onclick = () => {
-            const blob = new Blob([localStorage.getItem('garden_history')], { type: 'application/json' });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = `garden_backup_${Date.now()}.json`; a.click();
+            // 获取原始数据字符串
+            const rawData = localStorage.getItem('garden_history') || '[]';
+            try {
+                // 将字符串解析为对象，再重新序列化，添加 2 个空格的缩进
+                const formattedJson = JSON.stringify(JSON.parse(rawData), null, 2);
+                const blob = new Blob([formattedJson], { type: 'application/json' });
+                const a = document.createElement('a'); 
+                a.href = URL.createObjectURL(blob);
+                a.download = `garden_backup_${Date.now()}.json`; 
+                a.click();
+            } catch (e) {
+                showMessage("Export failed: Data format error");
+            }
         };
         importBtn.onclick = () => fileInput.click();
         fileInput.onchange = (e) => {
