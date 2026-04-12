@@ -62,7 +62,7 @@ Requirements:
       {"role": "user", "content": user_prompt},
     ],
     temperature=0.9,
-    max_tokens=10,
+    max_tokens=900,
   )
 
   # Calculate metrics
