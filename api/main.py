@@ -191,6 +191,7 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
                 {"role": "user", "content": prompt}
             ],
             temperature=0,
+            max_token=900
         )
 
         tokens = response.usage.total_tokens
