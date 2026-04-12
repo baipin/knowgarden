@@ -555,7 +555,6 @@
 
         function clearSelection() { selectedIds.clear(); loadGarden(); }
 
-        // --- 全量保留的原始业务逻辑 ---
         combineBtn.onclick = async () => {
             const history = readGardenData();
             const selected = history.filter(h => selectedIds.has(String(h.id)));
@@ -674,9 +673,34 @@
         langMenu.onchange = () => applyLanguage(langMenu.value);
         refreshBtn.onclick = () => { refreshBtn.classList.add('rotating'); loadGarden(); setTimeout(() => refreshBtn.classList.remove('rotating'), 800); };
         exportBtn.onclick = () => {
-            const blob = new Blob([localStorage.getItem('garden_history')], { type: 'application/json' });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = `garden_backup_${Date.now()}.json`; a.click();
+            // 1. 从 localStorage 获取原始字符串数据
+            const rawData = localStorage.getItem('garden_history');
+            
+            if (!rawData) {
+                showMessage("Garden is empty, nothing to export.");
+                return;
+            }
+
+            try {
+                // 2. 先解析为 JS 对象
+                const jsonObject = JSON.parse(rawData);
+                
+                // 3. 核心修改：使用 JSON.stringify 的第三个参数进行格式化
+                // null 是替代函数（不需要），2 代表每个层级缩进 2 个空格
+                const formattedJson = JSON.stringify(jsonObject, null, 2);
+                
+                // 4. 生成 Blob 并下载
+                const blob = new Blob([formattedJson], { type: 'application/json' });
+                const a = document.createElement('a'); 
+                a.href = URL.createObjectURL(blob);
+                a.download = `garden_backup_${Date.now()}.json`; 
+                a.click();
+                
+                showMessage("Backup exported with formatting");
+            } catch (e) {
+                console.error("Export Error:", e);
+                showMessage("Export failed: Data error");
+            }
         };
         importBtn.onclick = () => fileInput.click();
         fileInput.onchange = (e) => {
