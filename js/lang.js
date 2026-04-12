@@ -51,7 +51,7 @@ const i18n = {
     pptHeadline: "演示大纲 (Marp Markdown)",
     copyMarp: "复制 Markdown",
     combineLoading: "正在融合见解...",
-    combineSuccess: "新混合种子已诞生！",
+    combineSuccess: "新混合种子已诞生！"
   },
 
   'zh-tw': {
@@ -106,7 +106,7 @@ const i18n = {
     pptHeadline: "演示大綱 (Marp Markdown)",
     copyMarp: "複製 Markdown",
     combineLoading: "正在融合見解...",
-    combineSuccess: "新混合種子已誕生！",
+    combineSuccess: "新混合種子已誕生！"
   },
 
   'en': {
@@ -169,6 +169,6 @@ const i18n = {
     pptHeadline: "Presentation Outline (Marp)",
     copyMarp: "Copy Markdown",
     combineLoading: "Fusing insights...",
-    combineSuccess: "New Hybrid Seed Created!",
+    combineSuccess: "New Hybrid Seed Created!"
   }
 };
