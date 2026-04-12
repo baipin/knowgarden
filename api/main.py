@@ -192,10 +192,10 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
         )
 
         tokens = response.usage.total_tokens
-        raw_content = response.choices[0].message.content.lower()
-        
-        # Handle reasoning models (r1) if they are ever used
-        clean_content = raw_content.split("</think>")[-1] if "</think>" in raw_content else raw_content
+        content = response.choices[0].message.content.lower()
+
+        # Handling Chain-Of-Thoughts
+        clean_content = content.split("</think>")[-1] if "</think>" in content else content
             
         eval_stats = {
             "relevance": 0.0, "faithfulness": 0.0, 
@@ -203,7 +203,6 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
             "justification": "Parsing failed"
         }
 
-        # Fixed Indentation and Variable Name
         for line in clean_content.strip().split('\n'):
             line = line.replace('*', '').strip()
             if ':' in line:
@@ -228,7 +227,6 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
             "stats": {"relevance": 0.0, "faithfulness": 0.0, "synthesis": 0.0, "actionability": 0.0, "justification": "Error"},
             "tokens": 0
         }
-
 # =========================================================
 # 9) 主路由：/api/grow (同步 Agent2 升级)
 # =========================================================
