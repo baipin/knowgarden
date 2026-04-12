@@ -144,6 +144,9 @@ def build_title_from_summary(summary: str, fallback_lang: str) -> str:
 # 8.5) Evaluation Logic
 # =========================================================
 async def get_metrics(raw_input, summary, connections, growth, eval_model, lang):
+    s_summary = str(summary)[:500]
+    s_map = str(connections)[:800]
+    s_plan = str(growth)[:800]
     """Evaluates the 4 core pillars using the user's interface language."""
     lang_map = {
         "zh-cn": "Simplified Chinese",
@@ -155,12 +158,13 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
     try:
         prompt = f"""
         Role: Knowledge Audit Judge
-        Task: Evaluate the AI's performance based on the user's RAW INPUT.
+        Task: Evaluate the AI's performance based on the user's RAW INPUT. 
+        Output RAW JSON ONLY.
         
-        RAW INPUT: {raw_input[:500]}
-        SUMMARY: {summary[:500]}
-        CONNECTIONS: {connections[:500]}
-        GROWTH_PLAN: {growth[:500]}
+        RAW INPUT: {raw_input}
+        SUMMARY: {s_summary}
+        CONNECTIONS: {s_map}
+        GROWTH_PLAN: {s_plan}
 
         Evaluation Criteria (Score 0.0 to 1.0):
         1. Relevance: Does the output address the user's specific input?
@@ -173,7 +177,6 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
         - IMPORTANT: Write the 'justification' text in {target_lang}.
         - Then, provide the numerical scores.
         - Do not include any other conversational text or preamble.
-        - Output ONLY raw JSON. No markdown. No intro.
 
         Format your response EXACTLY as:
         justification: [Brief reasoning in {target_lang}]
