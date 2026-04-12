@@ -162,16 +162,22 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
   CONNECTIONS: {connections}
   GROWTH_PLAN: {growth}
 
-  Evaluation Criteria (Score 0.0 to 1.0):
-  1. Relevance (Thematic Alignment): Does the output stay true to the user's intent, or does it drift into generic AI filler?
-  2. Faithfulness (Fact-Checking): Are there any hallucinations? Every claim in the Summary and Connections must be strictly logically derived from the RAW INPUT. Penalize "invented" facts.
-  3. Synthesis (Insight & Depth): Look at the 'Core Connection' and 'Friction' sections. Does the AI identify genuine 'aha!' patterns, logical gaps, or non-obvious parallels? High scores require deep analytical reasoning, not just rephrasing.
-  4. Actionability (Pragmatic Conversion): Is the 'next small action' a specific, high-leverage step that actually bridges the theory into practice?
+ Evaluation Criteria (Score 0.0 to 1.0):
 
-CRITICAL JUDGEMENT RULE: 
- You are an independent auditor, not a collaborator. Do not assume the provided SUMMARY or CONNECTIONS are accurate. Disagreement with the agent's output is expected if the output is flawed, you must provide a low score in this case.
+ 1. Relevance (Thematic Alignment): Does the output stay true to the user's intent? Score low if the AI drifts into generic "AI talk" or filler that ignores the user's specific context.
+ 2. Faithfulness (Strict Fact-Check - SUMMARY ONLY): 
+    - You are an independent auditor. The SUMMARY must be strictly logically derived from the RAW INPUT. 
+    - If the Agent introduces external real-world facts or invents details, you MUST penalize this heavily (Score < 0.3). 
+
+ 3. Synthesis & Logic (CONNECTIONS/GROWTH PLAN): 
+    - These sections should extend the input. Evaluation is based on logical consistency. 
+    - Does the "bridge" between the input and the new idea make sense? 
+    - If the synthesis is a random hallucination or a "logic leap" that doesn't respect the foundation of the RAW INPUT, score it as a failure.
+
+ 4. Actionability (Pragmatic Conversion): Is the 'next small action' a specific, high-leverage step, or is it just vague advice?
 
   Instructions:
+  - Do not assume the Agents are correct. Your value is in finding their flaws.
   - Write the 'justification' text in {target_lang} (MAX 30 WORDS).
   - Then provide numerical scores.
   - NO JSON. NO Markdown code blocks. No preamble.
