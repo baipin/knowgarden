@@ -600,7 +600,15 @@
             if (!item) return;
             const content = document.getElementById('debug-content');
             const latency = item.latency ? `${item.latency}ms` : 'N/A';
-            const tokens = item.usage ? (item.usage.total_tokens || 'N/A') : 'N/A';
+            let tokenDisplay = 'N/A';
+            if (item.usage) {
+                tokenDisplay = item.usage.total_tokens || 'N/A';
+                // If the detailed breakdown exists, add it in parentheses
+                if (item.usage.details) {
+                    const d = item.usage.details;
+                    tokenDisplay += ` <br><small style="opacity:0.7">(A1:${d.agent1} | A2:${d.agent2} | A3:${d.agent3} | Audit:${d.judge})</small>`;
+                }
+            }
             const justification = item.evaluation?.justification || "No reasoning provided.";
             
             const metricsList = ['relevance', 'faithfulness', 'synthesis', 'actionability']
@@ -611,7 +619,10 @@
 
             content.innerHTML = `
                 <div class="debug-item"><span class="debug-label">Response Latency</span><span>${latency}</span></div>
-                <div class="debug-item"><span class="debug-label">Token Usage</span><span>${tokens}</span></div>
+                <div class="debug-item" style="align-items: flex-start;">
+                    <span class="debug-label">Token Usage</span>
+                    <span style="text-align: right;">${tokenDisplay}</span>
+                </div>
                 <div style="margin-top: 16px;">
                     <span class="debug-label">Audit Justification</span>
                     <p style="font-size: 13px; opacity: 0.8; margin: 8px 0;">${justification}</p>
