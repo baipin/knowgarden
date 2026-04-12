@@ -157,10 +157,10 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
         Role: Knowledge Audit Judge
         Task: Evaluate the AI's performance based on the user's RAW INPUT.
         
-        RAW INPUT: {raw_input}
-        SUMMARY: {summary}
-        CONNECTIONS: {connections}
-        GROWTH_PLAN: {growth}
+        RAW INPUT: {raw_input[:500]}
+        SUMMARY: {summary[:500]}
+        CONNECTIONS: {connections[:500]}
+        GROWTH_PLAN: {growth[:500]}
 
         Evaluation Criteria (Score 0.0 to 1.0):
         1. Relevance: Does the output address the user's specific input?
@@ -189,7 +189,7 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
                 {"role": "user", "content": prompt}
             ],
             temperature=0,
-            max_token=250
+            max_token=500
         )
 
         tokens = response.usage.total_tokens
