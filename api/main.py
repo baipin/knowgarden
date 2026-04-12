@@ -166,10 +166,10 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
   GROWTH_PLAN: {s_plan}
 
   Evaluation Criteria (Score 0.0 to 1.0):
-  1. Relevance: Address the specific input?
-  2. Faithfulness: No hallucinations?
-  3. Synthesis: Mindmap quality?
-  4. Actionability: Practical next step?
+  1. Relevance (Thematic Alignment): Does the output stay true to the user's intent, or does it drift into generic AI filler?
+2. Faithfulness (Fact-Checking): Are there any hallucinations? Every claim in the Summary and Connections must be strictly logically derived from the RAW INPUT. Penalize "invented" facts.
+3. Synthesis (Insight & Depth): Look at the 'Core Connection' and 'Friction' sections. Does the AI identify genuine 'aha!' patterns, logical gaps, or non-obvious parallels? High scores require deep analytical reasoning, not just rephrasing.
+4. Actionability (Pragmatic Conversion): Is the 'next small action' a specific, high-leverage step that actually bridges the theory into practice?
 
   Instructions:
   - Write the 'justification' text in {target_lang} (MAX 30 WORDS).
