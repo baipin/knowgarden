@@ -555,6 +555,7 @@
 
         function clearSelection() { selectedIds.clear(); loadGarden(); }
 
+        // --- 全量保留的原始业务逻辑 ---
         combineBtn.onclick = async () => {
             const history = readGardenData();
             const selected = history.filter(h => selectedIds.has(String(h.id)));
@@ -679,80 +680,24 @@
                 // 将字符串解析为对象，再重新序列化，添加 2 个空格的缩进
                 const formattedJson = JSON.stringify(JSON.parse(rawData), null, 2);
                 const blob = new Blob([formattedJson], { type: 'application/json' });
-                const a = document.createElement('a'); 
+                const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
-                a.download = `garden_backup_${Date.now()}.json`; 
+                a.download = `garden_backup_${Date.now()}.json`;
                 a.click();
             } catch (e) {
                 showMessage("Export failed: Data format error");
             }
         };
-                // ==================== 导入备份功能（带完整错误提示） ====================
         importBtn.onclick = () => fileInput.click();
-
         fileInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
             const reader = new FileReader();
-
             reader.onload = (ev) => {
-                try {
-                    const text = ev.target.result.trim();
-                    let imported;
-
-                    // 1. 尝试解析 JSON
-                    try {
-                        imported = JSON.parse(text);
-                    } catch (parseErr) {
-                        showMessage(t('importFormatError') || 'Invalid JSON format');
-                        console.error('JSON Parse Error:', parseErr);
-                        return;
-                    }
-
-                    // 2. 检查是否为数组（你要求的格式）
-                    if (!Array.isArray(imported)) {
-                        showMessage(t('importFormatError') || 'Invalid format: Backup should be an array');
-                        return;
-                    }
-
-                    // 3. 检查数组是否为空（可选，但推荐）
-                    if (imported.length === 0) {
-                        showMessage("Imported file is empty.");
-                        return;
-                    }
-
-                    // 4. 合并数据（去重逻辑保持不变）
-                    const currentData = readGardenData();
-                    const combined = [...imported, ...currentData];
-                    
-                    // 使用 id 或 created_at 去重
-                    const unique = Array.from(
-                        new Map(combined.map(item => [
-                            item.id || item.created_at || Math.random(), 
-                            item
-                        ])).values()
-                    );
-
-                    // 5. 保存并刷新
-                    localStorage.setItem('garden_history', JSON.stringify(unique));
-                    loadGarden();
-
-                    // 成功提示
-                    showMessage(t('importSuccess') || 'Imported successfully, refreshing...');
-
-                } catch (err) {
-                    console.error('Import Error:', err);
-                    showMessage(t('importSysError') || 'System error reading file');
-                }
+                const imported = JSON.parse(ev.target.result);
+                const unique = Array.from(new Map([...imported, ...readGardenData()].map(i => [i.id || i.created_at, i])).values());
+                localStorage.setItem('garden_history', JSON.stringify(unique));
+                loadGarden();
             };
-
-            // 文件读取错误处理
-            reader.onerror = () => {
-                showMessage(t('importSysError') || 'System error reading file');
-            };
-
-            reader.readAsText(file);
+            reader.readAsText(e.target.files[0]);
         };
         clearBtn.onclick = () => { if (confirm(t('gardenClearConfirm'))) { localStorage.removeItem('garden_history'); loadGarden(); } };
 
