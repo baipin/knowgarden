@@ -25,7 +25,7 @@ knowledge-garden-ai/
 │   │   └──  lang.js    # JS file for multi-language
 └── README.md               # Project documentation and setup guide
 ```
-*： 'garden_backup_sample.json' is for demo use. You can download and import this file at Garden Page to see sample outputs. 
+*： `garden_backup_sample.json` is for demo use. You can download and import this file at Garden Page to see sample outputs. 
 
 ## Deployment
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fbaipin%2Fknowgarden&env=DEEPSEEK_BASE_URL,DEEPSEEK_API_KEY&envDefaults=%7B%22DEEPSEEK_BASE_URL%22%3A%22*input%20your%20openai%20url%2C%20not%20limited%20to%20deepseek%2C%20any%20model%20is%20ok.*%22%2C%22DEEPSEEK_API_KEY%22%3A%22*input%20your%20openai%20api%2C%20not%20limited%20to%20deepseek%2C%20any%20model%20is%20ok.*%22%7D&demo-title=Knowledge%20Garden&demo-url=https%3A%2F%2Fkg.baipon.com%2F)  
