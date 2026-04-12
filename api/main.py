@@ -173,6 +173,7 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
         - IMPORTANT: Write the 'justification' text in {target_lang}.
         - Then, provide the numerical scores.
         - Do not include any other conversational text or preamble.
+        - Output ONLY raw JSON. No markdown. No intro.
 
         Format your response EXACTLY as:
         justification: [Brief reasoning in {target_lang}]
@@ -189,7 +190,7 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
                 {"role": "user", "content": prompt}
             ],
             temperature=0,
-            max_token=500
+            max_token=900
         )
 
         tokens = response.usage.total_tokens
