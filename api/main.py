@@ -144,9 +144,6 @@ def build_title_from_summary(summary: str, fallback_lang: str) -> str:
 # 8.5) Evaluation Logic
 # =========================================================
 async def get_metrics(raw_input, summary, connections, growth, eval_model, lang):
-    s_summary = str(summary)[:600]
-    s_map = str(connections)[:1000]
-    s_plan = str(growth)[:1000]
     """Evaluates the 4 core pillars using the user's interface language."""
     lang_map = {
         "zh-cn": "Simplified Chinese",
@@ -161,9 +158,9 @@ async def get_metrics(raw_input, summary, connections, growth, eval_model, lang)
   Task: Evaluate the AI's performance based on the user's RAW INPUT. 
 
   RAW INPUT: {raw_input}
-  SUMMARY: {s_summary}
-  CONNECTIONS: {s_map}
-  GROWTH_PLAN: {s_plan}
+  SUMMARY: {summary}
+  CONNECTIONS: {connections}
+  GROWTH_PLAN: {growth}
 
   Evaluation Criteria (Score 0.0 to 1.0):
   1. Relevance (Thematic Alignment): Does the output stay true to the user's intent, or does it drift into generic AI filler?
