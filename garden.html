@@ -702,63 +702,16 @@
                 showMessage("Export failed: Data error");
             }
         };
-        const t = (key) => {
-            const currentLang = document.documentElement.lang || 'zh-cn'; // 获取当前页面语言
-            return (window.i18n && window.i18n[currentLang]) ? window.i18n[currentLang][key] : key;
-        };
-
         importBtn.onclick = () => fileInput.click();
-
         fileInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
             const reader = new FileReader();
-
-            // 成功读取后的回调
             reader.onload = (ev) => {
-                try {
-                    const imported = JSON.parse(ev.target.result);
-
-                    // 1. 校验格式
-                    if (!Array.isArray(imported)) {
-                        throw new Error(t('importFormatError'));
-                    }
-
-                    // 2. 数据处理（去重合并）
-                    const currentData = typeof readGardenData === 'function' ? readGardenData() : [];
-                    const combined = [...imported, ...currentData];
-                    const unique = Array.from(new Map(combined.map(i => [i.id || i.created_at, i])).values());
-
-                    // 3. 写入存储
-                    localStorage.setItem('garden_history', JSON.stringify(unique));
-
-                    // 4. MDUI 成功提示
-                    mdui.snackbar({
-                        message: t('importSuccess'),
-                        position: 'top',
-                        timeout: 2000
-                    });
-
-                    // 5. 刷新页面或组件
-                    if (typeof loadGarden === 'function') {
-                        setTimeout(() => loadGarden(), 500);
-                    }
-                } catch (err) {
-                    console.error("Import Error:", err);
-                    // 失败提示
-                    mdui.snackbar({
-                        message: `${t('importError')}: ${err.message}`,
-                        position: 'top',
-                        timeout: 5000
-                    });
-                } finally {
-                    fileInput.value = ''; // 允许重复选择同一文件
-                }
+                const imported = JSON.parse(ev.target.result);
+                const unique = Array.from(new Map([...imported, ...readGardenData()].map(i => [i.id || i.created_at, i])).values());
+                localStorage.setItem('garden_history', JSON.stringify(unique));
+                loadGarden();
             };
-
-            // 关键：必须调用读取方法，否则 onload 不会触发
-            reader.readAsText(file);
+            reader.readAsText(e.target.files[0]);
         };
         clearBtn.onclick = () => { if (confirm(t('gardenClearConfirm'))) { localStorage.removeItem('garden_history'); loadGarden(); } };
 
