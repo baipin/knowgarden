@@ -703,15 +703,59 @@
             }
         };
         importBtn.onclick = () => fileInput.click();
+
         fileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
             const reader = new FileReader();
             reader.onload = (ev) => {
-                const imported = JSON.parse(ev.target.result);
-                const unique = Array.from(new Map([...imported, ...readGardenData()].map(i => [i.id || i.created_at, i])).values());
-                localStorage.setItem('garden_history', JSON.stringify(unique));
-                loadGarden();
+                try {
+                    const imported = JSON.parse(ev.target.result);
+
+                    // 校验：必须是数组
+                    if (!Array.isArray(imported)) {
+                        throw new Error(t('importFormatError'));
+                    }
+
+                    // 合并与去重逻辑
+                    const currentData = readGardenData();
+                    const combined = [...imported, ...currentData];
+                    const unique = Array.from(new Map(combined.map(i => [i.id || i.created_at, i])).values());
+
+                    localStorage.setItem('garden_history', JSON.stringify(unique));
+
+                    // 使用 MDUI Snackbar 显示成功状态（图标已包含在 t('importSuccess') 中）
+                    mdui.snackbar({
+                        message: t('importSuccess'),
+                        position: 'top',
+                        timeout: 2000
+                    });
+
+                    setTimeout(() => loadGarden(), 500);
+                } catch (err) {
+                    console.error("Import Error:", err);
+
+                    // 失败反馈：将图标前缀与具体的错误文本拼接
+                    mdui.snackbar({
+                        message: `${t('importError')}: ${err.message}`,
+                        position: 'top',
+                        timeout: 5000
+                    });
+                } finally {
+                    fileInput.value = ''; // 重置，允许重复上传同一文件
+                }
             };
-            reader.readAsText(e.target.files[0]);
+
+            // 增加读取错误处理
+            reader.onerror = () => {
+                mdui.snackbar({
+                    message: t('importSysError'),
+                    position: 'top'
+                });
+            };
+
+            reader.readAsText(file);
         };
         clearBtn.onclick = () => { if (confirm(t('gardenClearConfirm'))) { localStorage.removeItem('garden_history'); loadGarden(); } };
 

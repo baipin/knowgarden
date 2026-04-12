@@ -52,6 +52,11 @@ const i18n = {
     copyMarp: "复制 Markdown",
     combineLoading: "正在融合见解...",
     combineSuccess: "新混合种子已诞生！",
+
+    importSuccess: '<mdui-icon name="check_circle" style="color: var(--mdui-color-primary); margin-right: 8px;"></mdui-icon>导入成功，正在刷新花园...',
+    importError: '<mdui-icon name="error" style="color: var(--mdui-color-error); margin-right: 8px;"></mdui-icon>导入失败',
+    importFormatError: '非法格式：备份文件应为数组类型',
+    importSysError: '<mdui-icon name="report_problem" style="margin-right: 8px;"></mdui-icon>文件读取系统错误'
   },
 
   'zh-tw': {
@@ -106,7 +111,12 @@ const i18n = {
     pptHeadline: "演示大綱 (Marp Markdown)",
     copyMarp: "複製 Markdown",
     combineLoading: "正在融合見解...",
-    combineSuccess: "新混合種子已誕生！"
+    combineSuccess: "新混合種子已誕生！",
+
+    importSuccess: '<mdui-icon name="check_circle" style="color: var(--mdui-color-primary); margin-right: 8px;"></mdui-icon>匯入成功，正在重新整理花園...',
+    importError: '<mdui-icon name="error" style="color: var(--mdui-color-error); margin-right: 8px;"></mdui-icon>匯入失敗',
+    importFormatError: '格式錯誤：備份檔案應為陣列類型',
+    importSysError: '<mdui-icon name="report_problem" style="margin-right: 8px;"></mdui-icon>檔案讀取系統錯誤'
   },
 
   'en': {
@@ -169,6 +179,12 @@ const i18n = {
     pptHeadline: "Presentation Outline (Marp)",
     copyMarp: "Copy Markdown",
     combineLoading: "Fusing insights...",
-    combineSuccess: "New Hybrid Seed Created!"
+    combineSuccess: "New Hybrid Seed Created!",
+
+    importSuccess: '<mdui-icon name="check_circle" style="color: var(--mdui-color-primary); margin-right: 8px;"></mdui-icon>Imported successfully, refreshing...',
+    importError: '<mdui-icon name="error" style="color: var(--mdui-color-error); margin-right: 8px;"></mdui-icon>Import failed',
+    importFormatError: 'Invalid format: Backup should be an array',
+    importSysError: '<mdui-icon name="report_problem" style="margin-right: 8px;"></mdui-icon>System error reading file'
+  }
   }
 };
