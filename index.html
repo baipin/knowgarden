@@ -214,9 +214,17 @@
             localStorage.setItem('user_lang', lang);
         }
 
+        // 修改点：將進度條設為無特定進度模式
         function updateUI(text, progress, icon) {
             statusText.innerText = text;
-            progressBar.value = progress;
+            
+            // 如果 progress 為 null，則移除 value 屬性以觸發 MDUI 的 Indeterminate 動畫
+            if (progress === null) {
+                progressBar.removeAttribute('value');
+            } else {
+                progressBar.value = progress;
+            }
+            
             if (statusIcon) statusIcon.name = icon;
         }
 
@@ -225,11 +233,10 @@
             statusArea.style.display = 'none';
         }
 
-        // 修改点：确保数据项完整包含后端返回的所有元数据字段
         function saveToGarden(data) {
             const garden = JSON.parse(localStorage.getItem('garden_history') || '[]');
             garden.unshift({
-                ...data, // 这里会自动解构包含 summary, connections, growth_plan, latency, evaluation, usage 等
+                ...data,
                 id: Date.now(),
                 created_at: new Date().toLocaleString()
             });
@@ -271,7 +278,9 @@
 
             submitBtn.disabled = true;
             statusArea.style.display = 'block';
-            updateUI(langPack.agent1, 33, "data_exploration");
+            
+            // 修改點：傳入 null 讓進度條循環滾動
+            updateUI(langPack.agent1, null, "data_exploration");
 
             try {
                 const response = await fetch('/api/grow', {
@@ -296,12 +305,11 @@
                     return;
                 }
 
-                updateUI(langPack.agent2, 66, "hub");
+                updateUI(langPack.agent2, null, "hub");
                 await new Promise(r => setTimeout(r, 800));
-                updateUI(langPack.agent3, 95, "trending_up");
+                updateUI(langPack.agent3, null, "trending_up");
                 await new Promise(r => setTimeout(r, 1000));
 
-                // 修改点：直接传入返回的 data 对象，它现在包含 latency 和 evaluation
                 saveToGarden(result.data);
                 window.location.href = 'garden.html';
 
